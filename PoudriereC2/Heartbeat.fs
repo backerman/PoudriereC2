@@ -2,18 +2,14 @@ namespace Facefault.PoudriereC2
 
 open System
 open System.IO
+open System.Text.Json
 open Microsoft.AspNetCore.Mvc
 open Microsoft.Azure.WebJobs
 open Microsoft.Azure.WebJobs.Extensions.Http
 open Microsoft.AspNetCore.Http
-open Newtonsoft.Json
 open Microsoft.Extensions.Logging
 
 module Heartbeat =
-    // Define a nullable container to deserialize into.
-    [<AllowNullLiteral>]
-    type NameContainer() =
-        member val Name = "" with get, set
 
     // For convenience, it's better to have a central place for the literal.
     [<Literal>]
@@ -22,31 +18,22 @@ module Heartbeat =
     [<FunctionName("Heartbeat")>]
     let run ([<HttpTrigger(AuthorizationLevel.Function, "post", Route = null)>]req: HttpRequest) (log: ILogger) =
         async {
-            log.LogInformation("F# HTTP trigger function processed a request.")
-
-            let nameOpt = 
-                if req.Query.ContainsKey(Name) then
-                    Some(req.Query.[Name].[0])
-                else
-                    None
-
             use stream = new StreamReader(req.Body)
             let! reqBody = stream.ReadToEndAsync() |> Async.AwaitTask
-            let data = JsonConvert.DeserializeObject<NameContainer>(reqBody)
-
-            let name =
-                match nameOpt with
-                | Some n -> n
+            let data = 
+                try
+                    JsonSerializer.Deserialize<Event>
+                        (reqBody, eventSerializationOptions) |> Some
+                with
+                | :? System.Text.Json.JsonException -> None
+                | e -> raise e
+            let response =
+                match data with
+                | Some d ->
+                    let msg = "Received heartbeat from " + d.VmName + "."
+                    OkObjectResult(msg) :> IActionResult
                 | None ->
-                   match data with
-                   | null -> ""
-                   | nc -> nc.Name
-            
-            let responseMessage =             
-                if (String.IsNullOrWhiteSpace(name)) then
-                    "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response."
-                else
-                    "Hello, " +  name + ". This HTTP triggered function executed successfully."
-
-            return OkObjectResult(responseMessage) :> IActionResult
+                    log.LogError("Request from {0} not deserializable.", req.HttpContext.Connection.RemoteIpAddress)
+                    BadRequestObjectResult("Bad request.") :> IActionResult
+            return response
         } |> Async.StartAsTask
