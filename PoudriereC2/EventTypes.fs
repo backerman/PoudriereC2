@@ -13,16 +13,19 @@ module Types =
           LoadAverage: float list;
           /// The number of CPUs in the VM.
           NumCPUs: int;
-          /// The size of the VM (e.g. "Standard_D96as_v4").
+          /// <summary>The size of the VM (e.g. <c>Standard_D96as_v4</c>).</summary>
           VmSize: string }
 
     /// Payload for a jail event.
     type JailInfo =
+        /// The path at which the jail root is mounted in the host filesystem.
         { MountPath: string }
 
     /// Payload for a builder event.
     type BuilderInfo =
-        { Id: int;
+        { /// The ID number of the builder jail.
+          Id: int;
+          /// The path at which the builder jail root is mounted in the host filesystem.
           MountPath: string }
 
     [<Literal>]
