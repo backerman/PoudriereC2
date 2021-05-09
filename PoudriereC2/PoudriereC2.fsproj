@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <AzureFunctionsVersion>v3</AzureFunctionsVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="FSharp.Control.FusionTasks" Version="2.1.1" />
+    <PackageReference Include="FSharp.SystemTextJson" Version="0.16.6" />
+    <PackageReference Include="Microsoft.FSharpLu" Version="0.11.6" />
+    <PackageReference Include="Microsoft.FSharpLu.Azure" Version="0.11.6" />
+    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.11" />
+  </ItemGroup>
+  <Target Name="DefaultLocalSettings" BeforeTargets="GetCopyToOutputDirectoryItems">
+    <ItemGroup>
+      <DevLocalSettings Include="local.settings-dev.json"/>
+    </ItemGroup>
+    <Copy Condition="!Exists('local.settings.json')"
+          SourceFiles="@(DevLocalSettings)"
+          DestinationFiles="@(DevLocalSettings->'local.settings.json')">
+    </Copy>
+  </Target>
+  <ItemGroup>
+    <Compile Include="EventTypes.fs" />
+    <Compile Include="Heartbeat.fs" />
+    <None Include="host.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="local.settings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </None>
+  </ItemGroup>
+</Project>
