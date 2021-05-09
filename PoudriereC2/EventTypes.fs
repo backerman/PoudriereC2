@@ -7,14 +7,20 @@ open System.Text.Json.Serialization
 [<AutoOpen>]
 module Types =
 
+    /// A client heartbeat.
     type HeartbeatInfo =
-        { LoadAverage: float list;
+        { /// The 1-, 5-, and 15-minute load averages of the VM.
+          LoadAverage: float list;
+          /// The number of CPUs in the VM.
           NumCPUs: int;
+          /// The size of the VM (e.g. "Standard_D96as_v4").
           VmSize: string }
 
+    /// Payload for a jail event.
     type JailInfo =
         { MountPath: string }
 
+    /// Payload for a builder event.
     type BuilderInfo =
         { Id: int;
           MountPath: string }
@@ -22,7 +28,8 @@ module Types =
     [<Literal>]
     let private EventType = "type"
 
-    type Hook =
+    /// The type of an event and event-specific payload.
+    type EventDetail =
         | Jail of JailInfo
         | Builder of BuilderInfo
         | PkgBuild of
@@ -46,11 +53,17 @@ module Types =
         | PortsUpdate
         | Heartbeat of HeartbeatInfo
 
+    /// A VM event.
     type Event =
-        { Timestamp: DateTime;
+        {
+          /// The client timestamp.
+          Timestamp: DateTime;
+          /// The GUID of the client's Azure VM instance (from IMDS).
           VmGuid: Guid;
+          /// The name of the client's Azure VM instance (from IMDS).
           VmName: string;
-          Event: Hook }
+          /// The event type and payload.
+          Event: EventDetail }
 
     let serializationOptions discriminator =
         let options = JsonSerializerOptions()
@@ -66,4 +79,5 @@ module Types =
         ) |> options.Converters.Add
         options
     
+    /// The JSON serialization options to use for types in this module.
     let eventSerializationOptions = serializationOptions EventType
