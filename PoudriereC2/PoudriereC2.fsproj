@@ -7,7 +7,7 @@
   <ItemGroup>
     <PackageReference Include="FSharp.Control.FusionTasks" Version="2.1.1" />
     <PackageReference Include="FSharp.SystemTextJson" Version="0.16.6" />
-    <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.18.0" />
+    <PackageReference Include="Azure.Cosmos" Version="4.0.0-preview3" />
     <!-- Most of these Cosmos packages are included to resolve dependency conflicts. -->
     <PackageReference Include="Microsoft.Azure.Cosmos.Table" Version="1.0.8" />
     <PackageReference Include="Microsoft.Azure.DocumentDB.Core" Version="2.14.0" />
@@ -26,9 +26,10 @@
     </Copy>
   </Target>
   <ItemGroup>
-    <Compile Include="Configuration.fs" />
     <Compile Include="ConfigTypes.fs" />
     <Compile Include="EventTypes.fs" />
+    <Compile Include="CustomCosmosSerializer.fs" />
+    <Compile Include="Configuration.fs" />
     <Compile Include="GetConfiguration.fs" />
     <Compile Include="Heartbeat.fs" />
     <None Include="host.json">

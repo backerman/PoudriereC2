@@ -1,11 +1,12 @@
 namespace Facefault.PoudriereC2
 
-open Microsoft.Azure.Cosmos.Fluent
+open Azure.Cosmos
+open Azure.Cosmos.Fluent
 open Microsoft.Azure.Functions.Extensions.DependencyInjection
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
 open System
-open Microsoft.Azure.Cosmos
+open Azure.Cosmos.Serialization
 
 module Configuration =
     type Startup() =
@@ -26,7 +27,9 @@ module Configuration =
                     let connectionString = configuration.["CosmosDBConnection"]
                     if String.IsNullOrEmpty connectionString then
                         failwith "Please provide a valid thingy"
-                    let clientBuilder = new CosmosClientBuilder(connectionString)
+                    let clientBuilder = 
+                        (new CosmosClientBuilder(connectionString))
+                            .WithCustomSerializer(MyCustomCosmosSerializer())
                     clientBuilder.Build())
             builder.Services.AddSingleton<CosmosClient> buildClient |> ignore
 

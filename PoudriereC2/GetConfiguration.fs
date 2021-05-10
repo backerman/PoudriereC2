@@ -7,7 +7,9 @@ open Microsoft.Azure.WebJobs
 open Microsoft.Azure.WebJobs.Extensions.Http
 open Microsoft.AspNetCore.Http
 open Microsoft.Extensions.Logging
-open Microsoft.Azure.Cosmos
+open Azure.Cosmos
+open System.Text.Json
+open Microsoft.AspNetCore
 
 module GetConfiguration =
     // Define a nullable container to deserialize into.
@@ -20,46 +22,25 @@ module GetConfiguration =
     let Name = "name"
 
 type HttpTriggerMe(dbClient: CosmosClient) =
-    member this.getJobConfig (jobId: string) =
+    member this.getJobConfig (configs: CosmosContainer) (jobId: Guid) =
         async {
-            let db = dbClient.GetDatabase "poudrierec2"
-            let configs = db.GetContainer "configurations"
-            
-            let! jobConfig = configs.ReadItemAsync<JobConfig>(jobId, PartitionKey "jobConfig")
+            let! jobConfig =
+                configs.ReadItemAsync<JobConfig>(jobId.ToString(), PartitionKey "jobConfig")
             return jobConfig
         }
 
     [<FunctionName("GetConfiguration")>]
-    member this.run ([<HttpTrigger(AuthorizationLevel.Function, "get", Route = null)>]req: HttpRequest) (log: ILogger) =
+    member this.run
+        ([<HttpTrigger(AuthorizationLevel.Function, "get", Route = "GetConfiguration/jobId/{jobId:guid}")>]
+            req: HttpRequest) (log: ILogger) (jobId: Guid) =
         async {
-            log.LogInformation("F# HTTP trigger function processed a request.")
             let db = dbClient.GetDatabase "poudrierec2"
             let configs = db.GetContainer "configurations"
-            
-            let nameOpt = 
-                if req.Query.ContainsKey(GetConfiguration.Name) then
-                    Some(req.Query.[GetConfiguration.Name].[0])
-                else
-                    None
-
-            use stream = new StreamReader(req.Body)
-            let! reqBody = stream.ReadToEndAsync() |> Async.AwaitTask
-
-            let data = JsonConvert.DeserializeObject<GetConfiguration.NameContainer>(reqBody)
-
-            let name =
-                match nameOpt with
-                | Some n -> n
-                | None ->
-                   match data with
-                   | null -> ""
-                   | nc -> nc.Name
-            
-            let responseMessage =             
-                if (String.IsNullOrWhiteSpace(name)) then
-                    "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response."
-                else
-                    "Hello, " +  name + ". This HTTP triggered function executed successfully."
-
-            return OkObjectResult(responseMessage) :> IActionResult
+            let! jobConfig = this.getJobConfig configs jobId
+            let responseMessage = JsonSerializer.Serialize(jobConfig.Value, eventSerializationOptions)
+            let response = ContentResult()
+            response.Content <- responseMessage
+            response.ContentType <- "application/json"
+            response.StatusCode <- Http.StatusCodes.Status200OK
+            return response :> IActionResult
         } |> Async.StartAsTask
