@@ -20,21 +20,22 @@ module GetConfiguration =
     [<Literal>]
     let Name = "name"
 
+type HttpTriggerMe(dbClient: CosmosClient) =
     [<FunctionName("GetConfiguration")>]
-    let run ([<HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)>]req: HttpRequest) (log: ILogger) =
+    member this.run ([<HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)>]req: HttpRequest) (log: ILogger) =
         async {
             log.LogInformation("F# HTTP trigger function processed a request.")
 
             let nameOpt = 
-                if req.Query.ContainsKey(Name) then
-                    Some(req.Query.[Name].[0])
+                if req.Query.ContainsKey(GetConfiguration.Name) then
+                    Some(req.Query.[GetConfiguration.Name].[0])
                 else
                     None
 
             use stream = new StreamReader(req.Body)
             let! reqBody = stream.ReadToEndAsync() |> Async.AwaitTask
 
-            let data = JsonConvert.DeserializeObject<NameContainer>(reqBody)
+            let data = JsonConvert.DeserializeObject<GetConfiguration.NameContainer>(reqBody)
 
             let name =
                 match nameOpt with
