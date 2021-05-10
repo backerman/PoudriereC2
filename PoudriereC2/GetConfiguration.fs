@@ -6,7 +6,6 @@ open Microsoft.AspNetCore.Mvc
 open Microsoft.Azure.WebJobs
 open Microsoft.Azure.WebJobs.Extensions.Http
 open Microsoft.AspNetCore.Http
-open Newtonsoft.Json
 open Microsoft.Extensions.Logging
 open Microsoft.Azure.Cosmos
 
@@ -21,11 +20,22 @@ module GetConfiguration =
     let Name = "name"
 
 type HttpTriggerMe(dbClient: CosmosClient) =
+    member this.getJobConfig (jobId: string) =
+        async {
+            let db = dbClient.GetDatabase "poudrierec2"
+            let configs = db.GetContainer "configurations"
+            
+            let! jobConfig = configs.ReadItemAsync<JobConfig>(jobId, PartitionKey "jobConfig")
+            return jobConfig
+        }
+
     [<FunctionName("GetConfiguration")>]
-    member this.run ([<HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)>]req: HttpRequest) (log: ILogger) =
+    member this.run ([<HttpTrigger(AuthorizationLevel.Function, "get", Route = null)>]req: HttpRequest) (log: ILogger) =
         async {
             log.LogInformation("F# HTTP trigger function processed a request.")
-
+            let db = dbClient.GetDatabase "poudrierec2"
+            let configs = db.GetContainer "configurations"
+            
             let nameOpt = 
                 if req.Query.ContainsKey(GetConfiguration.Name) then
                     Some(req.Query.[GetConfiguration.Name].[0])
