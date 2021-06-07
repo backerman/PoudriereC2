@@ -5,8 +5,9 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="5.0.1"/>
+    <PackageReference Update="FSharp.Core" Version="5.0.1" />
     <PackageReference Include="FSharp.Control.FusionTasks" Version="2.2.0" />
+    <PackageReference Include="FSharp.Data.LiteralProviders" Version="0.3.5" />
     <PackageReference Include="FSharp.SystemTextJson" Version="0.17.4" />
     <PackageReference Include="Azure.Cosmos" Version="4.0.0-preview3" />
     <!-- Most of these Cosmos packages are included to resolve dependency conflicts. -->
@@ -18,12 +19,14 @@
     <PackageReference Include="Microsoft.FSharpLu" Version="0.11.6" />
     <PackageReference Include="Microsoft.FSharpLu.Azure" Version="0.11.6" />
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.13" />
+    <PackageReference Include="Npgsql" Version="5.0.5" />
+    <PackageReference Include="SQLProvider" Version="1.2.1" />
   </ItemGroup>
   <Target Name="DefaultLocalSettings" BeforeTargets="GetCopyToOutputDirectoryItems">
     <ItemGroup>
       <DevLocalSettings Include="local.settings-dev.json" />
     </ItemGroup>
-    <Copy Condition="!Exists('local.settings.json')" SourceFiles="@(DevLocalSettings)" DestinationFiles="@(DevLocalSettings-&gt;'local.settings.json')">
+    <Copy Condition="!Exists('local.settings.json')" SourceFiles="@(DevLocalSettings)" DestinationFiles="@(DevLocalSettings->'local.settings.json')">
     </Copy>
   </Target>
   <ItemGroup>
@@ -31,6 +34,7 @@
     <Compile Include="EventTypes.fs" />
     <Compile Include="CustomCosmosSerializer.fs" />
     <Compile Include="Configuration.fs" />
+    <Compile Include="ConfigFiles.fs" />
     <Compile Include="GetConfiguration.fs" />
     <Compile Include="Heartbeat.fs" />
     <None Include="host.json">

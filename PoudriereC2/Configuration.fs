@@ -7,8 +7,27 @@ open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
 open System
 open Azure.Cosmos.Serialization
+open FSharp.Data.LiteralProviders
+open FSharp.Data.Sql
 
 module Configuration =
+
+    /// The connection string to use by default.
+    [<Literal>]
+    let connectionString =
+        Env.PostgresConnection.Value
+
+    /// The schemas containing database objects used by this application.
+    [<Literal>]
+    let owner = "poudrierec2"
+
+    type DB = SqlDataProvider<
+                DatabaseVendor=Common.DatabaseProviderTypes.POSTGRESQL,
+                ConnectionString=connectionString,
+                UseOptionTypes=true,
+                ResolutionPath="/home/bsa3/src/PoudriereC2/src/Server/bin/Debug",
+                Owner=owner>
+
     type Startup() =
         inherit FunctionsStartup()
 
@@ -20,18 +39,17 @@ module Configuration =
                 .Build()
         
         override this.Configure(builder: IFunctionsHostBuilder): unit = 
-            // Need to define function elsewhere because lambda doesn't support
-            // annotating return value.
             let buildClient =
                 (fun s ->
-                    let connectionString = configuration.["CosmosDBConnection"]
+                    let cosmosConnectionString = configuration.["CosmosDBConnection"]
                     if String.IsNullOrEmpty connectionString then
                         failwith "Please provide a valid thingy"
                     let clientBuilder = 
-                        (new CosmosClientBuilder(connectionString))
+                        (new CosmosClientBuilder(cosmosConnectionString))
                             .WithCustomSerializer(MyCustomCosmosSerializer())
                     clientBuilder.Build())
             builder.Services.AddSingleton<CosmosClient> buildClient |> ignore
+            builder.Services.AddSingleton<DB.dataContext> (DB.GetDataContext()) |> ignore
 
     [<assembly:FunctionsStartup(typeof<Startup>)>]
     do
