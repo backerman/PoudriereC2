@@ -1,6 +1,5 @@
 namespace Facefault.PoudriereC2
 open System
-open Microsoft.FSharp.Reflection
 
 [<AutoOpen>]
 module ConfigTypes =
@@ -27,17 +26,8 @@ module ConfigTypes =
       | MakeConf
       | SrcConf
 
-      override x.ToString () = 
-        match FSharpValue.GetUnionFields(x, typeof<ConfigFileType>) with
-        | case, _ -> case.Name.ToLowerInvariant()
+      override x.ToString () = Data.UnionToString(x)
 
-      static member FromString (s: string) =
-        let lowerInput = s.ToLowerInvariant()
-        let myCase =
-            FSharpType.GetUnionCases typeof<ConfigFileType>
-            |> Array.find (fun c -> c.Name.ToLowerInvariant() = lowerInput)
-        FSharpValue.MakeUnion(myCase, [||]) :?> ConfigFileType
- 
     type ConfigFileMetadata =
       { Id: Guid
         Deleted: bool

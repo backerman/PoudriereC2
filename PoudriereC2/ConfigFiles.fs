@@ -1,12 +1,12 @@
 namespace Facefault.PoudriereC2
 open Configuration
+open Facefault.PoudriereC2.Data
 open Microsoft.Extensions.Logging
 open Microsoft.AspNetCore.Http
 open Microsoft.Azure.WebJobs
 open Microsoft.Azure.WebJobs.Extensions.Http
 open System.Text.Json
 open Microsoft.AspNetCore.Mvc
-
 
 type ConfigFileApi (db: DB.dataContext) =
 
@@ -29,7 +29,7 @@ type ConfigFileApi (db: DB.dataContext) =
                             Portset = None
                             Porttree = None
                             Jail = None
-                            FileType = ConfigFileType.FromString file.Configtype }
+                            FileType = FromString<ConfigFileType> file.Configtype }
                         )
                 let responseMessage = JsonSerializer.Serialize(files, eventSerializationOptions)
                 let response = ContentResult()

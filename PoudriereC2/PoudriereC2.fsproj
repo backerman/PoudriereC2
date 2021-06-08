@@ -26,10 +26,11 @@
     <ItemGroup>
       <DevLocalSettings Include="local.settings-dev.json" />
     </ItemGroup>
-    <Copy Condition="!Exists('local.settings.json')" SourceFiles="@(DevLocalSettings)" DestinationFiles="@(DevLocalSettings->'local.settings.json')">
+    <Copy Condition="!Exists('local.settings.json')" SourceFiles="@(DevLocalSettings)" DestinationFiles="@(DevLocalSettings-&gt;'local.settings.json')">
     </Copy>
   </Target>
   <ItemGroup>
+    <Compile Include="Data.fs" />
     <Compile Include="ConfigTypes.fs" />
     <Compile Include="EventTypes.fs" />
     <Compile Include="CustomCosmosSerializer.fs" />

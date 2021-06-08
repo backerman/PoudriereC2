@@ -1,4 +1,4 @@
-module PoudriereC2.Tests
+module PoudriereC2.Tests.Json
 
 open NUnit.Framework
 open FsUnit
