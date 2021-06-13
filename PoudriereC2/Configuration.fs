@@ -6,7 +6,6 @@ open Microsoft.Azure.Functions.Extensions.DependencyInjection
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
 open System
-open Azure.Cosmos.Serialization
 open FSharp.Data.LiteralProviders
 open FSharp.Data.Sql
 
@@ -50,6 +49,10 @@ module Configuration =
                     clientBuilder.Build())
             builder.Services.AddSingleton<CosmosClient> buildClient |> ignore
             builder.Services.AddSingleton<DB.dataContext> (DB.GetDataContext()) |> ignore
+            if configuration.["AZURE_FUNCTIONS_ENVIRONMENT"] = "Develpment" then
+                Common.QueryEvents.SqlQueryEvent
+                |> Event.add
+                    (fun sql -> printfn "Executing SQL: %O" sql)
 
     [<assembly:FunctionsStartup(typeof<Startup>)>]
     do
