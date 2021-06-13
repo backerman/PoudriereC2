@@ -9,6 +9,8 @@ open System.Text.Json
 open Microsoft.AspNetCore.Mvc
 open Npgsql
 open System
+open System.Linq
+open FSharp.Data.Sql
 
 type ConfigFileApi (db: DB.dataContext) =
 
@@ -113,5 +115,37 @@ type ConfigFileApi (db: DB.dataContext) =
                             | _ -> ()
                         | _ -> ()
                 response.ContentType <- "application/json"
+                return response :> IActionResult
+            } |> Async.StartAsTask
+
+    [<FunctionName("DeleteConfigFileOptions")>]
+    member this.deleteConfigFileOptions
+        ([<HttpTrigger(AuthorizationLevel.Function, "delete", Route="configurationfiles/{id:guid}/options")>]
+         req: HttpRequest) (id: Guid) (log: ILogger) =
+            async {
+                let response = ContentResult()
+                let! optsIn =
+                    (JsonSerializer.DeserializeAsync<string list>
+                        (req.Body, eventSerializationOptions)).AsTask()
+                    |> Async.AwaitTask
+                    |> Async.Catch
+                let opts =
+                    match optsIn with
+                    | Choice1Of2 myOptions -> myOptions
+                    | Choice2Of2 e ->
+                        log.LogError
+                            (e, "Failed deserialization for deleting options from {ConfigFile}", id)
+                        []
+                if opts.IsEmpty then
+                    response.StatusCode <- StatusCodes.Status400BadRequest
+                    response.Content <- """{"error": "unable to show tea and no tea to the door"}"""
+                else
+                    response.Content <- """{}"""
+                    query {
+                        for o in db.Poudrierec2.Configoptions do
+                        where (o.Configfile = id && opts.Contains o.Name)
+                    } |> Seq.``delete all items from single table``
+                    |> Async.RunSynchronously
+                    |> ignore
                 return response :> IActionResult
             } |> Async.StartAsTask
