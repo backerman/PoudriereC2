@@ -25,9 +25,9 @@ type ConfigFileApi (db: DB.dataContext) =
                      { Id = file.Id
                        Deleted = file.Deleted
                        Name = file.Name
-                       Portset = None
-                       Porttree = None
-                       Jail = None
+                       Portset = file.Portset
+                       Porttree = file.Porttree
+                       Jail = file.Jail
                        FileType = FromString<ConfigFileType> file.Configtype }
                 }
                 let responseMessage = JsonSerializer.Serialize(files, eventSerializationOptions)
