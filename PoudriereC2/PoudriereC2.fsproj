@@ -33,6 +33,7 @@
     <Compile Include="Data.fs" />
     <Compile Include="ConfigTypes.fs" />
     <Compile Include="EventTypes.fs" />
+    <Compile Include="Serialization.fs" />
     <Compile Include="CustomCosmosSerializer.fs" />
     <Compile Include="Configuration.fs" />
     <Compile Include="ConfigFiles.fs" />

@@ -75,21 +75,11 @@ type ConfigFileApi (db: DB.dataContext) =
          req: HttpRequest) (id: Guid) (log: ILogger) =
             async {
                 let response = ContentResult()
-                let! optsResult =
-                    JsonSerializer.DeserializeAsync<ConfigOption list>(req.Body, eventSerializationOptions).AsTask()
-                    |> Async.AwaitTask
-                    |> Async.Catch
-                let opts: ConfigOption list =
-                    match optsResult with
-                    | Choice1Of2 success ->
-                        success
-                    | Choice2Of2 e ->
-                        log.LogError
-                            (e, "Failed deserialization for upsert into {ConfigFile}", id)
-                        []
-                if opts.IsEmpty then
+                let! maybeOpts = Serialization.tryDeserialize<ConfigOption list> req log
+                match maybeOpts with
+                | None ->
                     response.StatusCode <- StatusCodes.Status400BadRequest
-                else
+                | Some opts ->
                     opts
                     |> List.iter
                         (fun o -> 
@@ -123,23 +113,14 @@ type ConfigFileApi (db: DB.dataContext) =
         ([<HttpTrigger(AuthorizationLevel.Function, "delete", Route="configurationfiles/{id:guid}/options")>]
          req: HttpRequest) (id: Guid) (log: ILogger) =
             async {
+                let! maybeOpts = Serialization.tryDeserialize<string list> req log
                 let response = ContentResult()
-                let! optsIn =
-                    (JsonSerializer.DeserializeAsync<string list>
-                        (req.Body, eventSerializationOptions)).AsTask()
-                    |> Async.AwaitTask
-                    |> Async.Catch
-                let opts =
-                    match optsIn with
-                    | Choice1Of2 myOptions -> myOptions
-                    | Choice2Of2 e ->
-                        log.LogError
-                            (e, "Failed deserialization for deleting options from {ConfigFile}", id)
-                        []
-                if opts.IsEmpty then
+                match maybeOpts with
+                | None ->
                     response.StatusCode <- StatusCodes.Status400BadRequest
                     response.Content <- """{"error": "unable to show tea and no tea to the door"}"""
-                else
+                | Some opts -> 
+                    response.StatusCode <- StatusCodes.Status200OK
                     response.Content <- """{}"""
                     query {
                         for o in db.Poudrierec2.Configoptions do
