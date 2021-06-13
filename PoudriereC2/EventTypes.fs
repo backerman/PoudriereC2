@@ -83,6 +83,7 @@ module Types =
                 JsonUnionEncoding.InternalTag
                 ||| JsonUnionEncoding.NamedFields
                 ||| JsonUnionEncoding.UnwrapRecordCases
+                ||| JsonUnionEncoding.UnwrapOption
             ),
             overrides = dict [
                 typeof<ConfigFileType>, JsonFSharpOptions(
