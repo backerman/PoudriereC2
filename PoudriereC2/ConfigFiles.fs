@@ -7,6 +7,7 @@ open Microsoft.Azure.WebJobs
 open Microsoft.Azure.WebJobs.Extensions.Http
 open System.Text.Json
 open Microsoft.AspNetCore.Mvc
+open Npgsql
 open System
 
 type ConfigFileApi (db: DB.dataContext) =
@@ -71,9 +72,46 @@ type ConfigFileApi (db: DB.dataContext) =
         ([<HttpTrigger(AuthorizationLevel.Function, "put", Route="configurationfiles/{id:guid}/options")>]
          req: HttpRequest) (id: Guid) (log: ILogger) =
             async {
-                failwith "not implemented"
                 let response = ContentResult()
+                let! optsResult =
+                    JsonSerializer.DeserializeAsync<ConfigOption list>(req.Body, eventSerializationOptions).AsTask()
+                    |> Async.AwaitTask
+                    |> Async.Catch
+                let opts: ConfigOption list =
+                    match optsResult with
+                    | Choice1Of2 success ->
+                        success
+                    | Choice2Of2 e ->
+                        log.LogError
+                            (e, "Failed deserialization for upsert into {ConfigFile}", id)
+                        []
+                if opts.IsEmpty then
+                    response.StatusCode <- StatusCodes.Status400BadRequest
+                else
+                    opts
+                    |> List.iter
+                        (fun o -> 
+                            let row = db.Poudrierec2.Configoptions.Create()
+                            row.Configfile <- id
+                            row.Name <- o.Name
+                            row.Value <- o.Value
+                            row.OnConflict <- FSharp.Data.Sql.Common.OnConflict.Update)
+                    let! result = Async.Catch(db.SubmitUpdatesAsync())
+                    match result with
+                    | Choice1Of2 _ ->
+                        response.StatusCode <- StatusCodes.Status200OK
+                        response.Content <- "{}"
+                    | Choice2Of2 e ->
+                        log.LogError
+                            (e, "Failed upsert of config {ConfigFile}", id)
+                        response.StatusCode <- StatusCodes.Status500InternalServerError
+                        match e.InnerException with
+                        | :? PostgresException as ex ->
+                            match ex.SqlState with
+                            | PostgresErrorCodes.ForeignKeyViolation ->
+                                response.Content <- """{"error": "configuration file does not exist"}"""
+                            | _ -> ()
+                        | _ -> ()
                 response.ContentType <- "application/json"
-                response.StatusCode <- StatusCodes.Status200OK
                 return response :> IActionResult
             } |> Async.StartAsTask
