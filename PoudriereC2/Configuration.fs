@@ -24,7 +24,6 @@ module Configuration =
                 DatabaseVendor=Common.DatabaseProviderTypes.POSTGRESQL,
                 ConnectionString=connectionString,
                 UseOptionTypes=true,
-                ResolutionPath="/home/bsa3/src/PoudriereC2/src/Server/bin/Debug",
                 Owner=owner>
 
     type Startup() =
