@@ -48,7 +48,7 @@ module Configuration =
                     clientBuilder.Build())
             builder.Services.AddSingleton<CosmosClient> buildClient |> ignore
             builder.Services.AddSingleton<DB.dataContext> (DB.GetDataContext()) |> ignore
-            if configuration.["AZURE_FUNCTIONS_ENVIRONMENT"] = "Develpment" then
+            if configuration.["AZURE_FUNCTIONS_ENVIRONMENT"] = "Development" then
                 Common.QueryEvents.SqlQueryEvent
                 |> Event.add
                     (fun sql -> printfn "Executing SQL: %O" sql)
