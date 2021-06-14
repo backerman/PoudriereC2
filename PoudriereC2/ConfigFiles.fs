@@ -1,23 +1,24 @@
 namespace Facefault.PoudriereC2
-open Configuration
 open Facefault.PoudriereC2.Data
+open Facefault.PoudriereC2.Database
+open Facefault.PoudriereC2.Serialization
 open Microsoft.Extensions.Logging
-open Microsoft.AspNetCore.Http
-open Microsoft.Azure.WebJobs
-open Microsoft.Azure.WebJobs.Extensions.Http
+open Microsoft.Azure.Functions.Worker
+open Microsoft.Azure.Functions.Worker.Http
 open System.Text.Json
-open Microsoft.AspNetCore.Mvc
 open Npgsql
 open System
+open System.Net
 open System.Linq
 open FSharp.Data.Sql
 
 type ConfigFileApi (db: DB.dataContext) =
 
-    [<FunctionName("GetConfigFilesMetadata")>]
+    [<Function("GetConfigFilesMetadata")>]
     member this.getConfigFileMetadata
         ([<HttpTrigger(AuthorizationLevel.Function, "get", Route="configurationfiles/metadata")>]
-        req: HttpRequest) (log: ILogger) =
+        req: HttpRequestData) (execContext: FunctionContext) =
+            let log = execContext.GetLogger("GetConfigFilesMetadata")
             async {
                 let files = Seq.toList <| query {
                    for file in db.Poudrierec2.Configfiles do
@@ -30,29 +31,25 @@ type ConfigFileApi (db: DB.dataContext) =
                        Jail = file.Jail
                        FileType = FromString<ConfigFileType> file.Configtype }
                 }
-                let responseMessage = JsonSerializer.Serialize(files, eventSerializationOptions)
-                let response = ContentResult()
-                response.Content <- responseMessage
-                response.ContentType <- "application/json"
-                response.StatusCode <- StatusCodes.Status200OK
-                return response :> IActionResult
+                let response = req.CreateResponse(HttpStatusCode.OK)
+                return response.writeJsonResponse files
             } |> Async.StartAsTask
 
-    [<FunctionName("GenerateConfigFile")>]
+    [<Function("GenerateConfigFile")>]
     member this.generateConfigFile
         ([<HttpTrigger(AuthorizationLevel.Function, "get", Route="configurationfiles/{id:guid}")>]
-         req: HttpRequest) (id: Guid) (log: ILogger) =
+         req: HttpRequestData) (execContext: FunctionContext) =
             async {
+                let log = execContext.GetLogger("GenerateConfigFile")
                 failwith "not implemented"
-                let response = ContentResult()
-                return response :> IActionResult
             } |> Async.StartAsTask
 
-    [<FunctionName("GetConfigFileOptions")>]
+    [<Function("GetConfigFileOptions")>]
     member this.getConfigFileOptions
         ([<HttpTrigger(AuthorizationLevel.Function, "get", Route="configurationfiles/{id:guid}/options")>]
-         req: HttpRequest) (id: Guid) (log: ILogger) =
+         req: HttpRequestData) (execContext: FunctionContext) (id: Guid) =
             async {
+                let log = execContext.GetLogger("GetConfigFileOptions")
                 let opts = Seq.toList <| query {
                     for configOption in db.Poudrierec2.Configoptions do
                     where (configOption.Configfile = id)
@@ -61,72 +58,83 @@ type ConfigFileApi (db: DB.dataContext) =
                              Value = configOption.Value }
                 }
                 // Should we error if there's no such file?
-                let responseMessage = JsonSerializer.Serialize(opts, eventSerializationOptions)
-                let response = ContentResult()
-                response.Content <- responseMessage
-                response.ContentType <- "application/json"
-                response.StatusCode <- StatusCodes.Status200OK
-                return response :> IActionResult
+                let response = req.CreateResponse()
+                return response.writeJsonResponse opts
             } |> Async.StartAsTask
 
-    [<FunctionName("AddConfigFileOptions")>]
+    [<Function("AddConfigFileOptions")>]
     member this.addConfigFileOptions
-        ([<HttpTrigger(AuthorizationLevel.Function, "put", Route="configurationfiles/{id:guid}/options")>]
-         req: HttpRequest) (id: Guid) (log: ILogger) =
+        ([<HttpTrigger(AuthorizationLevel.Function, "put", Route="configurationfiles/{configFile:guid}/options")>]
+         req: HttpRequestData) (execContext: FunctionContext) (configFile: string) =
             async {
-                let response = ContentResult()
-                let! maybeOpts = Serialization.tryDeserialize<ConfigOption list> req log
+                let log = execContext.GetLogger("AddConfigFileOptions")
+                let response = req.CreateResponse(HttpStatusCode.OK)
+                let! maybeOpts = tryDeserialize<ConfigOption list> req log
                 match maybeOpts with
                 | None ->
-                    response.StatusCode <- StatusCodes.Status400BadRequest
+                    response.StatusCode <- HttpStatusCode.BadRequest
+                    response.writeJsonResponse
+                        (Error "Can't show tea and no tea to the door") |> ignore
+                | Some [] ->
+                    response.StatusCode <- HttpStatusCode.BadRequest
+                    response.writeJsonResponse
+                        (Error "Nope!") |> ignore
                 | Some opts ->
                     opts
                     |> List.iter
                         (fun o -> 
                             let row = db.Poudrierec2.Configoptions.Create()
-                            row.Configfile <- id
+                            row.Configfile <- Guid configFile
                             row.Name <- o.Name
                             row.Value <- o.Value
-                            row.OnConflict <- FSharp.Data.Sql.Common.OnConflict.Update)
+                            row.OnConflict <- Common.OnConflict.Update)
                     let! result = Async.Catch(db.SubmitUpdatesAsync())
                     match result with
                     | Choice1Of2 _ ->
-                        response.StatusCode <- StatusCodes.Status200OK
-                        response.Content <- "{}"
+                        response.StatusCode <- HttpStatusCode.OK
+                        response.writeJsonResponse OK |> ignore
                     | Choice2Of2 e ->
                         log.LogError
-                            (e, "Failed upsert of config {ConfigFile}", id)
-                        response.StatusCode <- StatusCodes.Status500InternalServerError
+                            (e, "Failed upsert of config {ConfigFile}", configFile)
+                        response.StatusCode <- HttpStatusCode.InternalServerError
                         match e.InnerException with
                         | :? PostgresException as ex ->
                             match ex.SqlState with
                             | PostgresErrorCodes.ForeignKeyViolation ->
-                                response.Content <- """{"error": "configuration file does not exist"}"""
+                                response.writeJsonResponse
+                                    (Error "configuration file does not exist")
+                                    |> ignore
                             | _ -> ()
                         | _ -> ()
-                response.ContentType <- "application/json"
-                return response :> IActionResult
+                return response
             } |> Async.StartAsTask
 
-    [<FunctionName("DeleteConfigFileOptions")>]
+    [<Function("DeleteConfigFileOptions")>]
     member this.deleteConfigFileOptions
-        ([<HttpTrigger(AuthorizationLevel.Function, "delete", Route="configurationfiles/{id:guid}/options")>]
-         req: HttpRequest) (id: Guid) (log: ILogger) =
+        ([<HttpTrigger(AuthorizationLevel.Function, "delete", Route="configurationfiles/{configFile:guid}/options")>]
+         req: HttpRequestData) (execContext: FunctionContext) (configFile: string) =
             async {
+                let log = execContext.GetLogger("DeleteConfigFileOptions")
                 let! maybeOpts = Serialization.tryDeserialize<string list> req log
-                let response = ContentResult()
+                let response = req.CreateResponse()
                 match maybeOpts with
                 | None ->
-                    response.StatusCode <- StatusCodes.Status400BadRequest
-                    response.Content <- """{"error": "unable to show tea and no tea to the door"}"""
+                    response.StatusCode <- HttpStatusCode.BadRequest
+                    response.writeJsonResponse
+                        (Error "Unable to show tea and no tea to the door")
+                        |> ignore
+                | Some [] ->
+                    response.StatusCode <- HttpStatusCode.BadRequest
+                    response.writeJsonResponse
+                        (Error "What is the difference between a chicken?")
+                        |> ignore
                 | Some opts -> 
-                    response.StatusCode <- StatusCodes.Status200OK
-                    response.Content <- """{}"""
+                    response.StatusCode <- HttpStatusCode.NoContent
                     query {
                         for o in db.Poudrierec2.Configoptions do
-                        where (o.Configfile = id && opts.Contains o.Name)
+                        where (o.Configfile = Guid configFile && opts.Contains o.Name)
                     } |> Seq.``delete all items from single table``
                     |> Async.RunSynchronously
                     |> ignore
-                return response :> IActionResult
+                return response
             } |> Async.StartAsTask

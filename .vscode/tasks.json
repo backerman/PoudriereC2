@@ -59,7 +59,7 @@
 			"type": "func",
 			"dependsOn": "build",
 			"options": {
-				"cwd": "${workspaceFolder}/PoudriereC2/bin/Debug/netcoreapp3.1"
+				"cwd": "${workspaceFolder}/PoudriereC2/bin/Debug/net5.0"
 			},
 			"command": "host start",
 			"isBackground": true,

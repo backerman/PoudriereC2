@@ -1,25 +1,25 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <AzureFunctionsVersion>v3</AzureFunctionsVersion>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <OutputType>Exe</OutputType>
   </PropertyGroup>
   <ItemGroup>
+    <!-- The framework reference includes ASP.NET Core 3.1; without this,
+         it would be using 2.x. -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Update="FSharp.Core" Version="5.0.1" />
     <PackageReference Include="FSharp.Control.FusionTasks" Version="2.2.0" />
     <PackageReference Include="FSharp.Data.LiteralProviders" Version="0.3.5" />
     <PackageReference Include="FSharp.SystemTextJson" Version="0.17.4" />
-    <PackageReference Include="Azure.Cosmos" Version="4.0.0-preview3" />
-    <!-- Most of these Cosmos packages are included to resolve dependency conflicts. -->
-    <PackageReference Include="Microsoft.Azure.Cosmos.Table" Version="1.0.8" />
-    <PackageReference Include="Microsoft.Azure.DocumentDB.Core" Version="2.14.1" />
-    <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
-    <PackageReference Include="Microsoft.Azure.Management.CosmosDB.Fluent" Version="1.37.1" />
-    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.CosmosDB" Version="3.0.10" />
+    <!-- out of process now -->
+    <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.3.0" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.0.3" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.0.13" />
     <PackageReference Include="Microsoft.FSharpLu" Version="0.11.6" />
     <PackageReference Include="Microsoft.FSharpLu.Azure" Version="0.11.6" />
-    <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.13" />
-    <PackageReference Include="Npgsql" Version="5.0.5" />
+    <PackageReference Include="Npgsql" Version="5.0.7" />
     <PackageReference Include="SQLProvider" Version="1.2.1" />
   </ItemGroup>
   <Target Name="DefaultLocalSettings" BeforeTargets="GetCopyToOutputDirectoryItems">
@@ -30,15 +30,13 @@
     </Copy>
   </Target>
   <ItemGroup>
+    <Compile Include="Database.fs" />
     <Compile Include="Data.fs" />
     <Compile Include="ConfigTypes.fs" />
     <Compile Include="EventTypes.fs" />
     <Compile Include="Serialization.fs" />
-    <Compile Include="CustomCosmosSerializer.fs" />
-    <Compile Include="Configuration.fs" />
     <Compile Include="ConfigFiles.fs" />
-    <Compile Include="GetConfiguration.fs" />
-    <Compile Include="Heartbeat.fs" />
+    <Compile Include="Program.fs" />
     <None Include="host.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

@@ -67,7 +67,7 @@ module Types =
           VmName: string;
           /// The event type and payload.
           Event: EventDetail }
-    
+
     type LowerCaseNamingPolicy() =
         inherit JsonNamingPolicy()
         override __.ConvertName (n: string) : string =
@@ -85,6 +85,7 @@ module Types =
                 ||| JsonUnionEncoding.UnwrapRecordCases
                 ||| JsonUnionEncoding.UnwrapOption
             ),
+            allowOverride = true,
             overrides = dict [
                 typeof<ConfigFileType>, JsonFSharpOptions(
                     unionEncoding = JsonUnionEncoding.UnwrapFieldlessTags,
@@ -95,3 +96,10 @@ module Types =
     
     /// The JSON serialization options to use for types in this module.
     let eventSerializationOptions = serializationOptions EventType
+
+    /// A standard container for operation results.
+    [<JsonFSharpConverter(unionEncoding = JsonUnionEncoding.Untagged)>]
+    type FunctionResult =
+        | OK
+        | Error of Error: string
+        override this.ToString() = JsonSerializer.Serialize(this, eventSerializationOptions)
