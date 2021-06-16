@@ -55,7 +55,7 @@ type ConfigFileApi (db: DB.dataContext, cfg: ConfigRepository) =
                     response.StatusCode <- HttpStatusCode.OK
                     configOptions
                     |> Seq.map
-                        (fun opt -> $"{opt.Name}={opt.Value}")
+                        (fun opt -> $"{opt.Name}={opt.Value.ShellQuote()}")
                     |> String.concat Environment.NewLine
                     |> response.writeTextResponse
                     |> ignore

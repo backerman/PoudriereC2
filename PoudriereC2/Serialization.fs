@@ -7,6 +7,7 @@ open System.Net
 open System.Globalization
 open Microsoft.Net.Http.Headers
 open Microsoft.Extensions.Primitives
+open System.Text
 
 let tryDeserialize<'T> (req: HttpRequestData) (log: ILogger) =
     async {
@@ -46,6 +47,32 @@ type HttpResponseData with
             this.Headers.Add("Content-Type", "text/plain; charset=utf-8")
             this.WriteString body
         this
+
+let private posixSpecials =
+    ['|'; '&'; ';'; '<'; '>'; '('; ')'; '$'; '`'; '\\'; '"'; '\''; ' '; '\r'; '\n';
+    '*'; '?'; '['; '#'; '~'; '='; '%' ]
+
+let private posixEscapeInQuotes =
+    ['"'; '$'; '`'; '\\']
+
+type System.String with
+    /// Escape all shell special characters per POSIX.1-2017 by enclosing
+    /// the string in quotes iff necessary.
+    member this.ShellQuote() =
+        if String.exists (fun c -> Seq.contains c posixSpecials) this then
+            // quote it
+            let sb = new StringBuilder()
+            sb.Append '"' |> ignore
+            this
+            |> String.iter
+                (fun c ->
+                    if Seq.contains c posixEscapeInQuotes then
+                        sb.Append '\\' |> ignore
+                    sb.Append c |> ignore)
+            sb.Append('"').ToString()
+        else
+            // No need for quoting
+            this
 
 let private applicationJson = 
     StringSegment "application/json"
