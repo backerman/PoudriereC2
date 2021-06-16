@@ -12,7 +12,7 @@ open System.Net
 open System.Linq
 open FSharp.Data.Sql
 
-type ConfigFileApi (db: DB.dataContext) =
+type ConfigFileApi (db: DB.dataContext, cfg: ConfigRepository) =
 
     [<Function("GetConfigFilesMetadata")>]
     member this.getConfigFileMetadata
@@ -37,9 +37,32 @@ type ConfigFileApi (db: DB.dataContext) =
 
     [<Function("GenerateConfigFile")>]
     member this.generateConfigFile
-        ([<HttpTrigger(AuthorizationLevel.Function, "get", Route="configurationfiles/{id:guid}")>]
-         req: HttpRequestData) (execContext: FunctionContext) =
+        ([<HttpTrigger(AuthorizationLevel.Function, "get", Route="configurationfiles/{configFile:guid}")>]
+         req: HttpRequestData) (execContext: FunctionContext) (configFile: string) =
             async {
                 let log = execContext.GetLogger()
-                failwith "not implemented"
+                let response = req.CreateResponse()
+                match pickReturnMediaType req with
+                | Some AnyType | Some PlainText ->
+                    let! configMetadata =
+                        query {
+                            for f in db.Poudrierec2.Configfiles do
+                            where (f.Id = Guid configFile)
+                            select f
+                        } |> Seq.executeQueryAsync
+                    let! configOptions =
+                        cfg.getConfigFileOptions configFile
+                    response.StatusCode <- HttpStatusCode.OK
+                    configOptions
+                    |> Seq.map
+                        (fun opt -> $"{opt.Name}={opt.Value}")
+                    |> String.concat Environment.NewLine
+                    |> response.writeTextResponse
+                    |> ignore
+                | _ ->
+                    response.StatusCode <- HttpStatusCode.UnsupportedMediaType
+                    Error "Unsupported media type"
+                    |> response.writeJsonResponse
+                    |> ignore
+                return response
             } |> Async.StartAsTask

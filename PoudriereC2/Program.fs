@@ -23,6 +23,7 @@ let main argv =
             .ConfigureServices(
                 fun s ->
                     s.AddSingleton<DB.dataContext> (DB.GetDataContext()) |> ignore
+                    s.AddSingleton<ConfigRepository> () |> ignore
             )
             .Build()
     if configuration.["AZURE_FUNCTIONS_ENVIRONMENT"] = "Development" then

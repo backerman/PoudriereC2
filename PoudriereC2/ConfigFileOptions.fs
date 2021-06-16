@@ -12,7 +12,7 @@ open System.Net
 open System.Linq
 open FSharp.Data.Sql
 
-type ConfigFileOptionsApi (db: DB.dataContext) =
+type ConfigFileOptionsApi (db: DB.dataContext, cfg: ConfigRepository) =
 
     [<Function("GetConfigFileOptions")>]
     member this.getConfigFileOptions
@@ -20,13 +20,7 @@ type ConfigFileOptionsApi (db: DB.dataContext) =
          req: HttpRequestData) (execContext: FunctionContext) (configFile: string) =
             async {
                 let log = execContext.GetLogger()
-                let opts = Seq.toList <| query {
-                    for configOption in db.Poudrierec2.Configoptions do
-                    where (configOption.Configfile = Guid configFile)
-                    sortBy configOption.Name
-                    select { Name = configOption.Name
-                             Value = configOption.Value }
-                }
+                let! opts = cfg.getConfigFileOptions configFile
                 // Should we error if there's no such file?
                 let response = req.CreateResponse()
                 return response.writeJsonResponse opts
