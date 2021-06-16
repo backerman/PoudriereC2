@@ -19,7 +19,7 @@ type ConfigFileOptionsApi (db: DB.dataContext) =
         ([<HttpTrigger(AuthorizationLevel.Function, "get", Route="configurationfiles/{configFile:guid}/options")>]
          req: HttpRequestData) (execContext: FunctionContext) (configFile: string) =
             async {
-                let log = execContext.GetLogger("GetConfigFileOptions")
+                let log = execContext.GetLogger()
                 let opts = Seq.toList <| query {
                     for configOption in db.Poudrierec2.Configoptions do
                     where (configOption.Configfile = Guid configFile)
@@ -37,7 +37,7 @@ type ConfigFileOptionsApi (db: DB.dataContext) =
         ([<HttpTrigger(AuthorizationLevel.Function, "put", Route="configurationfiles/{configFile:guid}/options")>]
          req: HttpRequestData) (execContext: FunctionContext) (configFile: string) =
             async {
-                let log = execContext.GetLogger("AddConfigFileOptions")
+                let log = execContext.GetLogger()
                 let response = req.CreateResponse(HttpStatusCode.OK)
                 let! maybeOpts = tryDeserialize<ConfigOption list> req log
                 match maybeOpts with
@@ -84,7 +84,7 @@ type ConfigFileOptionsApi (db: DB.dataContext) =
         ([<HttpTrigger(AuthorizationLevel.Function, "delete", Route="configurationfiles/{configFile:guid}/options")>]
          req: HttpRequestData) (execContext: FunctionContext) (configFile: string) =
             async {
-                let log = execContext.GetLogger("DeleteConfigFileOptions")
+                let log = execContext.GetLogger()
                 let! maybeOpts = Serialization.tryDeserialize<string list> req log
                 let response = req.CreateResponse()
                 match maybeOpts with

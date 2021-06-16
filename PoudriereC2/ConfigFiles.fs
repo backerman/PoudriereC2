@@ -18,7 +18,7 @@ type ConfigFileApi (db: DB.dataContext) =
     member this.getConfigFileMetadata
         ([<HttpTrigger(AuthorizationLevel.Function, "get", Route="configurationfiles/metadata")>]
         req: HttpRequestData) (execContext: FunctionContext) =
-            let log = execContext.GetLogger("GetConfigFilesMetadata")
+            let log = execContext.GetLogger()
             async {
                 let files = Seq.toList <| query {
                    for file in db.Poudrierec2.Configfiles do
@@ -40,6 +40,6 @@ type ConfigFileApi (db: DB.dataContext) =
         ([<HttpTrigger(AuthorizationLevel.Function, "get", Route="configurationfiles/{id:guid}")>]
          req: HttpRequestData) (execContext: FunctionContext) =
             async {
-                let log = execContext.GetLogger("GenerateConfigFile")
+                let log = execContext.GetLogger()
                 failwith "not implemented"
             } |> Async.StartAsTask
