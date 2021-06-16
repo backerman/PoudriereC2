@@ -36,6 +36,7 @@
     <Compile Include="EventTypes.fs" />
     <Compile Include="Serialization.fs" />
     <Compile Include="ConfigFiles.fs" />
+    <Compile Include="ConfigFileOptions.fs" />
     <Compile Include="Program.fs" />
     <None Include="host.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
