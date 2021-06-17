@@ -5,6 +5,7 @@
     <GenerateProgramFile>false</GenerateProgramFile>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Serialization.fs" />
     <Compile Include="MediaType.fs" />
     <Compile Include="TypeConversion.fs" />
     <Compile Include="TestJson.fs" />
