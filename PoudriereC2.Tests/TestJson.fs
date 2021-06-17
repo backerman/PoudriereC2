@@ -19,8 +19,8 @@ type JsonTests() =
         //     numSkipped: int
         let bulkBuild = Bulk(42,86,99,13)
         let expected = """{"type":"bulk","numBuilt":42,"numFailed":86,"numIgnored":99,"numSkipped":13}"""
-        let actual = JsonSerializer.Serialize(bulkBuild, eventSerializationOptions)
-        Assert.That(actual, Is.EqualTo(expected))
+        JsonSerializer.Serialize(bulkBuild, eventSerializationOptions)
+        |> should equal expected
 
     [<Test>]
     member __.TestHeartbeatSerialization () =
@@ -34,8 +34,8 @@ type JsonTests() =
               VmName = "cthulhu";
               Event = Heartbeat(aHeartbeat) }
         let actual = JsonSerializer.Serialize(anEvent, eventSerializationOptions)
-        let roundTrip = JsonSerializer.Deserialize<Event>(actual, eventSerializationOptions)
-        roundTrip |> should equal anEvent
+        JsonSerializer.Deserialize<Event>(actual, eventSerializationOptions)
+        |> should equal anEvent
 
     [<SetUp>]
     member __.setup () =
