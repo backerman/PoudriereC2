@@ -5,6 +5,7 @@ open Facefault.PoudriereC2.Data
 open Facefault.PoudriereC2.Database
 open System
 open FSharp.Data.Sql
+open System.Linq
 
 type ConfigRepository (db: DB.dataContext) =
 
@@ -36,4 +37,29 @@ type ConfigRepository (db: DB.dataContext) =
                        FileType = FromString<ConfigFileType> file.Configtype }
                 } |> Seq.executeQueryAsync
             return configFiles
+        }
+
+    member __.addConfigFileOptions (configFile: string) (options: ConfigOption list)
+            : Async<DatabaseError> =
+        async {
+            options
+            |> List.iter
+                (fun o -> 
+                    let row = db.Poudrierec2.Configoptions.Create()
+                    row.Configfile <- Guid configFile
+                    row.Name <- o.Name
+                    row.Value <- o.Value
+                    row.OnConflict <- Common.OnConflict.Update)
+            return! DatabaseError.FromQuery (db.SubmitUpdatesAsync())
+        }
+
+    member __.deleteConfigFileOptions (configFile: string) (options: string list)
+            : Async<DatabaseError> =
+        async {
+            let q =
+                query {
+                    for o in db.Poudrierec2.Configoptions do
+                    where (o.Configfile = Guid configFile && options.Contains o.Name)
+                } |> Seq.``delete all items from single table``
+            return! (DatabaseError.FromQuery q)
         }
