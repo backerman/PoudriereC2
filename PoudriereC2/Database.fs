@@ -6,18 +6,24 @@ open System
 open Npgsql
 
 [<Literal>]
-let connectionString =
+let ConnectionString =
     Env.PostgresConnection.Value
 
 /// The schemas containing database objects used by this application.
 [<Literal>]
-let owner = "poudrierec2"
+let Owner = "poudrierec2"
+
+[<Literal>]
+let SchemaPath = __SOURCE_DIRECTORY__ + "/schema.json"
 
 type DB = SqlDataProvider<
             DatabaseVendor=Common.DatabaseProviderTypes.POSTGRESQL,
-            ConnectionString=connectionString,
+            ConnectionString=ConnectionString,
             UseOptionTypes=true,
-            Owner=owner>
+            ContextSchemaPath=SchemaPath,
+            Owner=Owner>
+
+// DB.GetDataContext().``Design Time Commands``.SaveContextSchema.
 
 /// A type to contain results from a database call.
 type DatabaseError =
