@@ -7,16 +7,21 @@ open Microsoft.Azure.Functions.Worker.Http
 open System
 open System.Net
 open FSharp.Data.Sql
+open System.Runtime.InteropServices
 
 type ConfigFileApi (db: DB.dataContext, cfg: ConfigRepository) =
 
     [<Function("GetConfigFilesMetadata")>]
     member _.getConfigFileMetadata
-        ([<HttpTrigger(AuthorizationLevel.Function, "get", Route="configurationfiles/metadata")>]
-        req: HttpRequestData) (execContext: FunctionContext) =
+        ([<HttpTrigger(AuthorizationLevel.Function, "get", Route="configurationfiles/metadata/{configFile:guid?}")>]
+        req: HttpRequestData, execContext: FunctionContext, [<Optional>]configFile: string) =
             let log = execContext.GetLogger()
+            let configFileOpt =
+                match configFile with
+                | null -> None
+                | _ -> Some configFile
             async {
-                let! files = cfg.getConfigFiles()
+                let! files = cfg.getConfigFiles(?configFile = configFileOpt)
                 let response = req.CreateResponse(HttpStatusCode.OK)
                 return response.writeJsonResponse files
             } |> Async.StartAsTask

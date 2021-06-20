@@ -7,10 +7,10 @@ open Microsoft.Azure.Functions.Worker
 open Microsoft.Azure.Functions.Worker.Http
 open System.Net
 
-type ConfigFileOptionsApi (db: DB.dataContext, cfg: ConfigRepository) =
+type ConfigFileOptionsApi (cfg: ConfigRepository) =
 
     [<Function("GetConfigFileOptions")>]
-    member this.getConfigFileOptions
+    member _.getConfigFileOptions
         ([<HttpTrigger(AuthorizationLevel.Function, "get", Route="configurationfiles/{configFile:guid}/options")>]
          req: HttpRequestData) (execContext: FunctionContext) (configFile: string) =
             async {
@@ -22,7 +22,7 @@ type ConfigFileOptionsApi (db: DB.dataContext, cfg: ConfigRepository) =
             } |> Async.StartAsTask
 
     [<Function("AddConfigFileOptions")>]
-    member this.addConfigFileOptions
+    member _.addConfigFileOptions
         ([<HttpTrigger(AuthorizationLevel.Function, "put", Route="configurationfiles/{configFile:guid}/options")>]
          req: HttpRequestData) (execContext: FunctionContext) (configFile: string) =
             async {
@@ -60,7 +60,7 @@ type ConfigFileOptionsApi (db: DB.dataContext, cfg: ConfigRepository) =
             } |> Async.StartAsTask
 
     [<Function("DeleteConfigFileOptions")>]
-    member this.deleteConfigFileOptions
+    member _.deleteConfigFileOptions
         ([<HttpTrigger(AuthorizationLevel.Function, "delete", Route="configurationfiles/{configFile:guid}/options")>]
          req: HttpRequestData) (execContext: FunctionContext) (configFile: string) =
             async {

@@ -22,11 +22,16 @@ type ConfigRepository (db: DB.dataContext) =
             return opts
         }
 
-    member _.getConfigFiles () =
+    member _.getConfigFiles (?configFile: string) =
         async {
+            let filterQuery =
+                match configFile with
+                | None -> <@ fun (_: DB.dataContext.``poudrierec2.configfilesEntity``) -> true @>
+                | Some f -> <@ fun (file: DB.dataContext.``poudrierec2.configfilesEntity``) -> file.Id = Guid f @>
             let! configFiles =
                 query {
                     for file in db.Poudrierec2.Configfiles do
+                    where ((%filterQuery) file)
                     select
                      { Id = file.Id
                        Deleted = file.Deleted
