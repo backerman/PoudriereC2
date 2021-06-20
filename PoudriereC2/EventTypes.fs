@@ -70,7 +70,7 @@ module Types =
 
     type LowerCaseNamingPolicy() =
         inherit JsonNamingPolicy()
-        override __.ConvertName (n: string) : string =
+        override _.ConvertName (n: string) : string =
             n.ToLowerInvariant()
 
     let serializationOptions discriminator =

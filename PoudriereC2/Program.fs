@@ -9,7 +9,7 @@ open System
 
 let configuration =
     // FIXME don't need this
-    (new ConfigurationBuilder())
+    ConfigurationBuilder()
         .SetBasePath(Environment.CurrentDirectory)
         .AddJsonFile("appsettings.json", true)
         .AddEnvironmentVariables()
@@ -29,6 +29,6 @@ let main argv =
     if configuration.["AZURE_FUNCTIONS_ENVIRONMENT"] = "Development" then
         Common.QueryEvents.SqlQueryEvent
         |> Event.add
-            (fun sql -> printfn "Executing SQL: %O" sql)
+            (fun sql -> printfn $"Executing SQL: {sql}")
     host.Run()
     0

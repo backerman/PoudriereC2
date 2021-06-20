@@ -2,7 +2,6 @@ module Facefault.PoudriereC2.Database
 
 open FSharp.Data.LiteralProviders
 open FSharp.Data.Sql
-open System
 open Npgsql
 
 [<Literal>]

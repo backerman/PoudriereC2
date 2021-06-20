@@ -18,7 +18,7 @@ type ConcreteRequestData(functionContext) =
         [] :> Collections.Generic.IReadOnlyCollection<IHttpCookie> with get
     override this.CreateResponse(): HttpResponseData = 
         failwith "Not Implemented"
-    override val Headers = new HttpHeadersCollection() with get
+    override val Headers = HttpHeadersCollection() with get
     override val Identities = 
         [] |> Seq.ofList with get
     override val Method = "GET" with get
@@ -28,9 +28,9 @@ type ConcreteRequestData(functionContext) =
 [<TestFixture>]
 type MediaTypeHandlerTests() =
     [<Test>]
-    member __.TestGoodValues() =
+    member _.TestGoodValues() =
         let fixture = Fixture()
-        new AutoFoqCustomization()
+        AutoFoqCustomization()
         |> fixture.Customize
         |> ignore
         fixture.Customizations.Add(

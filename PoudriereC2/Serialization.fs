@@ -4,7 +4,6 @@ open Microsoft.Extensions.Logging
 open Microsoft.Azure.Functions.Worker.Http
 open System.Text.Json
 open System.Net
-open System.Globalization
 open Microsoft.Net.Http.Headers
 open Microsoft.Extensions.Primitives
 open System.Text
@@ -61,7 +60,7 @@ type System.String with
     member this.ShellQuote() =
         if String.exists (fun c -> Seq.contains c posixSpecials) this then
             // quote it
-            let sb = new StringBuilder()
+            let sb = StringBuilder()
             sb.Append '"' |> ignore
             this
             |> String.iter

@@ -9,7 +9,7 @@ open System.Linq
 
 type ConfigRepository (db: DB.dataContext) =
 
-    member __.getConfigFileOptions (configFile: string) =
+    member _.getConfigFileOptions (configFile: string) =
         async {
             let! opts =
                 query {
@@ -22,7 +22,7 @@ type ConfigRepository (db: DB.dataContext) =
             return opts
         }
 
-    member __.getConfigFiles () =
+    member _.getConfigFiles () =
         async {
             let! configFiles =
                 query {
@@ -39,7 +39,7 @@ type ConfigRepository (db: DB.dataContext) =
             return configFiles
         }
 
-    member __.addConfigFileOptions (configFile: string) (options: ConfigOption list)
+    member _.addConfigFileOptions (configFile: string) (options: ConfigOption list)
             : Async<DatabaseError> =
         async {
             options
@@ -53,7 +53,7 @@ type ConfigRepository (db: DB.dataContext) =
             return! DatabaseError.FromQuery (db.SubmitUpdatesAsync())
         }
 
-    member __.deleteConfigFileOptions (configFile: string) (options: string list)
+    member _.deleteConfigFileOptions (configFile: string) (options: string list)
             : Async<DatabaseError> =
         async {
             let q =

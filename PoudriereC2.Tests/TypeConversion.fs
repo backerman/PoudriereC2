@@ -8,13 +8,13 @@ open Facefault.PoudriereC2.Data
 [<TestFixture>]
 type TypeConversionTests() =
     [<Test>]
-    member __.TestUnionFromString () =
+    member _.TestUnionFromString () =
         let configFileType = "poudriereconf"
         let expected = ConfigFileType.PoudriereConf
         FromString<ConfigFileType> configFileType
         |> should equal expected
 
-    member __.TestUnionToString () =
+    member _.TestUnionToString () =
         let configFileType = PoudriereConf
         let expected = "poudirereconf"
         UnionToString configFileType

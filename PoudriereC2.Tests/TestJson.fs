@@ -10,7 +10,7 @@ open System.Text.Json
 type JsonTests() =
 
     [<Test>]
-    member __.TestHookSerialization () =
+    member _.TestHookSerialization () =
         // Relevant portion of DU:
         // | Bulk of
         //     numBuilt: int *
@@ -23,7 +23,7 @@ type JsonTests() =
         |> should equal expected
 
     [<Test>]
-    member __.TestHeartbeatSerialization () =
+    member _.TestHeartbeatSerialization () =
         let aHeartbeat = 
             { LoadAverage = [0.1; 0.2; 0.3];
               NumCPUs = 16;
@@ -38,6 +38,6 @@ type JsonTests() =
         |> should equal anEvent
 
     [<SetUp>]
-    member __.setup () =
+    member _.setup () =
         FSharpCustomMessageFormatter() |> ignore
 

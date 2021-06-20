@@ -11,7 +11,7 @@ open FSharp.Data.Sql
 type ConfigFileApi (db: DB.dataContext, cfg: ConfigRepository) =
 
     [<Function("GetConfigFilesMetadata")>]
-    member __.getConfigFileMetadata
+    member _.getConfigFileMetadata
         ([<HttpTrigger(AuthorizationLevel.Function, "get", Route="configurationfiles/metadata")>]
         req: HttpRequestData) (execContext: FunctionContext) =
             let log = execContext.GetLogger()
@@ -22,7 +22,7 @@ type ConfigFileApi (db: DB.dataContext, cfg: ConfigRepository) =
             } |> Async.StartAsTask
 
     [<Function("GenerateConfigFile")>]
-    member __.generateConfigFile
+    member _.generateConfigFile
         ([<HttpTrigger(AuthorizationLevel.Function, "get", Route="configurationfiles/{configFile:guid}")>]
          req: HttpRequestData) (execContext: FunctionContext) (configFile: string) =
             async {
