@@ -99,11 +99,8 @@ let pickReturnMediaType (req: HttpRequestData) =
 
     let parsedMediaType strType =
         Option.bind
-            (fun s ->
-                s
-                |> StringSegment
-                |> MediaTypeHeaderValue.Parse
-                |> Some) strType
+            (StringSegment >> MediaTypeHeaderValue.Parse >> Some)
+            strType
 
     req.Headers.GetValues(HeaderNames.Accept)
     |> Seq.tryExactlyOne
