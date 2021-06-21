@@ -19,7 +19,7 @@ type DB = SqlDataProvider<
             DatabaseVendor=Common.DatabaseProviderTypes.POSTGRESQL,
             ConnectionString=ConnectionString,
             UseOptionTypes=true,
-            ContextSchemaPath=SchemaPath,
+            // ContextSchemaPath=SchemaPath,
             Owner=Owner>
 
 // DB.GetDataContext().``Design Time Commands``.SaveContextSchema.

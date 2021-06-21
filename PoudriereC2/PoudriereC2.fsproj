@@ -34,6 +34,7 @@
     <Compile Include="Data.fs" />
     <Compile Include="ConfigTypes.fs" />
     <Compile Include="EventTypes.fs" />
+    <Compile Include="PortsRepository.fs" />
     <Compile Include="Serialization.fs" />
     <Compile Include="ConfigRepository.fs" />
     <Compile Include="ConfigFiles.fs" />

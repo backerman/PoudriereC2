@@ -52,3 +52,26 @@ module ConfigTypes =
         PortSet: string
         Jail: string
         ConfigFiles: ConfigFileMetadata list }
+    
+    type PortsTreeMethod =
+      | Null
+      | Git of Uri: string
+      | Svn of Uri: string
+
+      /// Check if this value's URI is valid for the given method.
+      member this.isValid =
+        match this with
+        | Null -> true
+        | Git uri ->
+            let parsedUri = Uri uri
+            Seq.contains parsedUri.Scheme
+                // These schemes are based on what is allowed in `ports.sh`.
+                ["http"; "https"; "file"; "ssh"; "git"]
+        | Svn uri ->
+            let parsedUri = Uri uri
+            Seq.contains parsedUri.Scheme
+                ["http"; "https"; "file"; "svn+ssh"; "svn"]
+
+    type PortsTree =
+      { Name: string
+        Method: PortsTreeMethod }
