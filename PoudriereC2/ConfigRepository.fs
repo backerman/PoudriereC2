@@ -43,6 +43,24 @@ type ConfigRepository (db: DB.dataContext) =
                 } |> Seq.executeQueryAsync
             return configFiles
         }
+    
+    member _.newConfigFile (metadata: ConfigFileMetadata) : Async<DatabaseError> =
+        async {
+            let row = db.Poudrierec2.Configfiles.Create()
+            row.Name <- metadata.Name
+            row.Deleted <- false
+            row.Id <- metadata.Id
+            row.Jail <- metadata.Jail
+            row.Portset <- metadata.Portset
+            row.Porttree <- metadata.Porttree
+            row.Configtype <- UnionToString metadata.FileType
+
+            row.OnConflict <- Common.OnConflict.Throw
+            let! result = DatabaseError.FromQuery (db.SubmitUpdatesAsync())
+            if result <> NoError then
+                db.ClearUpdates() |> ignore
+            return result
+        }
 
     member _.addConfigFileOptions (configFile: string) (options: ConfigOption list)
             : Async<DatabaseError> =
@@ -55,7 +73,10 @@ type ConfigRepository (db: DB.dataContext) =
                     row.Name <- o.Name
                     row.Value <- o.Value
                     row.OnConflict <- Common.OnConflict.Update)
-            return! DatabaseError.FromQuery (db.SubmitUpdatesAsync())
+            let! result = DatabaseError.FromQuery (db.SubmitUpdatesAsync())
+            if result <> NoError then
+                db.ClearUpdates() |> ignore
+            return result
         }
 
     member _.deleteConfigFileOptions (configFile: string) (options: string list)
@@ -66,5 +87,8 @@ type ConfigRepository (db: DB.dataContext) =
                     for o in db.Poudrierec2.Configoptions do
                     where (o.Configfile = Guid configFile && options.Contains o.Name)
                 } |> Seq.``delete all items from single table``
-            return! (DatabaseError.FromQuery q)
+            let! result = DatabaseError.FromQuery q
+            if result <> NoError then
+                db.ClearUpdates() |> ignore
+            return result
         }

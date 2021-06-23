@@ -4,12 +4,53 @@ open Facefault.PoudriereC2.Database
 open Facefault.PoudriereC2.Serialization
 open Microsoft.Azure.Functions.Worker
 open Microsoft.Azure.Functions.Worker.Http
+open Microsoft.Extensions.Logging
 open System
 open System.Net
 open FSharp.Data.Sql
 open System.Runtime.InteropServices
 
 type ConfigFileApi (db: DB.dataContext, cfg: ConfigRepository) =
+
+    [<Function("NewConfigFile")>]
+    member _.newConfigFile
+        ([<HttpTrigger(AuthorizationLevel.Function, "put", Route="configurationfiles/metadata")>]
+        req: HttpRequestData, execContext: FunctionContext) =
+            async {
+                let log = execContext.GetLogger()
+                let response = req.CreateResponse(HttpStatusCode.OK)
+                let! maybeConfig = tryDeserialize<ConfigFileMetadata> req log
+                match maybeConfig with
+                | None ->
+                    response.StatusCode <- HttpStatusCode.BadRequest
+                    response.writeJsonResponse
+                        (Error "Invalid or nonexistent payload") |> ignore
+                | Some meta ->
+                    let! result = cfg.newConfigFile meta
+                    match result with
+                    | NoError ->
+                        response.StatusCode <- HttpStatusCode.OK
+                        response.writeJsonResponse OK |> ignore
+                    | ForeignKeyViolation ->
+                        log.LogError
+                            ("Failed upsert of config {ConfigFile}: referential integrity violation", meta.Id)
+                        response.StatusCode <- HttpStatusCode.UnprocessableEntity
+                        response.writeJsonResponse
+                            (Error "Referential integrity violation") |> ignore
+                    | UniqueViolation ->
+                        log.LogError
+                            ("Failed upsert of config {ConfigFile}: already exists", meta.Id)
+                        response.StatusCode <- HttpStatusCode.UnprocessableEntity
+                        response.writeJsonResponse
+                            (Error "Configuration GUID already exists") |> ignore
+                    | Unknown errorMsg ->
+                        log.LogError
+                            ("Failed insert of config {ConfigFile}: {errorMsg}", meta.Id, errorMsg)
+                        response.StatusCode <- HttpStatusCode.InternalServerError
+                        response.writeJsonResponse
+                            (Error "Bad request") |> ignore
+                return response
+            } |> Async.StartAsTask
 
     [<Function("GetConfigFilesMetadata")>]
     member _.getConfigFileMetadata
