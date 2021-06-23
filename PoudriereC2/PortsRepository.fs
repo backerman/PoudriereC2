@@ -32,5 +32,8 @@ type PortsRepository(db: DB.dataContext) =
                         row.Method <- UnionToString t
                         row.Url <- Some uri
                     row.OnConflict <- Common.OnConflict.Update)
-            return! DatabaseError.FromQuery (db.SubmitUpdatesAsync())
+            let! result = DatabaseError.FromQuery (db.SubmitUpdatesAsync())
+            if result <> NoError then
+                db.ClearUpdates() |> ignore
+            return result
         }
