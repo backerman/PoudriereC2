@@ -22,12 +22,10 @@ type DB = SqlDataProvider<
             // ContextSchemaPath=SchemaPath,
             Owner=Owner>
 
-// DB.GetDataContext().``Design Time Commands``.SaveContextSchema.
-
-/// A type to contain results from a database call.
 type DatabaseError =
     | NoError
     | ForeignKeyViolation
+    | UniqueViolation
     | Unknown of string
 
     static member FromQuery q =
@@ -42,6 +40,13 @@ type DatabaseError =
                         match ex.SqlState with
                         | PostgresErrorCodes.ForeignKeyViolation ->
                             ForeignKeyViolation
+                        | PostgresErrorCodes.UniqueViolation ->
+                            UniqueViolation
                         | _ -> Unknown ex.SqlState
                     | _ -> Unknown e.Message
         }
+
+
+// DB.GetDataContext().``Design Time Commands``.SaveContextSchema.
+
+/// A type to contain results from a database call.

@@ -50,6 +50,13 @@ type ConfigFileOptionsApi (cfg: ConfigRepository) =
                         response.StatusCode <- HttpStatusCode.UnprocessableEntity
                         response.writeJsonResponse
                             (Error "Nonexistent configuration file") |> ignore
+                    | UniqueViolation -> 
+                        // can't happen but.
+                        log.LogError
+                            ("Failed upsert of config {ConfigFile}: unexpected uniqueness violation", configFile)
+                        response.StatusCode <- HttpStatusCode.InternalServerError
+                        response.writeJsonResponse
+                            (Error "Bad request") |> ignore
                     | Unknown errorMsg ->
                         log.LogError
                             ("Failed upsert of config {ConfigFile}: {errorMsg}", configFile, errorMsg)
