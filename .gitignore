@@ -8,6 +8,9 @@ local.settings.json
 
 # Azurite data
 __azurite*__.json
+__blobstorage__
+__queuestorage__
+__tablestorage__
 
 # User-specific files
 *.suo
