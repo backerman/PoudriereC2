@@ -3,6 +3,7 @@ module Facefault.PoudriereC2.Database
 open FSharp.Data.LiteralProviders
 open FSharp.Data.Sql
 open Npgsql
+open System
 
 [<Literal>]
 let ConnectionString =
@@ -24,9 +25,9 @@ type DB = SqlDataProvider<
 
 type DatabaseError =
     | NoError
-    | ForeignKeyViolation
-    | UniqueViolation
-    | Unknown of string
+    | ForeignKeyViolation of PostgresException
+    | UniqueViolation of PostgresException
+    | Unknown of Exception
 
     static member FromQuery q =
         async {
@@ -39,11 +40,11 @@ type DatabaseError =
                     | :? PostgresException as ex ->
                         match ex.SqlState with
                         | PostgresErrorCodes.ForeignKeyViolation ->
-                            ForeignKeyViolation
+                            ForeignKeyViolation ex
                         | PostgresErrorCodes.UniqueViolation ->
-                            UniqueViolation
-                        | _ -> Unknown ex.SqlState
-                    | _ -> Unknown e.Message
+                            UniqueViolation ex
+                        | _ -> Unknown e
+                    | _ -> Unknown e
         }
 
 

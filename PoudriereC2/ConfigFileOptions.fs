@@ -44,22 +44,22 @@ type ConfigFileOptionsApi (cfg: ConfigRepository) =
                     | NoError ->
                         response.StatusCode <- HttpStatusCode.OK
                         response.writeJsonResponse OK |> ignore
-                    | ForeignKeyViolation ->
+                    | ForeignKeyViolation _ ->
                         log.LogError
                             ("Failed upsert of config {ConfigFile}: config does not exist", configFile)
                         response.StatusCode <- HttpStatusCode.UnprocessableEntity
                         response.writeJsonResponse
                             (Error "Nonexistent configuration file") |> ignore
-                    | UniqueViolation -> 
+                    | UniqueViolation _ -> 
                         // can't happen but.
                         log.LogError
                             ("Failed upsert of config {ConfigFile}: unexpected uniqueness violation", configFile)
                         response.StatusCode <- HttpStatusCode.InternalServerError
                         response.writeJsonResponse
                             (Error "Bad request") |> ignore
-                    | Unknown errorMsg ->
+                    | Unknown ex ->
                         log.LogError
-                            ("Failed upsert of config {ConfigFile}: {errorMsg}", configFile, errorMsg)
+                            (ex, "Failed upsert of config {ConfigFile}: {errorMsg}", configFile)
                         response.StatusCode <- HttpStatusCode.InternalServerError
                         response.writeJsonResponse
                             (Error "Bad request") |> ignore

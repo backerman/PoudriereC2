@@ -31,24 +31,33 @@ type ConfigFileApi (db: DB.dataContext, cfg: ConfigRepository) =
                     | NoError ->
                         response.StatusCode <- HttpStatusCode.OK
                         response.writeJsonResponse OK |> ignore
-                    | ForeignKeyViolation ->
+                    | ForeignKeyViolation ex ->
                         log.LogError
-                            ("Failed upsert of config {ConfigFile}: referential integrity violation", meta.Id)
+                            ("Failed upsert of config {ConfigFile}: {ViolatedConstraint} violated",
+                            meta.Id, ex.ConstraintName)
                         response.StatusCode <- HttpStatusCode.UnprocessableEntity
                         response.writeJsonResponse
-                            (Error "Referential integrity violation") |> ignore
-                    | UniqueViolation ->
-                        log.LogError
-                            ("Failed upsert of config {ConfigFile}: already exists", meta.Id)
+                            (Error
+                            $"Referential integrity violation: value of {ex.ColumnName} does not exist")
+                            |> ignore
+                    | UniqueViolation ex ->
                         response.StatusCode <- HttpStatusCode.UnprocessableEntity
-                        response.writeJsonResponse
-                            (Error "Configuration GUID already exists") |> ignore
-                    | Unknown errorMsg ->
+                        let errorText =
+                            match ex.ConstraintName with
+                            | "configfiles_index_undeleted_titles" -> "title"
+                            | "configfiles_pk" -> "GUID"
+                            | _ -> ""
                         log.LogError
-                            ("Failed insert of config {ConfigFile}: {errorMsg}", meta.Id, errorMsg)
+                            ("Failed upsert of config {ConfigFile}: {ViolatedConstraint} violated",
+                            meta.Id, ex.ConstraintName)
+                        response.writeJsonResponse
+                            (Error $"Configuration {errorText} already exists") |> ignore
+                    | Unknown ex ->
+                        log.LogError
+                            (ex, "Failed insert of config {ConfigFile}", meta.Id)
                         response.StatusCode <- HttpStatusCode.InternalServerError
                         response.writeJsonResponse
-                            (Error "Bad request") |> ignore
+                            (Error "Internal server error") |> ignore
                 return response
             } |> Async.StartAsTask
 
