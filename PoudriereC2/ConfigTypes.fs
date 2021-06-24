@@ -55,22 +55,33 @@ module ConfigTypes =
     
     type PortsTreeMethod =
       | Null
-      | Git of Uri: string
-      | Svn of Uri: string
+      | Git of Url: string
+      | Svn of Url: string
 
-      /// Check if this value's URI is valid for the given method.
+      /// Check if this value's URL is valid for the given method.
       member this.isValid =
         match this with
         | Null -> true
-        | Git uri ->
-            let parsedUri = Uri uri
+        | Git url ->
+            let parsedUri = Uri url
             Seq.contains parsedUri.Scheme
                 // These schemes are based on what is allowed in `ports.sh`.
                 ["http"; "https"; "file"; "ssh"; "git"]
-        | Svn uri ->
-            let parsedUri = Uri uri
+        | Svn url ->
+            let parsedUri = Uri url
             Seq.contains parsedUri.Scheme
                 ["http"; "https"; "file"; "svn+ssh"; "svn"]
+      
+      static member FromString (method: string, ?url: string) =
+        // FIXME should validate agreement of method and URI.
+        if method.StartsWith "git" then
+          if url.IsNone then Null
+          else Git url.Value
+        elif method.StartsWith "svn" then
+          if url.IsNone then Null
+          else Svn url.Value
+        else
+          Null
 
     type PortsTree =
       { Name: string

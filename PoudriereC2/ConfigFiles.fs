@@ -10,7 +10,7 @@ open System.Net
 open FSharp.Data.Sql
 open System.Runtime.InteropServices
 
-type ConfigFileApi (db: DB.dataContext, cfg: ConfigRepository) =
+type ConfigFileApi (cfg: ConfigRepository) =
 
     [<Function("NewConfigFile")>]
     member _.newConfigFile
@@ -85,12 +85,7 @@ type ConfigFileApi (db: DB.dataContext, cfg: ConfigRepository) =
                 let response = req.CreateResponse()
                 match pickReturnMediaType req with
                 | Some AnyType | Some PlainText ->
-                    let! configMetadata =
-                        query {
-                            for f in db.Poudrierec2.Configfiles do
-                            where (f.Id = Guid configFile)
-                            select f
-                        } |> Seq.executeQueryAsync
+                    let! configMetadataSeq = cfg.getConfigFiles configFile
                     let! configOptions =
                         cfg.getConfigFileOptions configFile
                     response.StatusCode <- HttpStatusCode.OK

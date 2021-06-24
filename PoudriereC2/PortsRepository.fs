@@ -7,14 +7,28 @@ open FSharp.Data.Sql
 
 type PortsRepository(db: DB.dataContext) =
 
-    member _.getPortsTrees() =
+    member _.getPortsTrees(?portsTree: string) =
         async {
+            let filterQuery =
+                match portsTree with
+                | None ->
+                    <@ fun (_: DB.dataContext.``poudrierec2.porttreesEntity``) -> true @>
+                | Some f ->
+                    <@ fun (pt: DB.dataContext.``poudrierec2.porttreesEntity``) ->
+                        pt.Name = portsTree.Value @>
             let! trees =
                 query {
                     for pt in db.Poudrierec2.Porttrees do
+                    where ((%filterQuery) pt)
                     select pt
                 } |> Seq.executeQueryAsync
-        return trees
+            return
+                trees
+                |> Seq.map
+                    (fun pt ->
+                        { Name = pt.Name
+                          Method = PortsTreeMethod.FromString
+                            (pt.Method, ?url=pt.Url) })
         }
 
     member _.addPortsTrees (trees: PortsTree list) =
@@ -29,9 +43,9 @@ type PortsRepository(db: DB.dataContext) =
                         row.Method <- t.ToString()
                     | Git uri
                     | Svn uri  ->
-                        row.Method <- UnionToString t
+                        row.Method <- UnionToString t.Method
                         row.Url <- Some uri
-                    row.OnConflict <- Common.OnConflict.Update)
+                    row.OnConflict <- Common.OnConflict.Throw)
             let! result = DatabaseError.FromQuery (db.SubmitUpdatesAsync())
             if result <> NoError then
                 db.ClearUpdates() |> ignore

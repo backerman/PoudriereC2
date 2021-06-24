@@ -24,6 +24,7 @@ let main argv =
                 fun s ->
                     s.AddSingleton<DB.dataContext> (DB.GetDataContext()) |> ignore
                     s.AddSingleton<ConfigRepository> () |> ignore
+                    s.AddSingleton<PortsRepository> () |> ignore
             )
             .Build()
     if configuration.["AZURE_FUNCTIONS_ENVIRONMENT"] = "Development" then
