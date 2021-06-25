@@ -8,9 +8,11 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
+    # Set fake connection string so that the program will compile
+    # (and use the offline schema to do so).
+    env:
+      PostgresConnection: Host=localhost
     steps:
     - uses: actions/checkout@v2
     - name: Setup .NET
