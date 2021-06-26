@@ -1,7 +1,7 @@
 INSERT INTO poudrierec2.jails (name, version, architecture)
 VALUES ('13_0-amd64', '13.0-RELEASE', 'amd64');
 
-INSERT INTO poudrierec2.porttrees (name, method)
+INSERT INTO poudrierec2.portstrees (name, method)
 VALUES ('local', 'git+https');
 
 INSERT INTO poudrierec2.portsets (name) VALUES ('server');
@@ -36,7 +36,7 @@ INSERT INTO poudrierec2.packageoptions (configfile, category, package, set, unse
 VALUES
 ('7557d8a8-bba5-4c99-ba6f-2ffbebb0be63', null, null, '{"DANE", "DTRACE", "FOP", "FORTRAN"}', '{"ALSA", "ASS", "CUPS", "DBUS", "DOXYGEN"}');
 
-INSERT INTO poudrierec2.jobconfigs (id, title, porttree, portset, jail)
+INSERT INTO poudrierec2.jobconfigs (id, title, portstree, portset, jail)
 VALUES
 ('209fc7b5-18c5-40e1-a205-4ae82790621e', 'Yes it''s a job configuration!', 'local', 'server', '13_0-amd64');
 

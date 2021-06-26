@@ -24,7 +24,8 @@ COMMENT ON ROLE poudriereadmin IS E'Owner role for the Poudriere database';
 -- object: poudrierec2 | type: DATABASE --
 -- DROP DATABASE IF EXISTS poudrierec2;
 CREATE DATABASE poudrierec2
-	ENCODING = 'UTF8';
+	ENCODING = 'UTF8'
+	OWNER = poudriereadmin;
 -- ddl-end --
 
 
@@ -46,7 +47,7 @@ SET search_path TO pg_catalog,public,poudrierec2;
 CREATE TABLE poudrierec2.jobconfigs (
 	id uuid NOT NULL DEFAULT gen_random_uuid(),
 	title text NOT NULL,
-	porttree text NOT NULL,
+	portstree text NOT NULL,
 	portset text NOT NULL,
 	jail text NOT NULL,
 	CONSTRAINT configs_pk PRIMARY KEY (id)
@@ -55,7 +56,7 @@ CREATE TABLE poudrierec2.jobconfigs (
 -- ddl-end --
 COMMENT ON TABLE poudrierec2.jobconfigs IS E'Run configurations';
 -- ddl-end --
-ALTER TABLE poudrierec2.jobconfigs OWNER TO postgres;
+ALTER TABLE poudrierec2.jobconfigs OWNER TO poudriereadmin;
 -- ddl-end --
 
 -- object: poudrierec2.configoptions | type: TABLE --
@@ -76,7 +77,7 @@ COMMENT ON COLUMN poudrierec2.configoptions.name IS E'The name of the option to 
 -- ddl-end --
 COMMENT ON COLUMN poudrierec2.configoptions.value IS E'The value of the option to set';
 -- ddl-end --
-ALTER TABLE poudrierec2.configoptions OWNER TO postgres;
+ALTER TABLE poudrierec2.configoptions OWNER TO poudriereadmin;
 -- ddl-end --
 
 -- object: poudrierec2.packageoptions | type: TABLE --
@@ -104,7 +105,7 @@ COMMENT ON COLUMN poudrierec2.packageoptions.unset IS E'Options that should be u
 -- ddl-end --
 COMMENT ON CONSTRAINT pkgoptions_valid_spec ON poudrierec2.packageoptions  IS E'package may only be non-null if category is non-null';
 -- ddl-end --
-ALTER TABLE poudrierec2.packageoptions OWNER TO postgres;
+ALTER TABLE poudrierec2.packageoptions OWNER TO poudriereadmin;
 -- ddl-end --
 
 -- object: poudrierec2.availableoptions | type: TABLE --
@@ -130,7 +131,7 @@ COMMENT ON COLUMN poudrierec2.availableoptions.required IS E'Whether the option 
 -- ddl-end --
 COMMENT ON COLUMN poudrierec2.availableoptions.defaultvalue IS E'The option''s default value.';
 -- ddl-end --
-ALTER TABLE poudrierec2.availableoptions OWNER TO postgres;
+ALTER TABLE poudrierec2.availableoptions OWNER TO poudriereadmin;
 -- ddl-end --
 
 -- object: poudrierec2.builds | type: TABLE --
@@ -154,7 +155,7 @@ COMMENT ON COLUMN poudrierec2.builds.stopped IS E'The stop time of this build.';
 -- ddl-end --
 COMMENT ON COLUMN poudrierec2.builds.vm IS E'The virtual machine assigned to this build.';
 -- ddl-end --
-ALTER TABLE poudrierec2.builds OWNER TO postgres;
+ALTER TABLE poudrierec2.builds OWNER TO poudriereadmin;
 -- ddl-end --
 
 -- object: poudrierec2.virtualmachines | type: TABLE --
@@ -185,7 +186,7 @@ COMMENT ON COLUMN poudrierec2.virtualmachines.stopped IS E'Time VM stopped (deal
 -- ddl-end --
 COMMENT ON COLUMN poudrierec2.virtualmachines.deleted IS E'Time VM deleted.';
 -- ddl-end --
-ALTER TABLE poudrierec2.virtualmachines OWNER TO postgres;
+ALTER TABLE poudrierec2.virtualmachines OWNER TO poudriereadmin;
 -- ddl-end --
 
 -- object: index_vm_azuuid | type: INDEX --
@@ -224,7 +225,7 @@ CREATE TABLE poudrierec2.configfiles (
 	deleted bool NOT NULL DEFAULT false,
 	name text NOT NULL,
 	portset text,
-	porttree text,
+	portstree text,
 	jail text,
 	configtype text NOT NULL,
 	CONSTRAINT configfiles_pk PRIMARY KEY (id),
@@ -264,7 +265,7 @@ ALTER TABLE poudrierec2.portstrees OWNER TO poudriereadmin;
 CREATE TABLE poudrierec2.portstree_methods (
 	name text NOT NULL,
 	isdefault bool NOT NULL DEFAULT false,
-	CONSTRAINT porttree_methods_pk PRIMARY KEY (name)
+	CONSTRAINT portstree_methods_pk PRIMARY KEY (name)
 
 );
 -- ddl-end --
@@ -274,7 +275,7 @@ ALTER TABLE poudrierec2.portstree_methods OWNER TO poudriereadmin;
 -- ddl-end --
 
 -- Appended SQL commands --
-ALTER TABLE porttree_methods
+ALTER TABLE portstree_methods
 ADD CONSTRAINT pt_methods_onlyonedefault
 EXCLUDE (isdefault WITH =) WHERE (isdefault);
 -- ddl-end --
@@ -311,7 +312,7 @@ ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- object: portstrees_fk | type: CONSTRAINT --
 -- ALTER TABLE poudrierec2.jobconfigs DROP CONSTRAINT IF EXISTS portstrees_fk CASCADE;
-ALTER TABLE poudrierec2.jobconfigs ADD CONSTRAINT portstrees_fk FOREIGN KEY (porttree)
+ALTER TABLE poudrierec2.jobconfigs ADD CONSTRAINT portstrees_fk FOREIGN KEY (portstree)
 REFERENCES poudrierec2.portstrees (name) MATCH FULL
 ON DELETE RESTRICT ON UPDATE CASCADE;
 -- ddl-end --
@@ -419,7 +420,7 @@ ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- object: portstrees_fk | type: CONSTRAINT --
 -- ALTER TABLE poudrierec2.configfiles DROP CONSTRAINT IF EXISTS portstrees_fk CASCADE;
-ALTER TABLE poudrierec2.configfiles ADD CONSTRAINT portstrees_fk FOREIGN KEY (porttree)
+ALTER TABLE poudrierec2.configfiles ADD CONSTRAINT portstrees_fk FOREIGN KEY (portstree)
 REFERENCES poudrierec2.portstrees (name) MATCH FULL
 ON DELETE SET NULL ON UPDATE CASCADE;
 -- ddl-end --

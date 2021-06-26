@@ -20,7 +20,6 @@ type DB = SqlDataProvider<
             DatabaseVendor=Common.DatabaseProviderTypes.POSTGRESQL,
             ConnectionString=ConnectionString,
             UseOptionTypes=true,
-            ContextSchemaPath=SchemaPath,
             Owner=Owner>
 
 type DatabaseError =
@@ -46,8 +45,3 @@ type DatabaseError =
                         | _ -> Unknown e
                     | _ -> Unknown e
         }
-
-
-// DB.GetDataContext().``Design Time Commands``.SaveContextSchema.
-
-/// A type to contain results from a database call.

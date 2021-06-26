@@ -12,13 +12,13 @@ type PortsRepository(db: DB.dataContext) =
             let filterQuery =
                 match portsTree with
                 | None ->
-                    <@ fun (_: DB.dataContext.``poudrierec2.porttreesEntity``) -> true @>
+                    <@ fun (_: DB.dataContext.``poudrierec2.portstreesEntity``) -> true @>
                 | Some f ->
-                    <@ fun (pt: DB.dataContext.``poudrierec2.porttreesEntity``) ->
+                    <@ fun (pt: DB.dataContext.``poudrierec2.portstreesEntity``) ->
                         pt.Name = portsTree.Value @>
             let! trees =
                 query {
-                    for pt in db.Poudrierec2.Porttrees do
+                    for pt in db.Poudrierec2.Portstrees do
                     where ((%filterQuery) pt)
                     select pt
                 } |> Seq.executeQueryAsync
@@ -36,7 +36,7 @@ type PortsRepository(db: DB.dataContext) =
             trees
             |> List.iter
                 (fun t -> 
-                    let row = db.Poudrierec2.Porttrees.Create()
+                    let row = db.Poudrierec2.Portstrees.Create()
                     row.Name <- t.Name
                     match t.Method with
                     | Null ->
