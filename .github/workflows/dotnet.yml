@@ -7,12 +7,36 @@ on:
     branches: [ main ]
 
 jobs:
+  genPassword:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Generate password for PostgreSQL
+      id: passGen
+      run: |
+        echo "::set-output name=password::$(openssl rand 32 | base64 -w 0)"
+    outputs:
+      password: ${{ steps.passGen.outputs.password }}
+
   build:
+    needs: genPassword
     runs-on: ubuntu-latest
     # Set fake connection string so that the program will compile
     # (and use the offline schema to do so).
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: ${{ needs.genPassword.outputs.password }}
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
     env:
-      PostgresConnection: Host=localhost
+      PostgresConnection: Host=localhost;Port=5432;Username=postgres;Password=${{ needs.genPassword.outputs.password }}
+      PGPASSWORD: ${{ needs.genPassword.outputs.password }}
     steps:
     - uses: actions/checkout@v2
     - name: Setup .NET
@@ -21,6 +45,8 @@ jobs:
         dotnet-version: 5.0.x
     - name: Restore dependencies
       run: dotnet restore
+    - name: Load schema
+      run: psql -h localhost -U postgres -f ./schema.sql
     - name: Build
       run: dotnet build --no-restore
     - name: Test
