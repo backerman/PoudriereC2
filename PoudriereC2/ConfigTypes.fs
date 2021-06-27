@@ -32,8 +32,8 @@ module ConfigTypes =
       { Id: Guid
         Deleted: bool
         Name: string
-        Portset: string option
-        Porttree: string option
+        PortSet: string option
+        PortsTree: string option
         Jail: string option
         FileType: ConfigFileType }
 
@@ -48,7 +48,7 @@ module ConfigTypes =
     type JobConfig =
       { Id: Guid
         Title: string
-        PortTree: string
+        PortsTree: string
         PortSet: string
         Jail: string
         ConfigFiles: ConfigFileMetadata list }

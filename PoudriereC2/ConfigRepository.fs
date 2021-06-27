@@ -36,8 +36,8 @@ type ConfigRepository (db: DB.dataContext) =
                      { Id = file.Id
                        Deleted = file.Deleted
                        Name = file.Name
-                       Portset = file.Portset
-                       Porttree = file.Portstree
+                       PortSet = file.Portset
+                       PortsTree = file.Portstree
                        Jail = file.Jail
                        FileType = FromString<ConfigFileType> file.Configtype }
                 } |> Seq.executeQueryAsync
@@ -51,8 +51,8 @@ type ConfigRepository (db: DB.dataContext) =
             row.Deleted <- false
             row.Id <- metadata.Id
             row.Jail <- metadata.Jail
-            row.Portset <- metadata.Portset
-            row.Portstree <- metadata.Porttree
+            row.Portset <- metadata.PortSet
+            row.Portstree <- metadata.PortsTree
             row.Configtype <- UnionToString metadata.FileType
 
             row.OnConflict <- Common.OnConflict.Throw
