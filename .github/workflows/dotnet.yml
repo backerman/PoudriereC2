@@ -1,4 +1,4 @@
-name: .NET
+name: Run Tests
 
 on:
   push:
@@ -35,7 +35,7 @@ jobs:
         ports:
           - 5432:5432
     env:
-      PostgresConnection: Host=localhost;Port=5432;Username=postgres;Password=${{ needs.genPassword.outputs.password }}
+      PostgresConnection: Host=localhost;Port=5432;Username=postgres;Database=poudrierec2;
       PGPASSWORD: ${{ needs.genPassword.outputs.password }}
     steps:
     - uses: actions/checkout@v2
@@ -51,7 +51,11 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Load schema
-      run: psql -h localhost -U postgres -f ./schema.sql
+      run: |
+        psql -h localhost -U postgres -f ./database/createdb/0001-createdb.sql
+        for ddl in ./database/*.sql; do
+          psql -h localhost -U postgres -f $ddl -d poudrierec2
+        done
     - name: Build
       run: dotnet build --no-restore
     - name: Test

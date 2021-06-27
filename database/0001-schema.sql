@@ -11,10 +11,10 @@
 -- 
 -- object: poudriereadmin | type: ROLE --
 -- DROP ROLE IF EXISTS poudriereadmin;
-CREATE ROLE poudriereadmin WITH 
-	CREATEDB;
+-- CREATE ROLE poudriereadmin WITH 
+-- 	CREATEDB;
 -- ddl-end --
-COMMENT ON ROLE poudriereadmin IS E'Owner role for the Poudriere database';
+-- COMMENT ON ROLE poudriereadmin IS E'Owner role for the Poudriere database';
 -- ddl-end --
 
 
@@ -23,9 +23,9 @@ COMMENT ON ROLE poudriereadmin IS E'Owner role for the Poudriere database';
 -- 
 -- object: poudrierec2 | type: DATABASE --
 -- DROP DATABASE IF EXISTS poudrierec2;
-CREATE DATABASE poudrierec2
-	ENCODING = 'UTF8'
-	OWNER = poudriereadmin;
+-- CREATE DATABASE poudrierec2
+-- 	ENCODING = 'UTF8'
+-- 	OWNER = poudriereadmin;
 -- ddl-end --
 
 
