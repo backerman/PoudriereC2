@@ -4,26 +4,10 @@ open NUnit.Framework
 open FsUnit
 open AutoFixture
 open AutoFixture.AutoFoq
-open System
 open Facefault.PoudriereC2.Serialization
 open Microsoft.Azure.Functions.Worker.Http
-open System.IO
 open AutoFixture.Kernel
-
-type ConcreteRequestData(functionContext) =
-    inherit HttpRequestData(functionContext)
-    override val Body =
-        new MemoryStream() :> Stream with get
-    override val Cookies =
-        [] :> Collections.Generic.IReadOnlyCollection<IHttpCookie> with get
-    override this.CreateResponse(): HttpResponseData = 
-        failwith "Not Implemented"
-    override val Headers = HttpHeadersCollection() with get
-    override val Identities = 
-        [] |> Seq.ofList with get
-    override val Method = "GET" with get
-    override val Url = 
-        Uri("http://localhost") with get
+open Facefault.PoudriereC2.Tests.RequestData
 
 [<TestFixture>]
 type MediaTypeHandlerTests() =
