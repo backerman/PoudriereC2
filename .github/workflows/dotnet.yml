@@ -52,7 +52,7 @@ jobs:
       run: dotnet restore
     - name: Load schema
       shell: pwsh
-      run: ./database/deploy.ps1 -PsqlHost localhost
+      run: ./database/deploy.ps1 -PsqlHost localhost -SampleData
     - name: Build
       run: dotnet build --no-restore
     - name: Test
