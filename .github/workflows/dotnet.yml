@@ -51,11 +51,7 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Load schema
-      run: |
-        psql -h localhost -U postgres -f ./database/createdb/0001-createdb.sql
-        for ddl in ./database/*.sql; do
-          psql -h localhost -U postgres -f $ddl -d poudrierec2
-        done
+      run: pwsh -File ./database/deploy.ps1 -PsqlHost localhost
     - name: Build
       run: dotnet build --no-restore
     - name: Test
