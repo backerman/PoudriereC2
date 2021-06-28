@@ -13,9 +13,6 @@ let ConnectionString =
 [<Literal>]
 let Owner = "poudrierec2"
 
-[<Literal>]
-let SchemaPath = __SOURCE_DIRECTORY__ + "/schema.json"
-
 type DB = SqlDataProvider<
             DatabaseVendor=Common.DatabaseProviderTypes.POSTGRESQL,
             ConnectionString=ConnectionString,
