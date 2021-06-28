@@ -19,7 +19,7 @@ param (
     [Parameter()]
     [string]
     $PsqlUser = "postgres",
-    
+
     # Also insert sample data.
     [Parameter()]
     [switch]
