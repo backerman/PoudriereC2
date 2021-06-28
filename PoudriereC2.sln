@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.6.30114.105
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "PoudriereC2", "PoudriereC2\PoudriereC2.fsproj", "{A0ED4F6B-4D0C-41EA-8F4A-30363EC3E1D7}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "PoudriereC2", "backend\PoudriereC2\PoudriereC2.fsproj", "{A0ED4F6B-4D0C-41EA-8F4A-30363EC3E1D7}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "PoudriereC2.Tests", "PoudriereC2.Tests\PoudriereC2.Tests.fsproj", "{1BD3F956-9463-4570-A5EF-5EB42F2F243F}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "PoudriereC2.Tests", "backend\PoudriereC2.Tests\PoudriereC2.Tests.fsproj", "{1BD3F956-9463-4570-A5EF-5EB42F2F243F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
