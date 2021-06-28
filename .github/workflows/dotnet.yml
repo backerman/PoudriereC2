@@ -51,7 +51,8 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Load schema
-      run: pwsh -File ./database/deploy.ps1 -PsqlHost localhost
+      shell: pwsh
+      run: ./database/deploy.ps1 -PsqlHost localhost
     - name: Build
       run: dotnet build --no-restore
     - name: Test
