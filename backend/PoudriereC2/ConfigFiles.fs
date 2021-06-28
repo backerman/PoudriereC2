@@ -15,7 +15,7 @@ type ConfigFileApi (cfg: ConfigRepository) =
     [<Function("NewConfigFile")>]
     member _.newConfigFile
         ([<HttpTrigger(AuthorizationLevel.Function, "put", Route="configurationfiles/metadata")>]
-        req: HttpRequestData, execContext: FunctionContext) =
+         req: HttpRequestData, execContext: FunctionContext) =
             async {
                 let log = execContext.GetLogger()
                 let response = req.CreateResponse(HttpStatusCode.OK)
@@ -24,7 +24,8 @@ type ConfigFileApi (cfg: ConfigRepository) =
                 | None ->
                     response.StatusCode <- HttpStatusCode.BadRequest
                     response.writeJsonResponse
-                        (Error "Invalid or nonexistent payload") |> ignore
+                        (Error "Invalid or nonexistent payload")
+                    |> ignore
                 | Some meta ->
                     let! result = cfg.newConfigFile meta
                     match result with
@@ -34,12 +35,12 @@ type ConfigFileApi (cfg: ConfigRepository) =
                     | ForeignKeyViolation ex ->
                         log.LogError
                             ("Failed upsert of config {ConfigFile}: {ViolatedConstraint} violated",
-                            meta.Id, ex.ConstraintName)
+                             meta.Id, ex.ConstraintName)
                         response.StatusCode <- HttpStatusCode.UnprocessableEntity
                         response.writeJsonResponse
                             (Error
                             $"Referential integrity violation: value of {ex.ColumnName} does not exist")
-                            |> ignore
+                        |> ignore
                     | UniqueViolation ex ->
                         response.StatusCode <- HttpStatusCode.UnprocessableEntity
                         let errorText =
@@ -49,22 +50,24 @@ type ConfigFileApi (cfg: ConfigRepository) =
                             | _ -> ""
                         log.LogError
                             ("Failed upsert of config {ConfigFile}: {ViolatedConstraint} violated",
-                            meta.Id, ex.ConstraintName)
+                             meta.Id, ex.ConstraintName)
                         response.writeJsonResponse
-                            (Error $"Configuration {errorText} already exists") |> ignore
+                            (Error $"Configuration {errorText} already exists")
+                        |> ignore
                     | Unknown ex ->
                         log.LogError
                             (ex, "Failed insert of config {ConfigFile}", meta.Id)
                         response.StatusCode <- HttpStatusCode.InternalServerError
                         response.writeJsonResponse
-                            (Error "Internal server error") |> ignore
+                            (Error "Internal server error")
+                        |> ignore
                 return response
             } |> Async.StartAsTask
 
     [<Function("GetConfigFilesMetadata")>]
     member _.getConfigFileMetadata
         ([<HttpTrigger(AuthorizationLevel.Function, "get", Route="configurationfiles/metadata/{configFile:guid?}")>]
-        req: HttpRequestData, execContext: FunctionContext, [<Optional>]configFile: string) =
+         req: HttpRequestData, execContext: FunctionContext, [<Optional>]configFile: string) =
             let log = execContext.GetLogger()
             let configFileOpt =
                 match configFile with
@@ -79,12 +82,13 @@ type ConfigFileApi (cfg: ConfigRepository) =
     [<Function("GenerateConfigFile")>]
     member _.generateConfigFile
         ([<HttpTrigger(AuthorizationLevel.Function, "get", Route="configurationfiles/{configFile:guid}")>]
-         req: HttpRequestData) (execContext: FunctionContext) (configFile: string) =
+        req: HttpRequestData) (execContext: FunctionContext) (configFile: string) =
             async {
                 let log = execContext.GetLogger()
                 let response = req.CreateResponse()
                 match pickReturnMediaType req with
-                | Some AnyType | Some PlainText ->
+                | Some AnyType
+                | Some PlainText ->
                     let! configMetadataSeq = cfg.getConfigFiles configFile
                     let! configOptions =
                         cfg.getConfigFileOptions configFile

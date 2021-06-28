@@ -49,7 +49,7 @@ type HttpResponseData with
 
 let private posixSpecials =
     ['|'; '&'; ';'; '<'; '>'; '('; ')'; '$'; '`'; '\\'; '"'; '\''; ' '; '\r'; '\n';
-    '*'; '?'; '['; '#'; '~'; '='; '%' ]
+     '*'; '?'; '['; '#'; '~'; '='; '%' ]
 
 let private posixEscapeInQuotes =
     ['"'; '$'; '`'; '\\']

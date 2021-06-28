@@ -12,7 +12,7 @@ type ConfigFileOptionsApi (cfg: ConfigRepository) =
     [<Function("GetConfigFileOptions")>]
     member _.getConfigFileOptions
         ([<HttpTrigger(AuthorizationLevel.Function, "get", Route="configurationfiles/{configFile:guid}/options")>]
-         req: HttpRequestData) (execContext: FunctionContext) (configFile: string) =
+        req: HttpRequestData) (execContext: FunctionContext) (configFile: string) =
             async {
                 let log = execContext.GetLogger()
                 let! opts = cfg.getConfigFileOptions configFile
@@ -24,7 +24,7 @@ type ConfigFileOptionsApi (cfg: ConfigRepository) =
     [<Function("AddConfigFileOptions")>]
     member _.addConfigFileOptions
         ([<HttpTrigger(AuthorizationLevel.Function, "put", Route="configurationfiles/{configFile:guid}/options")>]
-         req: HttpRequestData) (execContext: FunctionContext) (configFile: string) =
+        req: HttpRequestData) (execContext: FunctionContext) (configFile: string) =
             async {
                 let log = execContext.GetLogger()
                 let response = req.CreateResponse(HttpStatusCode.OK)
@@ -33,11 +33,13 @@ type ConfigFileOptionsApi (cfg: ConfigRepository) =
                 | None ->
                     response.StatusCode <- HttpStatusCode.BadRequest
                     response.writeJsonResponse
-                        (Error "Invalid or nonexistent payload") |> ignore
+                        (Error "Invalid or nonexistent payload")
+                    |> ignore
                 | Some [] ->
                     response.StatusCode <- HttpStatusCode.BadRequest
                     response.writeJsonResponse
-                        (Error "At least one option must be provided") |> ignore
+                        (Error "At least one option must be provided")
+                    |> ignore
                 | Some opts ->
                     let! result = cfg.addConfigFileOptions configFile opts
                     match result with
@@ -49,27 +51,30 @@ type ConfigFileOptionsApi (cfg: ConfigRepository) =
                             ("Failed upsert of config {ConfigFile}: config does not exist", configFile)
                         response.StatusCode <- HttpStatusCode.UnprocessableEntity
                         response.writeJsonResponse
-                            (Error "Nonexistent configuration file") |> ignore
+                            (Error "Nonexistent configuration file")
+                        |> ignore
                     | UniqueViolation _ -> 
                         // can't happen but.
                         log.LogError
                             ("Failed upsert of config {ConfigFile}: unexpected uniqueness violation", configFile)
                         response.StatusCode <- HttpStatusCode.InternalServerError
                         response.writeJsonResponse
-                            (Error "Bad request") |> ignore
+                            (Error "Bad request")
+                        |> ignore
                     | Unknown ex ->
                         log.LogError
                             (ex, "Failed upsert of config {ConfigFile}: {errorMsg}", configFile)
                         response.StatusCode <- HttpStatusCode.InternalServerError
                         response.writeJsonResponse
-                            (Error "Bad request") |> ignore
+                            (Error "Bad request")
+                        |> ignore
                 return response
             } |> Async.StartAsTask
 
     [<Function("DeleteConfigFileOptions")>]
     member _.deleteConfigFileOptions
         ([<HttpTrigger(AuthorizationLevel.Function, "delete", Route="configurationfiles/{configFile:guid}/options")>]
-         req: HttpRequestData) (execContext: FunctionContext) (configFile: string) =
+        req: HttpRequestData) (execContext: FunctionContext) (configFile: string) =
             async {
                 let log = execContext.GetLogger()
                 let! maybeOpts = tryDeserialize<string list> req log
@@ -79,12 +84,12 @@ type ConfigFileOptionsApi (cfg: ConfigRepository) =
                     response.StatusCode <- HttpStatusCode.BadRequest
                     response.writeJsonResponse
                         (Error "Unable to show tea and no tea to the door")
-                        |> ignore
+                    |> ignore
                 | Some [] ->
                     response.StatusCode <- HttpStatusCode.BadRequest
                     response.writeJsonResponse
                         (Error "What is the difference between a chicken?")
-                        |> ignore
+                    |> ignore
                 | Some opts -> 
                     response.StatusCode <- HttpStatusCode.NoContent
                     let! _ = cfg.deleteConfigFileOptions configFile opts

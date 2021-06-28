@@ -5,16 +5,13 @@ open Facefault.PoudriereC2.Serialization
 open Microsoft.Azure.Functions.Worker
 open Microsoft.Azure.Functions.Worker.Http
 open Microsoft.Extensions.Logging
-open System
 open System.Net
-open FSharp.Data.Sql
-open System.Runtime.InteropServices
 
 type PortsTreesApi (cfg: PortsRepository) =
     [<Function("NewPortsTree")>]
     member _.NewPortsTree
         ([<HttpTrigger(AuthorizationLevel.Function, "put", Route="portstrees")>]
-        req: HttpRequestData, execContext: FunctionContext) =
+         req: HttpRequestData, execContext: FunctionContext) =
         async {
             let log = execContext.GetLogger()
             let response = req.CreateResponse(HttpStatusCode.OK)
@@ -23,7 +20,8 @@ type PortsTreesApi (cfg: PortsRepository) =
             | None ->
                 response.StatusCode <- HttpStatusCode.BadRequest
                 response.writeJsonResponse
-                    (Error "Invalid or nonexistent payload") |> ignore
+                    (Error "Invalid or nonexistent payload")
+                |> ignore
             | Some meta ->
                 let! result = cfg.addPortsTrees [meta]
                 match result with
@@ -33,11 +31,11 @@ type PortsTreesApi (cfg: PortsRepository) =
                 | ForeignKeyViolation ex ->
                     log.LogError
                         ("Failed upsert of ports tree {PortsTree}: {ViolatedConstraint} violated",
-                        meta.Name, ex.ConstraintName)
+                         meta.Name, ex.ConstraintName)
                     response.StatusCode <- HttpStatusCode.UnprocessableEntity
                     response.writeJsonResponse
                         (Error "Referential integrity violation")
-                        |> ignore
+                    |> ignore
                 | UniqueViolation ex ->
                     response.StatusCode <- HttpStatusCode.UnprocessableEntity
                     let errorText =
@@ -46,22 +44,24 @@ type PortsTreesApi (cfg: PortsRepository) =
                         | _ -> ""
                     log.LogError
                         (ex, "Failed upsert of ports tree {ConfigFile}: {ViolatedConstraint} violated",
-                        meta.Name, ex.ConstraintName)
+                         meta.Name, ex.ConstraintName)
                     response.writeJsonResponse
-                        (Error $"Ports tree {meta.Name}: {errorText} already exists") |> ignore
+                        (Error $"Ports tree {meta.Name}: {errorText} already exists")
+                    |> ignore
                 | Unknown ex ->
                     log.LogError
                         (ex, "Failed insert of ports tree {ConfigFile}", meta.Name)
                     response.StatusCode <- HttpStatusCode.InternalServerError
                     response.writeJsonResponse
-                        (Error "Internal server error") |> ignore         
+                        (Error "Internal server error")
+                    |> ignore
             return response
         } |> Async.StartAsTask
 
     [<Function("GetPortsTrees")>]
     member _.GetPortsTrees
         ([<HttpTrigger(AuthorizationLevel.Function, "get", Route="portstrees/{treeName?}")>]
-        req: HttpRequestData, execContext: FunctionContext, treeName: string) =
+         req: HttpRequestData, execContext: FunctionContext, treeName: string) =
         let log = execContext.GetLogger()
         let treeNameOpt =
             match treeName with

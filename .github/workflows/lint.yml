@@ -7,14 +7,18 @@ on:
     branches: [ main ]
 
 jobs:
-  powershell:
+  lint:
     runs-on: ubuntu-latest
     steps:
-    - name: Install PSScriptAnalyzer
+    - uses: actions/checkout@v2
+    - name: Install linting tools
       shell: pwsh
       run: |
         Set-PSRepository PSGallery -InstallationPolicy Trusted
         Install-Module PSScriptAnalyzer -ErrorAction Stop
+        dotnet tool install -g dotnet-fsharplint
+    - name: Restore dependencies
+      run: dotnet restore
     - name: Lint with PSScriptAnalyzer
       shell: pwsh
       run: |
@@ -26,3 +30,5 @@ jobs:
         } else {
             Write-Output "There were $($errors.Count) errors and $($warnings.Count) warnings total."
         }
+    - name: Lint with FSharpLint
+      run: dotnet fsharplint lint ./PoudriereC2.sln

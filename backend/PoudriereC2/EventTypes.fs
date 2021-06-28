@@ -9,12 +9,14 @@ module Types =
 
     /// A client heartbeat.
     type HeartbeatInfo =
-        { /// The 1-, 5-, and 15-minute load averages of the VM.
-          LoadAverage: float list;
-          /// The number of CPUs in the VM.
-          NumCPUs: int;
-          /// <summary>The size of the VM (e.g. <c>Standard_D96as_v4</c>).</summary>
-          VmSize: string }
+        {
+            /// The 1-, 5-, and 15-minute load averages of the VM.
+            LoadAverage: float list;
+            /// The number of CPUs in the VM.
+            NumCPUs: int;
+            /// <summary>The size of the VM (e.g. <c>Standard_D96as_v4</c>).</summary>
+            VmSize: string
+        }
 
     /// Payload for a jail event.
     type JailInfo =
@@ -23,10 +25,12 @@ module Types =
 
     /// Payload for a builder event.
     type BuilderInfo =
-        { /// The ID number of the builder jail.
-          Id: int;
-          /// The path at which the builder jail root is mounted in the host filesystem.
-          MountPath: string }
+        {
+            /// The ID number of the builder jail.
+            Id: int;
+            /// The path at which the builder jail root is mounted in the host filesystem.
+            MountPath: string
+        }
 
     [<Literal>]
     let private EventType = "type"
@@ -59,14 +63,15 @@ module Types =
     /// A VM event.
     type Event =
         {
-          /// The client timestamp.
-          Timestamp: DateTime;
-          /// The GUID of the client's Azure VM instance (from IMDS).
-          VmGuid: Guid;
-          /// The name of the client's Azure VM instance (from IMDS).
-          VmName: string;
-          /// The event type and payload.
-          Event: EventDetail }
+            /// The client timestamp.
+            Timestamp: DateTime;
+            /// The GUID of the client's Azure VM instance (from IMDS).
+            VmGuid: Guid;
+            /// The name of the client's Azure VM instance (from IMDS).
+            VmName: string;
+            /// The event type and payload.
+            Event: EventDetail
+        }
 
     type LowerCaseNamingPolicy() =
         inherit JsonNamingPolicy()
@@ -87,9 +92,9 @@ module Types =
             ),
             allowOverride = true,
             overrides = dict [
-                typeof<ConfigFileType>, JsonFSharpOptions(
+                (typeof<ConfigFileType>, JsonFSharpOptions(
                     unionEncoding = JsonUnionEncoding.UnwrapFieldlessTags,
-                    unionTagNamingPolicy = LowerCaseNamingPolicy())
+                    unionTagNamingPolicy = LowerCaseNamingPolicy()))
             ]
         ) |> options.Converters.Add
         options

@@ -33,13 +33,13 @@ type ConfigRepository (db: DB.dataContext) =
                     for file in db.Poudrierec2.Configfiles do
                     where ((%filterQuery) file)
                     select
-                     { Id = file.Id
-                       Deleted = file.Deleted
-                       Name = file.Name
-                       PortSet = file.Portset
-                       PortsTree = file.Portstree
-                       Jail = file.Jail
-                       FileType = FromString<ConfigFileType> file.Configtype }
+                        { Id = file.Id
+                          Deleted = file.Deleted
+                          Name = file.Name
+                          PortSet = file.Portset
+                          PortsTree = file.Portstree
+                          Jail = file.Jail
+                          FileType = FromString<ConfigFileType> file.Configtype }
                 } |> Seq.executeQueryAsync
             return configFiles
         }

@@ -17,7 +17,7 @@ type JsonTests() =
         //     numFailed: int *
         //     numIgnored: int *
         //     numSkipped: int
-        let bulkBuild = Bulk(42,86,99,13)
+        let bulkBuild = Bulk(42, 86, 99, 13)
         let expected = """{"type":"bulk","numBuilt":42,"numFailed":86,"numIgnored":99,"numSkipped":13}"""
         JsonSerializer.Serialize(bulkBuild, eventSerializationOptions)
         |> should equal expected
@@ -40,4 +40,3 @@ type JsonTests() =
     [<SetUp>]
     member _.setup () =
         FSharpCustomMessageFormatter() |> ignore
-

@@ -1,61 +1,63 @@
 {
     "ignoreFiles": [
-        "assemblyinfo.*"
+        "AssemblyInfo.*",
+        "PoudriereC2.AssemblyInfo.fs",
+        "PoudriereC2.Tests.AssemblyInfo.fs"
     ],
     "formatting": {
         "typedItemSpacing": {
-            "enabled": false,
+            "enabled": true,
             "config": {
-                "typedItemStyle": "NoSpaces"
+                "typedItemStyle": "SpaceAfter"
             }
         },
         "typePrefixing": {
-            "enabled": false
+            "enabled": true
         },
         "unionDefinitionIndentation": {
-            "enabled": false
+            "enabled": true
         },
         "moduleDeclSpacing": {
             "enabled": false
         },
         "classMemberSpacing": {
-            "enabled": false
+            "enabled": true
         },
         "tupleFormatting": {
             "tupleCommaSpacing": {
-                "enabled": false
+                "enabled": true
             },
             "tupleIndentation": {
-                "enabled": false
+                "enabled": true
             },
             "tupleParentheses": {
-                "enabled": false
+                "enabled": true
             }
         },
         "patternMatchFormatting": {
             "patternMatchClausesOnNewLine": {
-                "enabled": false
+                "enabled": true
             },
             "patternMatchOrClausesOnNewLine": {
-                "enabled": false
+                "enabled": true
             },
             "patternMatchClauseIndentation": {
-                "enabled": false
+                "enabled": true
             },
             "patternMatchExpressionIndentation": {
-                "enabled": false
+                "enabled": true
             }
         }
     },
     "conventions": {
         "recursiveAsyncFunction": {
-            "enabled": false
+            "enabled": true
         },
         "redundantNewKeyword": {
             "enabled": true
         },
         "nestedStatements": {
-            "enabled": false,
+            "enabled": true,
             "config": {
                 "depth": 8
             }
@@ -85,73 +87,73 @@
         },
         "sourceLength": {
             "maxLinesInLambdaFunction": {
-                "enabled": false,
+                "enabled": true,
                 "config": {
-                    "maxLines": 7
+                    "maxLines": 10
                 }
             },
             "maxLinesInMatchLambdaFunction": {
-                "enabled": false,
+                "enabled": true,
                 "config": {
                     "maxLines": 100
                 }
             },
             "maxLinesInValue": {
-                "enabled": false,
+                "enabled": true,
                 "config": {
                     "maxLines": 100
                 }
             },
             "maxLinesInFunction": {
-                "enabled": false,
+                "enabled": true,
                 "config": {
                     "maxLines": 100
                 }
             },
             "maxLinesInMember": {
-                "enabled": false,
+                "enabled": true,
                 "config": {
                     "maxLines": 100
                 }
             },
             "maxLinesInConstructor": {
-                "enabled": false,
+                "enabled": true,
                 "config": {
                     "maxLines": 100
                 }
             },
             "maxLinesInProperty": {
-                "enabled": false,
+                "enabled": true,
                 "config": {
                     "maxLines": 70
                 }
             },
             "maxLinesInModule": {
-                "enabled": false,
+                "enabled": true,
                 "config": {
                     "maxLines": 1000
                 }
             },
             "maxLinesInRecord": {
-                "enabled": false,
+                "enabled": true,
                 "config": {
                     "maxLines": 500
                 }
             },
             "maxLinesInEnum": {
-                "enabled": false,
+                "enabled": true,
                 "config": {
                     "maxLines": 500
                 }
             },
             "maxLinesInUnion": {
-                "enabled": false,
+                "enabled": true,
                 "config": {
                     "maxLines": 500
                 }
             },
             "maxLinesInClass": {
-                "enabled": false,
+                "enabled": true,
                 "config": {
                     "maxLines": 500
                 }
@@ -181,7 +183,7 @@
                 }
             },
             "recordFieldNames": {
-                "enabled": false,
+                "enabled": true,
                 "config": {
                     "naming": "PascalCase",
                     "underscores": "None"
@@ -264,7 +266,7 @@
         },
         "numberOfItems": {
             "maxNumberOfItemsInTuple": {
-                "enabled": false,
+                "enabled": true,
                 "config": {
                     "maxItems": 4
                 }
@@ -282,7 +284,7 @@
                 }
             },
             "maxNumberOfBooleanOperatorsInCondition": {
-                "enabled": false,
+                "enabled": true,
                 "config": {
                     "maxItems": 4
                 }
@@ -305,19 +307,19 @@
     },
     "typography": {
         "indentation": {
-            "enabled": false,
+            "enabled": true,
             "config": {
                 "numberOfIndentationSpaces": 4
             }
         },
         "maxCharactersOnLine": {
-            "enabled": false,
+            "enabled": true,
             "config": {
                 "maxCharactersOnLine": 120
             }
         },
         "trailingWhitespaceOnLine": {
-            "enabled": false,
+            "enabled": true,
             "config": {
                 "numberOfSpacesAllowed": 1,
                 "oneSpaceAllowedAfterOperator": true,
@@ -325,13 +327,13 @@
             }
         },
         "maxLinesInFile": {
-            "enabled": false,
+            "enabled": true,
             "config": {
                 "maxLinesInFile": 1000
             }
         },
         "trailingNewLineInFile": {
-            "enabled": false
+            "enabled": true
         },
         "noTabCharacters": {
             "enabled": true
