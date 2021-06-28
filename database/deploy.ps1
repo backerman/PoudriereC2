@@ -1,4 +1,12 @@
-# Deploy the database.
+<#
+.SYNOPSIS
+    Create the application database.
+.DESCRIPTION
+    Executes the SQL in the database directory on the specified database server.
+.EXAMPLE
+    PS C:\> .\deploy.ps1 -PsqlHost localhost
+    Connects to a PostgreSQL server on localhost and creates the database.
+#>
 
 [CmdletBinding()]
 param (
