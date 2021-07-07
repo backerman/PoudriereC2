@@ -1,6 +1,7 @@
 import React from 'react';
 import { DetailsList, DetailsListLayoutMode, IColumn, IDetailsRowProps } from '@fluentui/react';
 import { ConfigFileMetadata } from './model/configs';
+import { sortBy } from './utils';
 import './ConfigFiles.css';
 
 type ConfigFilesProps = {
@@ -118,15 +119,7 @@ export const ConfigFiles =
             <DetailsList
                 ariaLabel={"List of configuration files"}
                 items={props.configFiles.filter(itemsFilter).sort(
-                    (a, b) => {
-                        if (a.name > b.name) {
-                            return 1;
-                        } else if (a.name < b.name) {
-                            return -1;
-                        } else {
-                            return 0;
-                        }
-                    })}
+                    sortBy('name'))}
                 columns={columns}
                 getKey={(f: ConfigFileMetadata) => f.id}
                 layoutMode={DetailsListLayoutMode.justified}
