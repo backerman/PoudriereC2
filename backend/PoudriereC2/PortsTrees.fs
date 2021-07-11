@@ -72,3 +72,42 @@ type PortsTreesApi (cfg: PortsRepository) =
             let response = req.CreateResponse(HttpStatusCode.OK)
             return response.writeJsonResponse files
         } |> Async.StartAsTask
+
+    [<Function("ModifyPortsTree")>]
+    member _.ModifyPortsTree
+        ([<HttpTrigger(AuthorizationLevel.Function, "patch", Route="portstrees/{treeName}")>]
+         req: HttpRequestData, execContext: FunctionContext, treeName: string) =
+        let log = execContext.GetLogger()
+        async {
+            let! maybeConfig = tryDeserialize<PortsTree> req log
+            match maybeConfig with
+            | None ->
+                req.CreateResponse
+                    (HttpStatusCode.BadRequest)
+                |> ignore
+            | Some meta ->
+                let! result = cfg.updatePortsTree treeName meta
+                match result with
+                | NoError ->
+                    req.CreateResponse
+                        (HttpStatusCode.OK)
+                    |> ignore
+                | ForeignKeyViolation ex ->
+                    log.LogError
+                        ("Failed upsert of ports tree {PortsTree}: {ViolatedConstraint} violated",
+                         meta.Name, ex.ConstraintName)
+                    req.CreateResponse
+                        (HttpStatusCode.UnprocessableEntity)
+                    |> ignore
+                | UniqueViolation ex ->
+                    req.CreateResponse
+                        (HttpStatusCode.UnprocessableEntity)
+                    |> ignore
+                | Unknown ex ->
+                    log.LogError
+                        (ex, "Failed insert of ports tree {ConfigFile}", meta.Name)
+                    req.CreateResponse
+                        (HttpStatusCode.InternalServerError)
+                    |> ignore
+            return req.CreateResponse (HttpStatusCode.OK) |> ignore
+        } |> Async.StartAsTask

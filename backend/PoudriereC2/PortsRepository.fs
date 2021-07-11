@@ -51,3 +51,26 @@ type PortsRepository(db: DB.dataContext) =
                 db.ClearUpdates() |> ignore
             return result
         }
+
+        member _.updatePortsTree (treeName: string) (tree: PortsTree) =
+            async {
+                let! rows =
+                    query {
+                        for pt in db.Poudrierec2.Portstrees do
+                        where (pt.Name = treeName)
+                        select pt
+                    } |> Seq.executeQueryAsync
+                let row = Seq.exactlyOne rows
+                row.Name <- tree.Name
+                row.Method <- tree.Method.ToString()
+                row.Url <-
+                    match tree.Method with
+                    | Git uri -> Some uri
+                    | Svn uri -> Some uri
+                    | _ -> None
+                row.OnConflict <- Common.OnConflict.Update
+                let! result = DatabaseError.FromQuery (db.SubmitUpdatesAsync())
+                if result <> NoError then
+                    db.ClearUpdates() |> ignore
+                return result
+            }
