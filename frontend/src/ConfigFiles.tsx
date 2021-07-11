@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { DetailsList, DetailsListLayoutMode, IColumn, IDetailsRowProps } from '@fluentui/react';
-import { ConfigFileMetadata } from './model/configs';
+import { ConfigFileMetadata, ConfigFileRepository } from './model/configs';
 import { sortBy } from './utils';
 import './ConfigFiles.css';
+import { ConfigFileEditor } from './ConfigFileEditor';
+import { useBoolean } from '@fluentui/react-hooks';
 
 type ConfigFilesProps = {
-    configFiles: ConfigFileMetadata[];
+    dataSource: ConfigFileRepository;
     showDeleted?: boolean;
 }
 
@@ -114,11 +116,22 @@ export const ConfigFiles =
             }
             return !item.deleted;
         }
-
+        const [editorIsOpen, { setTrue: openEditor, setFalse: closeEditor }] = useBoolean(false);
+        const [activeRecord, setActiveRecord] = useState('');
         return (<div className={"ConfigFiles"}>
+            <ConfigFileEditor
+                dataSource={props.dataSource}
+                isOpen={editorIsOpen}
+                recordId={activeRecord}
+                onDismiss={closeEditor}
+                onSubmit={(meta) => {
+                    props.dataSource.updateConfigFile(meta);
+                    closeEditor();
+                }}
+            />
             <DetailsList
                 ariaLabel={"List of configuration files"}
-                items={props.configFiles.filter(itemsFilter).sort(
+                items={props.dataSource.getConfigFiles().filter(itemsFilter).sort(
                     sortBy('name'))}
                 columns={columns}
                 getKey={(f: ConfigFileMetadata) => f.id}
@@ -126,5 +139,9 @@ export const ConfigFiles =
                 compact={false}
                 onRenderItemColumn={renderItemColumn}
                 onRenderRow={renderRow}
+                onItemInvoked={(item: ConfigFileMetadata) => {
+                    setActiveRecord(item.id);
+                    openEditor();
+                }}
             /></div>)
     }

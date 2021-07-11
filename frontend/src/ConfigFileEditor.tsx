@@ -1,5 +1,5 @@
 import { DefaultButton, Dropdown, IDropdownOption, Panel, PrimaryButton, Stack, TextField } from "@fluentui/react";
-import { useCallback, useReducer } from "react";
+import { useCallback, useEffect, useReducer } from "react";
 import { ConfigFileMetadata, ConfigFileRepository } from "./model/configs";
 
 export type ConfigFileEditorProps =
@@ -23,33 +23,38 @@ export const ConfigFileEditor: React.FC<ConfigFileEditorProps> =
     (props: ConfigFileEditorProps) => {
 
         function updateState<K extends keyof ConfigFileMetadata>(state: ConfigFileMetadata,
-            action: { field: K, value: string | boolean | undefined }): ConfigFileMetadata {
+            action: { field: K, value: string | boolean | undefined } | ConfigFileMetadata): ConfigFileMetadata {
             let newState = { ...state };
-            switch (typeof action.value) {
-                case "boolean":
-                    if (action.field === "deleted") {
-                        newState.deleted = action.value ?? false; break;
-                    }
-                    break;
-                case "string":
-                case "undefined":
-                    switch (action.field) {
-                        case "id":
-                            newState.id = action.value ?? ""; break;
-                        case "name":
-                            newState.name = action.value ?? ""; break;
-                        case "portSet":
-                            newState.portSet = action.value ?? ""; break;
-                        case "portsTree":
-                            newState.portsTree = action.value ?? ""; break;
-                        case "jail":
-                            newState.jail = action.value ?? ""; break;
-                        case "fileType":
-                            newState.fileType = action.value ?? ""; break;
-                    }
-                    break;
-                default:
-                    throw Error("Unexpected type passed");
+            if (!("field" in action)) {
+                // Must be ConfigFileMetadata.
+                newState = action;
+            } else {
+                switch (typeof action.value) {
+                    case "boolean":
+                        if (action.field === "deleted") {
+                            newState.deleted = action.value ?? false; break;
+                        }
+                        break;
+                    case "string":
+                    case "undefined":
+                        switch (action.field) {
+                            case "id":
+                                newState.id = action.value ?? ""; break;
+                            case "name":
+                                newState.name = action.value ?? ""; break;
+                            case "portSet":
+                                newState.portSet = action.value ?? ""; break;
+                            case "portsTree":
+                                newState.portsTree = action.value ?? ""; break;
+                            case "jail":
+                                newState.jail = action.value ?? ""; break;
+                            case "fileType":
+                                newState.fileType = action.value ?? ""; break;
+                        }
+                        break;
+                    default:
+                        throw Error("Unexpected type passed");
+                }
             }
             return newState;
         }
@@ -71,10 +76,24 @@ export const ConfigFileEditor: React.FC<ConfigFileEditorProps> =
             },
             [onDismiss, onSubmit, configFileData]
         );
+
+        useEffect(() => {
+            console.log(`Active record is now ${props.recordId}.`);
+            const newRecord = props.dataSource.getConfigFile(props.recordId) ?? {} as ConfigFileMetadata;
+            console.log("New record: ", newRecord);
+            setState(newRecord);
+        }, [props.dataSource, props.recordId]);
+
+        const onTextChange = useCallback((fieldName: keyof ConfigFileMetadata) => {
+            return (event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string) => {
+                setState(updateState(configFileData, { field: fieldName, value: (newValue || '') }));
+            }
+        }, [configFileData]);
+
         return (
             <Panel
                 isOpen={props.isOpen}
-                isBlocking={true}
+                isBlocking={false}
                 headerText={"Edit configuration"}
                 closeButtonAriaLabel={"Close"}
                 onRenderFooterContent={onRenderFooterContent}
@@ -83,13 +102,13 @@ export const ConfigFileEditor: React.FC<ConfigFileEditorProps> =
                 <Stack verticalAlign="start">
                     <TextField
                         label="GUID"
-                        defaultValue={configFileData.id}
+                        value={configFileData.id}
                         contentEditable={false}
-                        onChange={(_, val) => setState({ field: "id", value: val })} />
+                        onChange={onTextChange("id")} />
                     <TextField
                         label="Name"
-                        defaultValue={configFileData.name}
-                        onChange={(_, val) => setState({ field: "name", value: val })} />
+                        value={configFileData.name}
+                        onChange={onTextChange("name")} />
                     <Dropdown
                         label="File type"
                         placeholder="Select a file type"
@@ -98,16 +117,16 @@ export const ConfigFileEditor: React.FC<ConfigFileEditorProps> =
                         onChange={(_, val) => setState({ field: "fileType", value: val?.key.toString() })} />
                     <TextField
                         label="Jail"
-                        defaultValue={configFileData.jail}
-                        onChange={(_, val) => setState({ field: "jail", value: val })} />
+                        value={configFileData.jail}
+                        onChange={onTextChange("jail")} />
                     <TextField
                         label="Port set"
-                        defaultValue={configFileData.portSet}
-                        onChange={(_, val) => setState({ field: "portSet", value: val })} />
+                        value={configFileData.portSet}
+                        onChange={onTextChange("portSet")} />
                     <TextField
                         label="Ports tree"
-                        defaultValue={configFileData.portsTree}
-                        onChange={(_, val) => setState({ field: "portsTree", value: val })} />
+                        value={configFileData.portsTree}
+                        onChange={onTextChange("portsTree")} />
                 </Stack>
             </Panel>)
     };

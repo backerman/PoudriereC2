@@ -2,7 +2,7 @@
 import { Meta } from '@storybook/react';
 
 import { ConfigFiles } from './ConfigFiles';
-import { ConfigFileMetadata, ConfigFileRepository } from './model/configs';
+import { ConfigFileMetadata, ConfigFileRepository, getDataSource } from './model/configs';
 import { initializeIcons } from '@fluentui/react/lib/Icons';
 import { ConfigFileEditor } from './ConfigFileEditor';
 import { useBoolean } from "@fluentui/react-hooks";
@@ -29,21 +29,7 @@ const sampleList: ConfigFileMetadata[] = [
   }
 ]
 
-const dataSource: ConfigFileRepository = {
-  getConfigFiles: function (): ConfigFileMetadata[] {
-    return sampleList;
-  },
-  getConfigFile: function (id: string): ConfigFileMetadata | undefined {
-    const matching = sampleList.filter((f) => f.id === id);
-    if (matching.length > 0)
-      return matching[0]
-    else
-      return undefined
-  },
-  updateConfigFile: function (meta: ConfigFileMetadata): void {
-    throw new Error('Function not implemented.');
-  }
-}
+const dataSource : ConfigFileRepository = getDataSource(sampleList);
 
 export default {
   title: 'Config/ConfigFileEditor',

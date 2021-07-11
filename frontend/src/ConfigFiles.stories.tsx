@@ -2,12 +2,12 @@
 import { Meta } from '@storybook/react';
 
 import { ConfigFiles } from './ConfigFiles';
-import { ConfigFileMetadata } from './model/configs';
+import { ConfigFileMetadata, getDataSource } from './model/configs';
 import { initializeIcons } from '@fluentui/react/lib/Icons';
 initializeIcons();
 
 
-const sampleList: ConfigFileMetadata[] = [
+let sampleList: ConfigFileMetadata[] = [
   {
     id: 'aa5cd502-eb08-4f42-b187-b81c3d849611',
     deleted: true,
@@ -30,6 +30,9 @@ export default {
   component: ConfigFiles
 } as Meta;
 
-export const Empty = () => <ConfigFiles configFiles={[]} />;
-export const Contents = () => <ConfigFiles configFiles={sampleList} />;
-export const ContentsWithDeleted = () => <ConfigFiles configFiles={sampleList} showDeleted={true} />;
+const dataSource = getDataSource(sampleList);
+const emptyDataSource = getDataSource([]);
+
+export const Empty = () => <ConfigFiles dataSource={emptyDataSource} />;
+export const Contents = () => <ConfigFiles dataSource={dataSource} />;
+export const ContentsWithDeleted = () => <ConfigFiles dataSource={dataSource} showDeleted={true} />;
