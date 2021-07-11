@@ -107,30 +107,30 @@ export const ConfigFileEditor: React.FC<ConfigFileEditorProps> =
                 <Stack verticalAlign="start">
                     <TextField
                         label="GUID"
-                        value={configFileData.id}
+                        value={configFileData.id || ''}
                         contentEditable={false}
                         onChange={onTextChange("id")} />
                     <TextField
                         label="Name"
-                        value={configFileData.name}
+                        value={configFileData.name || ''}
                         onChange={onTextChange("name")} />
                     <Dropdown
                         label="File type"
                         placeholder="Select a file type"
-                        selectedKey={configFileData.fileType}
+                        selectedKey={configFileData.fileType || ''}
                         options={fileTypeChoices}
                         onChange={(_, val) => setState({ field: "fileType", value: val?.key.toString() })} />
                     <TextField
                         label="Jail"
-                        value={configFileData.jail}
+                        value={configFileData.jail || ''}
                         onChange={onTextChange("jail")} />
                     <TextField
                         label="Port set"
-                        value={configFileData.portSet}
+                        value={configFileData.portSet || ''}
                         onChange={onTextChange("portSet")} />
                     <TextField
                         label="Ports tree"
-                        value={configFileData.portsTree}
+                        value={configFileData.portsTree || ''}
                         onChange={onTextChange("portsTree")} />
                 </Stack>
             </Panel>)
