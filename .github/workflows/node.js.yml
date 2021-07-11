@@ -29,5 +29,11 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
     - run: npm ci --no-optional
+    - name: Upload NPM logs
+      if: failure()
+      uses: actions/upload-artifact@v2
+      with:
+        name: npm-logs
+        path: /home/runner/.npm/_logs/
     - run: npm run build --if-present
     - run: npm test
