@@ -1,5 +1,6 @@
 // Configuration types
 
+
 type ConfigFileMetadata = {
     id: string,
     deleted: boolean,
@@ -10,4 +11,10 @@ type ConfigFileMetadata = {
     fileType: string
 }
 
-export type { ConfigFileMetadata }
+interface ConfigFileRepository {
+    getConfigFiles: () => ConfigFileMetadata[]
+    getConfigFile: (id: string) => ConfigFileMetadata | null
+    updateConfigFile: (meta: ConfigFileMetadata) => void
+}
+
+export type { ConfigFileMetadata, ConfigFileRepository }
