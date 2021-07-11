@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { DetailsList, DetailsListLayoutMode, IColumn, IDetailsRowProps } from '@fluentui/react';
 import { ConfigFileMetadata, ConfigFileRepository } from './model/configs';
 import { sortBy } from './utils';
@@ -110,14 +110,25 @@ function renderRow(props?: IDetailsRowProps, defaultRender?: (props?: IDetailsRo
 
 export const ConfigFiles =
     (props: ConfigFilesProps) => {
-        let itemsFilter = (item: ConfigFileMetadata) => {
+        const itemsFilter = useCallback((item: ConfigFileMetadata) => {
             if (props.showDeleted) {
                 return true;
             }
             return !item.deleted;
-        }
+        }, [props.showDeleted]);
         const [editorIsOpen, { setTrue: openEditor, setFalse: closeEditor }] = useBoolean(false);
         const [activeRecord, setActiveRecord] = useState('');
+        const [itemList, setItemList] = useState([] as ConfigFileMetadata[]);
+        useEffect(() => {
+            async function fetchData() {
+                props.dataSource.getConfigFiles()
+                .then(
+                    (items: ConfigFileMetadata[]) =>
+                        setItemList(items.filter(itemsFilter).sort(sortBy('name')))
+                );
+            };
+            fetchData();
+        }, [itemsFilter, props.dataSource, itemList]);
         return (<div className={"ConfigFiles"}>
             <ConfigFileEditor
                 dataSource={props.dataSource}
@@ -131,8 +142,7 @@ export const ConfigFiles =
             />
             <DetailsList
                 ariaLabel={"List of configuration files"}
-                items={props.dataSource.getConfigFiles().filter(itemsFilter).sort(
-                    sortBy('name'))}
+                items={itemList}
                 columns={columns}
                 getKey={(f: ConfigFileMetadata) => f.id}
                 layoutMode={DetailsListLayoutMode.justified}

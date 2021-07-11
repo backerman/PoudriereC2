@@ -22,8 +22,8 @@ const fileTypeChoices: IDropdownOption<string>[] = [
 export const ConfigFileEditor: React.FC<ConfigFileEditorProps> =
     (props: ConfigFileEditorProps) => {
 
-        function updateState<K extends keyof ConfigFileMetadata>(state: ConfigFileMetadata,
-            action: { field: K, value: string | boolean | undefined } | ConfigFileMetadata): ConfigFileMetadata {
+        function updateState(state: ConfigFileMetadata,
+            action: { field: keyof ConfigFileMetadata, value: string | boolean | undefined } | ConfigFileMetadata): ConfigFileMetadata {
             let newState = { ...state };
             if (!("field" in action)) {
                 // Must be ConfigFileMetadata.
@@ -58,10 +58,9 @@ export const ConfigFileEditor: React.FC<ConfigFileEditorProps> =
             }
             return newState;
         }
-
+        
         let [configFileData, setState] =
-            useReducer(updateState, props.dataSource.getConfigFile(props.recordId)
-                ?? {} as ConfigFileMetadata)
+            useReducer(updateState, {} as ConfigFileMetadata)
         let { onDismiss, onSubmit } = props
         const onRenderFooterContent = useCallback(
             () => {
@@ -79,9 +78,15 @@ export const ConfigFileEditor: React.FC<ConfigFileEditorProps> =
 
         useEffect(() => {
             console.log(`Active record is now ${props.recordId}.`);
-            const newRecord = props.dataSource.getConfigFile(props.recordId) ?? {} as ConfigFileMetadata;
-            console.log("New record: ", newRecord);
-            setState(newRecord);
+            if (props.recordId) {
+                props.dataSource.getConfigFile(props.recordId)
+                .then((newRecord: ConfigFileMetadata | undefined) => {
+                    console.log("New record: ", newRecord);
+                    setState(newRecord || {} as ConfigFileMetadata);
+                });                 
+            } else {
+                console.log("No active record.");
+            }
         }, [props.dataSource, props.recordId]);
 
         const onTextChange = useCallback((fieldName: keyof ConfigFileMetadata) => {
