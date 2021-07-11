@@ -33,12 +33,12 @@ const dataSource: ConfigFileRepository = {
   getConfigFiles: function (): ConfigFileMetadata[] {
     return sampleList;
   },
-  getConfigFile: function (id: string): ConfigFileMetadata | null {
+  getConfigFile: function (id: string): ConfigFileMetadata | undefined {
     const matching = sampleList.filter((f) => f.id === id);
     if (matching.length > 0)
       return matching[0]
     else
-      return null
+      return undefined
   },
   updateConfigFile: function (meta: ConfigFileMetadata): void {
     throw new Error('Function not implemented.');

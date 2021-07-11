@@ -13,7 +13,7 @@ type ConfigFileMetadata = {
 
 interface ConfigFileRepository {
     getConfigFiles: () => ConfigFileMetadata[]
-    getConfigFile: (id: string) => ConfigFileMetadata | null
+    getConfigFile: (id: string) => ConfigFileMetadata | undefined
     updateConfigFile: (meta: ConfigFileMetadata) => void
 }
 
