@@ -120,14 +120,18 @@ export const ConfigFiles =
         const [activeRecord, setActiveRecord] = useState('');
         const [itemList, setItemList] = useState([] as ConfigFileMetadata[]);
         useEffect(() => {
+            let isMounted = true;
             async function fetchData() {
                 props.dataSource.getConfigFiles()
-                .then(
-                    (items: ConfigFileMetadata[]) =>
-                        setItemList(items.filter(itemsFilter).sort(sortBy('name')))
-                );
+                    .then(
+                        (items: ConfigFileMetadata[]) => {
+                            if (isMounted)
+                                setItemList(items.filter(itemsFilter).sort(sortBy('name')))
+                        }
+                    );
             };
             fetchData();
+            return () => { isMounted = false; }
         }, [itemsFilter, props.dataSource, itemList]);
         return (<div className={"ConfigFiles"}>
             <ConfigFileEditor
