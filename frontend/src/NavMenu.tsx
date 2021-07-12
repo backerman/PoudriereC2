@@ -17,8 +17,9 @@ const navLinkGroups: INavLinkGroup[] = [
             {
                 name: 'Configuration',
                 url: '/config',
-                expandAriaLabel: 'Expand Home section',
-                collapseAriaLabel: 'Collapse Home section',
+                icon: 'Settings',
+                expandAriaLabel: 'Expand configuration section',
+                collapseAriaLabel: 'Collapse configuration section',
                 links: [
                     {
                         name: 'Files',
@@ -36,7 +37,8 @@ const navLinkGroups: INavLinkGroup[] = [
             {
                 name: 'Job history',
                 url: 'http://example.com',
-                key: 'key3'
+                key: 'key3',
+                icon: 'History',
             },
             {
                 name: 'Pages',

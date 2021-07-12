@@ -28,7 +28,7 @@ export const App: React.FunctionComponent = () => {
         verticalFill={true}>
         <NavMenu />
         <Switch>
-          <Route exact path="/">
+          <Route path="/config/files">
             <ConfigFiles dataSource={sampleData} />
           </Route>
         </Switch>

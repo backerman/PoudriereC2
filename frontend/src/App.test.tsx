@@ -1,9 +1,12 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import { App } from './App';
+import { initializeIcons } from '@fluentui/react';
 
-it('renders "Welcome to Your Fluent UI App"', () => {
-  render(<App />);
-  const linkElement = screen.getByText(/Welcome to Your Fluent UI App/i);
+initializeIcons();
+
+it('renders nav bar', async () => {
+  await act(async () => {render(<App />)});
+  const linkElement = screen.getByText(/Configuration/i);
   expect(linkElement).toBeInTheDocument();
 });
