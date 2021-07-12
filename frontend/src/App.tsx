@@ -1,44 +1,38 @@
 import React from 'react';
-import { Stack, Text, Link, FontWeights, IStackTokens, IStackStyles, ITextStyles } from '@fluentui/react';
-import logo from './logo.svg';
+import { Stack, IStackTokens, IStackStyles } from '@fluentui/react';
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom'
 import './App.css';
+import { ConfigFiles } from './ConfigFiles';
+import { getSampleDataSource } from './model/configs.sample';
+import { NavMenu } from './NavMenu';
 
-const boldStyle: Partial<ITextStyles> = { root: { fontWeight: FontWeights.semibold } };
 const stackTokens: IStackTokens = { childrenGap: 15 };
 const stackStyles: Partial<IStackStyles> = {
   root: {
-    width: '960px',
     margin: '0 auto',
-    textAlign: 'center',
+    textAlign: 'left',
     color: '#605e5c',
   },
 };
 
 export const App: React.FunctionComponent = () => {
+  const sampleData = getSampleDataSource();
+
   return (
-    <Stack horizontalAlign="center" verticalAlign="center" verticalFill styles={stackStyles} tokens={stackTokens}>
-      <img className="App-logo" src={logo} alt="logo" />
-      <Text variant="xxLarge" styles={boldStyle}>
-        Welcome to your Fluent UI app
-      </Text>
-      <Text variant="large">For a guide on how to customize this project, check out the Fluent UI documentation.</Text>
-      <Text variant="large" styles={boldStyle}>
-        Essential links
-      </Text>
-      <Stack horizontal tokens={stackTokens} horizontalAlign="center">
-        <Link href="https://developer.microsoft.com/en-us/fluentui#/get-started/web">Docs</Link>
-        <Link href="https://stackoverflow.com/questions/tagged/office-ui-fabric">Stack Overflow</Link>
-        <Link href="https://github.com/microsoft/fluentui/">Github</Link>
-        <Link href="https://twitter.com/fluentui">Twitter</Link>
+    <Router>
+      <Stack
+        horizontal
+        horizontalAlign="start"
+        tokens={stackTokens}
+        styles={stackStyles}
+        verticalFill={true}>
+        <NavMenu />
+        <Switch>
+          <Route exact path="/">
+            <ConfigFiles dataSource={sampleData} />
+          </Route>
+        </Switch>
       </Stack>
-      <Text variant="large" styles={boldStyle}>
-        Design system
-      </Text>
-      <Stack horizontal tokens={stackTokens} horizontalAlign="center">
-        <Link href="https://developer.microsoft.com/en-us/fluentui#/styles/web/icons">Icons</Link>
-        <Link href="https://developer.microsoft.com/en-us/fluentui#/styles/web">Styles</Link>
-        <Link href="https://aka.ms/themedesigner">Theme designer</Link>
-      </Stack>
-    </Stack>
+    </Router>
   );
 };
