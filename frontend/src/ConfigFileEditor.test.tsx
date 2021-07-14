@@ -1,30 +1,19 @@
-import React from 'react';
 import { act, render } from '@testing-library/react';
 import { ConfigFileEditor } from './ConfigFileEditor';
-import { ConfigFileMetadata, getDataSource } from './model/configs';
 import { initializeIcons } from '@fluentui/react';
+import { getSampleDataSource } from './model/configs.sample';
 
-let sampleList: ConfigFileMetadata[] = [
-    {
-        id: 'aa5cd502-eb08-4f42-b187-b81c3d849612',
-        deleted: false,
-        name: 'this is a test',
-        fileType: 'poudriereconf',
-        jail: 'jail1',
-        portSet: 'set1',
-        portsTree: 'tree42'
-    }
-];
 
-const dataSource = getDataSource(sampleList);
+const dataSource = getSampleDataSource();
 
 initializeIcons();
 
 it('renders editor successfully', async () => {
+    const recordToEdit = (await dataSource.getConfigFiles())[0].id;
     await act(async () => {
         render(<ConfigFileEditor
             isOpen={true}
-            recordId={sampleList[0].id}
+            recordId={recordToEdit}
             dataSource={dataSource}
             onDismiss={() => { return }}
             onSubmit={() => { return }} />);
