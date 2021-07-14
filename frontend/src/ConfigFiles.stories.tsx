@@ -1,8 +1,7 @@
 // import React from 'react';
 import { Meta } from '@storybook/react';
-
 import { ConfigFiles } from './ConfigFiles';
-import { ConfigFileMetadata, getDataSource } from './model/configs';
+import { ConfigFileMetadata, ConfigFileRepository, getDataSource } from './model/configs';
 import { initializeIcons } from '@fluentui/react/lib/Icons';
 initializeIcons();
 
@@ -33,6 +32,20 @@ export default {
 const dataSource = getDataSource(sampleList);
 const emptyDataSource = getDataSource([]);
 
+const erroringDataSource : ConfigFileRepository = {
+  // EvalError is used here instead of Error to prevent red lines in VSCode.
+  getConfigFiles: async function (): Promise<ConfigFileMetadata[]> {
+    throw new EvalError('Function not implemented.');
+  },
+  getConfigFile: function (id: string): Promise<ConfigFileMetadata | undefined> {
+      throw new EvalError('Function not implemented.');
+  },
+  updateConfigFile: function (meta: ConfigFileMetadata): Promise<void> {
+      throw new EvalError('Function not implemented.');
+  }
+}
+
 export const Empty = () => <ConfigFiles dataSource={emptyDataSource} />;
 export const Contents = () => <ConfigFiles dataSource={dataSource} />;
 export const ContentsWithDeleted = () => <ConfigFiles dataSource={dataSource} showDeleted={true} />;
+export const Error = () => <ConfigFiles dataSource={erroringDataSource} />;

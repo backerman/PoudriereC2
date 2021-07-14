@@ -161,6 +161,7 @@ export const ConfigFiles =
             {error && !errorBarClosed && errorBar}
             <DetailsList
                 ariaLabel={"List of configuration files"}
+                getRowAriaLabel={(r: ConfigFileMetadata) => r.name}
                 items={itemList}
                 columns={columns}
                 getKey={(f: ConfigFileMetadata) => f.id}
