@@ -7,6 +7,7 @@ import { ConfigFileMetadata, ConfigFileRepository } from './model/configs';
 initializeIcons();
 
 it('renders a file list successfully', async () => {
+    expect.assertions(2);
     const sampleData = getSampleDataSource();
 
     await act(async () => {
@@ -30,6 +31,7 @@ const erroringDataSource : ConfigFileRepository = {
 }
 
 it('renders errors successfully', async () => {
+    expect.hasAssertions();
     await act(async () => {
         render(<ConfigFiles dataSource={erroringDataSource}/>);
     });
