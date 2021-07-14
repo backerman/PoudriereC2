@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import { initializeIcons } from '@fluentui/react';
 import { getSampleDataSource } from './model/configs.sample';
 import { ConfigFiles } from './ConfigFiles';
@@ -33,5 +33,9 @@ it('renders errors successfully', async () => {
     await act(async () => {
         render(<ConfigFiles dataSource={erroringDataSource}/>);
     });
-    expect(screen.getByRole("alert")).toHaveTextContent("Error retrieving data.");
+
+    await waitFor(() => {
+        const testElement = screen.getByRole("alert");
+        expect(testElement).toHaveTextContent("Error retrieving data.");
+    });
 });
