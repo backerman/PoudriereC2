@@ -126,13 +126,13 @@ export const ConfigFiles =
                     .then(
                         (items: ConfigFileMetadata[]) => {
                             if (isMounted)
-                                setItemList(items.filter(itemsFilter).sort(sortBy('name')))
+                                setItemList(items.filter(itemsFilter).sort(sortBy('name')));
                         }
                     );
             };
             fetchData();
             return () => { isMounted = false; }
-        }, [itemsFilter, props.dataSource, itemList]);
+        }, [itemsFilter, props.dataSource]);
         return (<div className={"ConfigFiles"}>
             <ConfigFileEditor
                 dataSource={props.dataSource}
