@@ -1,23 +1,39 @@
 {
     "version": "0.2.0",
     "configurations": [
-    {
-        "name": "Run tests",
-        "type": "coreclr",
-        "request": "launch",
-        "preLaunchTask": "build",
-        "program": "${workspaceFolder}/PoudriereC2.Tests/bin/Debug/netcoreapp3.1/PoudriereC2.Tests.dll",
-        "args": [],
-        "cwd": "${workspaceFolder}",
-        "stopAtEntry": false,
-        "console": "internalConsole"
-    },
-    {
-        "name": "Attach to .NET Functions",
-        "type": "coreclr",
-        "request": "attach",
-        "processId": "${command:azureFunctions.pickProcess}",
-        "justMyCode": false
-    }
+        {
+            "name": "Run tests",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/PoudriereC2.Tests/bin/Debug/netcoreapp3.1/PoudriereC2.Tests.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        },
+        {
+            "name": "Attach to .NET Functions",
+            "type": "coreclr",
+            "request": "attach",
+            "processId": "${command:azureFunctions.pickProcess}",
+            "justMyCode": false
+        },
+        {
+            "type": "node",
+            "name": "vscode-jest-tests",
+            "request": "launch",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "disableOptimisticBPs": true,
+            "cwd": "${workspaceFolder}",
+            "runtimeExecutable": "npm",
+            "args": [
+                "test",
+                "--",
+                "--runInBand",
+                "--watchAll=false"
+            ]
+        }
     ]
 }
