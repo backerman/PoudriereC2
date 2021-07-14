@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { DetailsList, DetailsListLayoutMode, IColumn, IDetailsRowProps } from '@fluentui/react';
+import { useCallback, useEffect, useState } from 'react';
+import { DetailsList, DetailsListLayoutMode, IColumn, IDetailsRowProps, MessageBar, MessageBarType } from '@fluentui/react';
 import { ConfigFileMetadata, ConfigFileRepository } from './model/configs';
 import { sortBy } from './utils';
 import './ConfigFiles.css';
@@ -119,6 +119,7 @@ export const ConfigFiles =
         const [editorIsOpen, { setTrue: openEditor, setFalse: closeEditor }] = useBoolean(false);
         const [activeRecord, setActiveRecord] = useState('');
         const [itemList, setItemList] = useState([] as ConfigFileMetadata[]);
+        let [error, setError] = useState<any>(null);
         useEffect(() => {
             let isMounted = true;
             async function fetchData() {
@@ -128,11 +129,25 @@ export const ConfigFiles =
                             if (isMounted)
                                 setItemList(items.filter(itemsFilter).sort(sortBy('name')));
                         }
-                    );
+                    ).catch((err) => {
+                        setError(err);
+                    });
             };
             fetchData();
             return () => { isMounted = false; }
         }, [itemsFilter, props.dataSource]);
+
+        let errorBar: JSX.Element;
+        const [errorBarClosed, { setTrue: closeErrorBar }] = useBoolean(false);
+        errorBar =
+            <MessageBar
+                messageBarType={MessageBarType.error}
+                isMultiline={false}
+                onDismiss={closeErrorBar}
+                dismissButtonAriaLabel="Close">
+                Error retrieving data.
+            </MessageBar>;
+
         return (<div className={"ConfigFiles"}>
             <ConfigFileEditor
                 dataSource={props.dataSource}
@@ -142,8 +157,8 @@ export const ConfigFiles =
                 onSubmit={(meta) => {
                     props.dataSource.updateConfigFile(meta);
                     closeEditor();
-                }}
-            />
+                }} />
+            {error && !errorBarClosed && errorBar}
             <DetailsList
                 ariaLabel={"List of configuration files"}
                 items={itemList}
@@ -157,5 +172,6 @@ export const ConfigFiles =
                     setActiveRecord(item.id);
                     openEditor();
                 }}
-            /></div>)
+            />
+        </div>)
     }
