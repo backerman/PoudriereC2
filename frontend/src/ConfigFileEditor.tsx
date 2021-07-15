@@ -60,15 +60,11 @@ export const ConfigFileEditor: React.FC<ConfigFileEditorProps> =
         );
 
         useEffect(() => {
-            console.log(`Active record is now ${props.recordId}.`);
             if (props.recordId) {
                 props.dataSource.getConfigFile(props.recordId)
                 .then((newRecord: ConfigFileMetadata | undefined) => {
-                    console.log("New record: ", newRecord);
                     setState(newRecord || {} as ConfigFileMetadata);
                 });                 
-            } else {
-                console.log("No active record.");
             }
         }, [props.dataSource, props.recordId]);
 
