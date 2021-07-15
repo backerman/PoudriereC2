@@ -120,6 +120,7 @@ export const ConfigFiles =
         const [activeRecord, setActiveRecord] = useState('');
         const [itemList, setItemList] = useState([] as ConfigFileMetadata[]);
         let [error, setError] = useState<any>(null);
+        let [itemsChanged, renderMe] = useState(0);
         useEffect(() => {
             let isMounted = true;
             async function fetchData() {
@@ -135,7 +136,7 @@ export const ConfigFiles =
             };
             fetchData();
             return () => { isMounted = false; }
-        }, [itemsFilter, props.dataSource]);
+        }, [itemsFilter, props.dataSource, itemsChanged]);
 
         let errorBar: JSX.Element;
         const [errorBarClosed, { setTrue: closeErrorBar }] = useBoolean(false);
@@ -154,8 +155,10 @@ export const ConfigFiles =
                 isOpen={editorIsOpen}
                 recordId={activeRecord}
                 onDismiss={closeEditor}
-                onSubmit={(meta) => {
-                    props.dataSource.updateConfigFile(meta);
+                onSubmit={async (meta) => {
+                    await props.dataSource.updateConfigFile(meta);
+                    // force rerender.
+                    renderMe((x) => x + 1);
                     closeEditor();
                 }} />
             {error && !errorBarClosed && errorBar}
