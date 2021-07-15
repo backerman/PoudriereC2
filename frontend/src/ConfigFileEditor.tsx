@@ -22,8 +22,8 @@ const fileTypeChoices: IDropdownOption<string>[] = [
 export const ConfigFileEditor: React.FC<ConfigFileEditorProps> =
     (props: ConfigFileEditorProps) => {
 
-        function updateState(state: ConfigFileMetadata,
-            action: { field: keyof ConfigFileMetadata, value: string | boolean | undefined } | ConfigFileMetadata): ConfigFileMetadata {
+        function updateState<K extends keyof ConfigFileMetadata>(state: ConfigFileMetadata,
+            action: { field: K, value: ConfigFileMetadata[K] } | ConfigFileMetadata): ConfigFileMetadata {
             let newState = { ...state };
             if (!("field" in action)) {
                 // Must be ConfigFileMetadata.
@@ -31,26 +31,9 @@ export const ConfigFileEditor: React.FC<ConfigFileEditorProps> =
             } else {
                 switch (typeof action.value) {
                     case "boolean":
-                        if (action.field === "deleted") {
-                            newState.deleted = action.value ?? false; break;
-                        }
-                        break;
                     case "string":
                     case "undefined":
-                        switch (action.field) {
-                            case "id":
-                                newState.id = action.value ?? ""; break;
-                            case "name":
-                                newState.name = action.value ?? ""; break;
-                            case "portSet":
-                                newState.portSet = action.value ?? ""; break;
-                            case "portsTree":
-                                newState.portsTree = action.value ?? ""; break;
-                            case "jail":
-                                newState.jail = action.value ?? ""; break;
-                            case "fileType":
-                                newState.fileType = action.value ?? ""; break;
-                        }
+                        newState[action.field] = action.value;
                         break;
                     default:
                         throw Error("Unexpected type passed");
