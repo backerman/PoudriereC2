@@ -1,5 +1,6 @@
-import { DefaultButton, Dropdown, IDropdownOption, Panel, PrimaryButton, Stack, TextField } from "@fluentui/react";
+import { Dropdown, IDropdownOption, TextField } from "@fluentui/react";
 import { useCallback, useEffect, useReducer } from "react";
+import Editor from "./Editor";
 import { ConfigFileMetadata, ConfigFileRepository } from "./model/configs";
 
 export type ConfigFileEditorProps =
@@ -10,8 +11,6 @@ export type ConfigFileEditorProps =
         onSubmit: (formData: ConfigFileMetadata) => void
         onDismiss: () => void
     }
-
-const buttonStyles = { root: { marginRight: 8 } };
 
 const fileTypeChoices: IDropdownOption<string>[] = [
     { key: "poudriereconf", text: "poudriere.conf" },
@@ -41,30 +40,16 @@ export const ConfigFileEditor: React.FC<ConfigFileEditorProps> =
             }
             return newState;
         }
-        
+
         let [configFileData, setState] =
             useReducer(updateState, {} as ConfigFileMetadata)
-        let { onDismiss, onSubmit } = props
-        const onRenderFooterContent = useCallback(
-            () => {
-                return (
-                    <div>
-                        <PrimaryButton onClick={() => onSubmit(configFileData)} styles={buttonStyles}>
-                            Save
-                        </PrimaryButton>
-                        <DefaultButton onClick={onDismiss}>Cancel</DefaultButton>
-                    </div>
-                )
-            },
-            [onDismiss, onSubmit, configFileData]
-        );
 
         useEffect(() => {
             if (props.recordId) {
                 props.dataSource.getConfigFile(props.recordId)
-                .then((newRecord: ConfigFileMetadata | undefined) => {
-                    setState(newRecord || {} as ConfigFileMetadata);
-                });                 
+                    .then((newRecord: ConfigFileMetadata | undefined) => {
+                        setState(newRecord || {} as ConfigFileMetadata);
+                    });
             }
         }, [props.dataSource, props.recordId]);
 
@@ -75,42 +60,38 @@ export const ConfigFileEditor: React.FC<ConfigFileEditorProps> =
         }, [configFileData]);
 
         return (
-            <Panel
-                isOpen={props.isOpen}
-                isBlocking={false}
-                headerText={"Edit configuration"}
-                closeButtonAriaLabel={"Close"}
-                onRenderFooterContent={onRenderFooterContent}
-                isFooterAtBottom={true}
-                onDismiss={props.onDismiss}>
-                <Stack verticalAlign="start">
-                    <TextField
-                        label="GUID"
-                        value={configFileData.id || ''}
-                        contentEditable={false}
-                        onChange={onTextChange("id")} />
-                    <TextField
-                        label="Name"
-                        value={configFileData.name || ''}
-                        onChange={onTextChange("name")} />
-                    <Dropdown
-                        label="File type"
-                        placeholder="Select a file type"
-                        selectedKey={configFileData.fileType || ''}
-                        options={fileTypeChoices}
-                        onChange={(_, val) => setState({ field: "fileType", value: val?.key.toString() })} />
-                    <TextField
-                        label="Jail"
-                        value={configFileData.jail || ''}
-                        onChange={onTextChange("jail")} />
-                    <TextField
-                        label="Port set"
-                        value={configFileData.portSet || ''}
-                        onChange={onTextChange("portSet")} />
-                    <TextField
-                        label="Ports tree"
-                        value={configFileData.portsTree || ''}
-                        onChange={onTextChange("portsTree")} />
-                </Stack>
-            </Panel>)
+            <Editor
+            isOpen={props.isOpen}
+            isBlocking={false}
+            headerText={"Edit configuration"}
+            onDismiss={props.onDismiss}
+            onSubmit={() => {props.onSubmit(configFileData)}}>
+                <TextField
+                    label="GUID"
+                    value={configFileData.id || ''}
+                    contentEditable={false}
+                    onChange={onTextChange("id")} />
+                <TextField
+                    label="Name"
+                    value={configFileData.name || ''}
+                    onChange={onTextChange("name")} />
+                <Dropdown
+                    label="File type"
+                    placeholder="Select a file type"
+                    selectedKey={configFileData.fileType || ''}
+                    options={fileTypeChoices}
+                    onChange={(_, val) => setState({ field: "fileType", value: val?.key.toString() })} />
+                <TextField
+                    label="Jail"
+                    value={configFileData.jail || ''}
+                    onChange={onTextChange("jail")} />
+                <TextField
+                    label="Port set"
+                    value={configFileData.portSet || ''}
+                    onChange={onTextChange("portSet")} />
+                <TextField
+                    label="Ports tree"
+                    value={configFileData.portsTree || ''}
+                    onChange={onTextChange("portsTree")} />
+            </Editor>)
     };
