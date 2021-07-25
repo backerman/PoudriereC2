@@ -35,5 +35,4 @@ const erroringDataSource : PortSetRepository = {
 
 export const Empty = () => <PortSets dataSource={emptyDataSource} />;
 export const Contents = () => <PortSets dataSource={dataSource} />;
-export const ContentsWithDeleted = () => <PortSets dataSource={dataSource} />;
 export const Error = () => <PortSets dataSource={erroringDataSource} />;
