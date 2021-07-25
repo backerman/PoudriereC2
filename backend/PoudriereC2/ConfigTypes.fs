@@ -32,8 +32,8 @@ module ConfigTypes =
         { Id: Guid
           Deleted: bool
           Name: string
-          PortSet: string option
-          PortsTree: string option
+          PortSet: Guid option
+          PortsTree: Guid option
           Jail: string option
           FileType: ConfigFileType }
 

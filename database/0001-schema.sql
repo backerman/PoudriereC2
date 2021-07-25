@@ -23,9 +23,9 @@
 -- 
 -- object: poudrierec2 | type: DATABASE --
 -- DROP DATABASE IF EXISTS poudrierec2;
--- CREATE DATABASE poudrierec2
--- 	ENCODING = 'UTF8'
--- 	OWNER = poudriereadmin;
+CREATE DATABASE poudrierec2
+	ENCODING = 'UTF8'
+	OWNER = poudriereadmin;
 -- ddl-end --
 
 
@@ -47,9 +47,9 @@ SET search_path TO pg_catalog,public,poudrierec2;
 CREATE TABLE poudrierec2.jobconfigs (
 	id uuid NOT NULL DEFAULT gen_random_uuid(),
 	title text NOT NULL,
-	portset text NOT NULL,
-	jail text NOT NULL,
 	portstree uuid NOT NULL,
+	jail text NOT NULL,
+	portset uuid NOT NULL,
 	CONSTRAINT configs_pk PRIMARY KEY (id)
 
 );
@@ -224,7 +224,7 @@ CREATE TABLE poudrierec2.configfiles (
 	id uuid NOT NULL,
 	deleted bool NOT NULL DEFAULT false,
 	name text NOT NULL,
-	portset text,
+	portset uuid,
 	portstree uuid,
 	jail text,
 	configtype text NOT NULL,
@@ -355,8 +355,9 @@ COMMENT ON FUNCTION poudrierec2.configfile_is_makeconf() IS E'Validate that the 
 -- object: poudrierec2.portsets | type: TABLE --
 -- DROP TABLE IF EXISTS poudrierec2.portsets CASCADE;
 CREATE TABLE poudrierec2.portsets (
+	id uuid NOT NULL,
 	name text NOT NULL,
-	CONSTRAINT portsets_pk PRIMARY KEY (name)
+	CONSTRAINT portsets_pk PRIMARY KEY (id)
 
 );
 -- ddl-end --
@@ -368,7 +369,7 @@ ALTER TABLE poudrierec2.portsets OWNER TO poudriereadmin;
 -- object: poudrierec2.portset_members | type: TABLE --
 -- DROP TABLE IF EXISTS poudrierec2.portset_members CASCADE;
 CREATE TABLE poudrierec2.portset_members (
-	portset text NOT NULL,
+	portset uuid NOT NULL,
 	portname text NOT NULL,
 	CONSTRAINT portset_members_pk PRIMARY KEY (portset,portname)
 
@@ -384,14 +385,14 @@ ALTER TABLE poudrierec2.portset_members OWNER TO poudriereadmin;
 -- object: portsets_fk | type: CONSTRAINT --
 -- ALTER TABLE poudrierec2.jobconfigs DROP CONSTRAINT IF EXISTS portsets_fk CASCADE;
 ALTER TABLE poudrierec2.jobconfigs ADD CONSTRAINT portsets_fk FOREIGN KEY (portset)
-REFERENCES poudrierec2.portsets (name) MATCH FULL
+REFERENCES poudrierec2.portsets (id) MATCH FULL
 ON DELETE RESTRICT ON UPDATE CASCADE;
 -- ddl-end --
 
 -- object: portsets_fk | type: CONSTRAINT --
 -- ALTER TABLE poudrierec2.configfiles DROP CONSTRAINT IF EXISTS portsets_fk CASCADE;
 ALTER TABLE poudrierec2.configfiles ADD CONSTRAINT portsets_fk FOREIGN KEY (portset)
-REFERENCES poudrierec2.portsets (name) MATCH FULL
+REFERENCES poudrierec2.portsets (id) MATCH FULL
 ON DELETE SET NULL ON UPDATE CASCADE;
 -- ddl-end --
 
@@ -535,7 +536,7 @@ ON DELETE NO ACTION ON UPDATE NO ACTION;
 -- object: portset_member_fk | type: CONSTRAINT --
 -- ALTER TABLE poudrierec2.portset_members DROP CONSTRAINT IF EXISTS portset_member_fk CASCADE;
 ALTER TABLE poudrierec2.portset_members ADD CONSTRAINT portset_member_fk FOREIGN KEY (portset)
-REFERENCES poudrierec2.portsets (name) MATCH FULL
+REFERENCES poudrierec2.portsets (id) MATCH FULL
 ON DELETE RESTRICT ON UPDATE NO ACTION;
 -- ddl-end --
 

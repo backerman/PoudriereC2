@@ -5,20 +5,17 @@ VALUES ('13_0-amd64', '13.0-RELEASE', 'amd64');
 INSERT INTO poudrierec2.portstrees (id, name, method, url)
 VALUES ('4e6d2feb-2a99-4bed-8545-d5462c66ba0c', 'main', 'git+https', 'https://git.freebsd.org/ports.git');
 
-INSERT INTO poudrierec2.portsets (name) VALUES ('server');
+INSERT INTO poudrierec2.portsets (id, name) VALUES ('11a4e47a-e778-4499-8ad3-4ad117fe0a2f', 'server');
 
 INSERT INTO poudrierec2.portset_members (portset, portname)
 VALUES
-('server', 'net/rclone'),
-('server', 'security/sssd'),
-('server', 'sysutils/tmux');
-
-INSERT INTO poudrierec2.configfiles (id, deleted, name, configtype)
-VALUES
-('97241b1e-9c04-4b58-9cdc-4c90eef35225', false, 'Random poudriere.conf', 'poudriereconf');
+('11a4e47a-e778-4499-8ad3-4ad117fe0a2f', 'net/rclone'),
+('11a4e47a-e778-4499-8ad3-4ad117fe0a2f', 'security/sssd'),
+('11a4e47a-e778-4499-8ad3-4ad117fe0a2f', 'sysutils/tmux');
 
 INSERT INTO poudrierec2.configfiles (id, deleted, name, configtype, jail)
 VALUES
+('97241b1e-9c04-4b58-9cdc-4c90eef35225', false, 'Random poudriere.conf', 'poudriereconf', NULL),
 ('7557d8a8-bba5-4c99-ba6f-2ffbebb0be63', false, 'Some make.conf', 'makeconf', '13_0-amd64');
 
 INSERT INTO poudrierec2.configoptions (configfile, name, value)
@@ -39,7 +36,7 @@ VALUES
 
 INSERT INTO poudrierec2.jobconfigs (id, title, portstree, portset, jail)
 VALUES
-('209fc7b5-18c5-40e1-a205-4ae82790621e', 'Yes it''s a job configuration!', '4e6d2feb-2a99-4bed-8545-d5462c66ba0c', 'server', '13_0-amd64');
+('209fc7b5-18c5-40e1-a205-4ae82790621e', 'Yes it''s a job configuration!', '4e6d2feb-2a99-4bed-8545-d5462c66ba0c', '11a4e47a-e778-4499-8ad3-4ad117fe0a2f', '13_0-amd64');
 
 INSERT INTO poudrierec2.jobconfigs_configfiles (id_jobconfigs, id_configfiles)
 VALUES
