@@ -91,7 +91,13 @@ export const PortSetEditor: React.FC<PortSetEditorProps> =
                             aria-label={"Text field for adding a package origin"}
                             placeholder={"Enter a package origin to add."}
                             value={originName}
-                            onChange={(_, newVal) => updateOriginName(newVal || '')} />
+                            onChange={(_, newVal) => updateOriginName(newVal || '')}
+                            onKeyPress={(ev) => {
+                                if (ev.key === 'Enter') {
+                                    setOrigins({action: 'add', value: originName});
+                                    updateOriginName('');
+                                }
+                            }} />
                     </Stack.Item>
                     <IconButton
                         ariaLabel={"Add package"}
