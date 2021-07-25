@@ -1,8 +1,8 @@
 // import React from 'react';
 import { Meta } from '@storybook/react';
 import { PortSets } from './PortSets';
-import { getDataSource, PortSet, PortSetRepository } from './model/portsets';
-import { getSampleDataSource } from './model/portsets.sample'
+import { getDataSource, PortSet, PortSetRepository } from '../model/portsets';
+import { getSampleDataSource } from '../model/portsets.sample'
 import { initializeIcons } from '@fluentui/react/lib/Icons';
 initializeIcons();
 

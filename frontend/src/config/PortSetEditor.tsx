@@ -1,8 +1,8 @@
 import { IconButton, Stack, TextField } from "@fluentui/react";
 import { useEffect, useReducer, useRef, useState } from "react";
 import Editor from "./Editor";
-import ItemList from "./ItemList";
-import { PortSet, PortSetRepository } from "./model/portsets";
+import ItemList from "../ItemList";
+import { PortSet, PortSetRepository } from "../model/portsets";
 
 export interface PortSetEditorProps {
     isOpen: boolean

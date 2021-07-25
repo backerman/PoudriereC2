@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { IColumn } from '@fluentui/react';
-import { ConfigFileMetadata, ConfigFileRepository } from './model/configs';
-import { sortBy } from './utils';
+import { ConfigFileMetadata, ConfigFileRepository } from '../model/configs';
+import { sortBy } from '../utils';
 import './ConfigFiles.css';
 import { ConfigFileEditor } from './ConfigFileEditor';
 import { useBoolean } from '@fluentui/react-hooks';
-import ItemList from './ItemList';
+import ItemList from '../ItemList';
 
 type ConfigFilesProps = {
     dataSource: ConfigFileRepository;

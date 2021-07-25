@@ -1,7 +1,7 @@
 // import React from 'react';
 import { Meta } from '@storybook/react';
 import { ConfigFiles } from './ConfigFiles';
-import { ConfigFileMetadata, ConfigFileRepository, getDataSource } from './model/configs';
+import { ConfigFileMetadata, ConfigFileRepository, getDataSource } from '../model/configs';
 import { initializeIcons } from '@fluentui/react/lib/Icons';
 initializeIcons();
 

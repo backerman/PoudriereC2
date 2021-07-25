@@ -1,9 +1,9 @@
 import { act, getByLabelText, render, screen, waitFor } from '@testing-library/react';
 import { initializeIcons } from '@fluentui/react';
 import userEvent from '@testing-library/user-event'
-import { getSampleDataSource } from './model/configs.sample';
+import { getSampleDataSource } from '../model/configs.sample';
 import { ConfigFiles } from './ConfigFiles';
-import { ConfigFileMetadata, ConfigFileRepository } from './model/configs';
+import { ConfigFileMetadata, ConfigFileRepository } from '../model/configs';
 
 initializeIcons();
 

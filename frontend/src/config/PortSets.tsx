@@ -1,9 +1,9 @@
 import { IColumn } from "@fluentui/react";
 import { useEffect, useState } from "react";
 import { useBoolean } from '@fluentui/react-hooks';
-import { PortSet, PortSetRepository } from "./model/portsets";
-import ItemList from "./ItemList";
-import { sortBy } from "./utils";
+import { PortSet, PortSetRepository } from "../model/portsets";
+import ItemList from "../ItemList";
+import { sortBy } from "../utils";
 import { PortSetEditor } from "./PortSetEditor";
 
 

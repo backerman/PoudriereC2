@@ -2,7 +2,7 @@ import React from 'react';
 import { Stack, IStackTokens, IStackStyles } from '@fluentui/react';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom'
 import './App.css';
-import { ConfigFiles } from './ConfigFiles';
+import { ConfigFiles } from './config/ConfigFiles';
 import { getSampleDataSource } from './model/configs.sample';
 import { NavMenu } from './NavMenu';
 

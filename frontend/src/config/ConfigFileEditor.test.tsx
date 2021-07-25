@@ -1,7 +1,7 @@
 import { act, render } from '@testing-library/react';
 import { ConfigFileEditor } from './ConfigFileEditor';
 import { initializeIcons } from '@fluentui/react';
-import { getSampleDataSource } from './model/configs.sample';
+import { getSampleDataSource } from '../model/configs.sample';
 
 
 const dataSource = getSampleDataSource();
