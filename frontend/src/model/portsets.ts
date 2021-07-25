@@ -10,17 +10,19 @@ export interface PortSetRepository {
     getPortSet: (id: string) => Promise<PortSet | undefined>
     // addPackage: (id: string, origin: string) => Promise<void>
     // removePackage: (id: string, origin: string) => Promise<void>
-    setPortSet: (id: string, packageSet: PortSet) => Promise<void>
+    updatePortSet: (id: string, packageSet: PortSet) => Promise<void>
 }
 
 export function getDataSource(data: PortSet[]): PortSetRepository {
     return {
         getPortSets: async () => data,
         getPortSet: async (id) => data.find((ps) => ps.id === id),
-        setPortSet: async (id, pset) => {
+        updatePortSet: async (id, pset) => {
             const index = data.findIndex(ps => ps.id === id);
             if (index !== -1) {
                 data[index] = pset;
+                // force a re-render
+                data = data.slice();
             }
         }
     }

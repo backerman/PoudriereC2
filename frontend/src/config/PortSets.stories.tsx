@@ -28,7 +28,7 @@ const erroringDataSource : PortSetRepository = {
     getPortSet: async function (id: string): Promise<PortSet | undefined> {
         throw new EvalError('Function not implemented.');
     },
-    setPortSet: async function (id: string, packageSet: PortSet): Promise<void> {
+    updatePortSet: async function (id: string, packageSet: PortSet): Promise<void> {
         throw new EvalError('Function not implemented.');
     }
 }

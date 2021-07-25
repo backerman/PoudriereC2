@@ -67,7 +67,7 @@ export const PortSets = (props: PortSetProps) => {
                 onDismiss={closeEditor}
                 recordId={activeRecord}
                 onSubmit={async (ps) => {
-                    await props.dataSource.setPortSet(activeRecord, ps);
+                    await props.dataSource.updatePortSet(activeRecord, ps);
                     renderMe((x) => x + 1);
                     closeEditor();
                 }}/>
