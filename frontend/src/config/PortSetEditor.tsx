@@ -27,6 +27,7 @@ export const PortSetEditor: React.FC<PortSetEditorProps> =
                 switch (mutation.action) {
                     case "add":
                         newState.push(mutation.value);
+                        newState.sort();
                         break;
                     case "delete":
                         const idx = newState.indexOf(mutation.value);
@@ -49,7 +50,7 @@ export const PortSetEditor: React.FC<PortSetEditorProps> =
             if (props.recordId) {
                 props.dataSource.getPortSet(props.recordId)
                     .then((newRecord: PortSet | undefined) => {
-                        setOrigins(newRecord?.origins || []);
+                        setOrigins(newRecord?.origins.sort() || []);
                         setPortSetName(newRecord?.name || '');
                         if (newRecord != null) {
                             originalValue.current = { ...newRecord }
