@@ -47,9 +47,9 @@ SET search_path TO pg_catalog,public,poudrierec2;
 CREATE TABLE poudrierec2.jobconfigs (
 	id uuid NOT NULL DEFAULT gen_random_uuid(),
 	title text NOT NULL,
-	portstree text NOT NULL,
 	portset text NOT NULL,
 	jail text NOT NULL,
+	portstree uuid NOT NULL,
 	CONSTRAINT configs_pk PRIMARY KEY (id)
 
 );
@@ -225,7 +225,7 @@ CREATE TABLE poudrierec2.configfiles (
 	deleted bool NOT NULL DEFAULT false,
 	name text NOT NULL,
 	portset text,
-	portstree text,
+	portstree uuid,
 	jail text,
 	configtype text NOT NULL,
 	CONSTRAINT configfiles_pk PRIMARY KEY (id),
@@ -245,10 +245,11 @@ ALTER TABLE poudrierec2.configfiles OWNER TO poudriereadmin;
 -- object: poudrierec2.portstrees | type: TABLE --
 -- DROP TABLE IF EXISTS poudrierec2.portstrees CASCADE;
 CREATE TABLE poudrierec2.portstrees (
+	id uuid NOT NULL,
 	name text NOT NULL,
 	method text NOT NULL,
 	url text,
-	CONSTRAINT portstrees_pk PRIMARY KEY (name),
+	CONSTRAINT portstrees_pk PRIMARY KEY (id),
 	CONSTRAINT portstrees_url_presence CHECK (method = 'null' OR url IS NOT NULL)
 
 );
@@ -313,7 +314,7 @@ ON DELETE RESTRICT ON UPDATE CASCADE;
 -- object: portstrees_fk | type: CONSTRAINT --
 -- ALTER TABLE poudrierec2.jobconfigs DROP CONSTRAINT IF EXISTS portstrees_fk CASCADE;
 ALTER TABLE poudrierec2.jobconfigs ADD CONSTRAINT portstrees_fk FOREIGN KEY (portstree)
-REFERENCES poudrierec2.portstrees (name) MATCH FULL
+REFERENCES poudrierec2.portstrees (id) MATCH FULL
 ON DELETE RESTRICT ON UPDATE CASCADE;
 -- ddl-end --
 
@@ -421,7 +422,7 @@ ON DELETE RESTRICT ON UPDATE CASCADE;
 -- object: portstrees_fk | type: CONSTRAINT --
 -- ALTER TABLE poudrierec2.configfiles DROP CONSTRAINT IF EXISTS portstrees_fk CASCADE;
 ALTER TABLE poudrierec2.configfiles ADD CONSTRAINT portstrees_fk FOREIGN KEY (portstree)
-REFERENCES poudrierec2.portstrees (name) MATCH FULL
+REFERENCES poudrierec2.portstrees (id) MATCH FULL
 ON DELETE SET NULL ON UPDATE CASCADE;
 -- ddl-end --
 

@@ -2,8 +2,8 @@ BEGIN WORK;
 INSERT INTO poudrierec2.jails (name, version, architecture)
 VALUES ('13_0-amd64', '13.0-RELEASE', 'amd64');
 
-INSERT INTO poudrierec2.portstrees (name, method, url)
-VALUES ('main', 'git+https', 'https://git.freebsd.org/ports.git');
+INSERT INTO poudrierec2.portstrees (id, name, method, url)
+VALUES ('4e6d2feb-2a99-4bed-8545-d5462c66ba0c', 'main', 'git+https', 'https://git.freebsd.org/ports.git');
 
 INSERT INTO poudrierec2.portsets (name) VALUES ('server');
 
@@ -39,7 +39,7 @@ VALUES
 
 INSERT INTO poudrierec2.jobconfigs (id, title, portstree, portset, jail)
 VALUES
-('209fc7b5-18c5-40e1-a205-4ae82790621e', 'Yes it''s a job configuration!', 'main', 'server', '13_0-amd64');
+('209fc7b5-18c5-40e1-a205-4ae82790621e', 'Yes it''s a job configuration!', '4e6d2feb-2a99-4bed-8545-d5462c66ba0c', 'server', '13_0-amd64');
 
 INSERT INTO poudrierec2.jobconfigs_configfiles (id_jobconfigs, id_configfiles)
 VALUES
