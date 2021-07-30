@@ -56,10 +56,20 @@
 			"problemMatcher": "$msCompile"
 		},
 		{
+			"label": "test",
+			"command": "dotnet",
+			"args": [
+				"test"
+			],
+			"type": "process",
+			"problemMatcher": "$msCompile",
+			"isTestCommand": true
+		},
+		{
 			"type": "func",
 			"dependsOn": "build",
 			"options": {
-				"cwd": "${workspaceFolder}/PoudriereC2/bin/Debug/net5.0"
+				"cwd": "${workspaceFolder}/backend/PoudriereC2/bin/Debug/net5.0"
 			},
 			"command": "host start",
 			"isBackground": true,

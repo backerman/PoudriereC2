@@ -2,17 +2,6 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Run tests",
-            "type": "coreclr",
-            "request": "launch",
-            "preLaunchTask": "build",
-            "program": "${workspaceFolder}/PoudriereC2.Tests/bin/Debug/netcoreapp3.1/PoudriereC2.Tests.dll",
-            "args": [],
-            "cwd": "${workspaceFolder}",
-            "stopAtEntry": false,
-            "console": "internalConsole"
-        },
-        {
             "name": "Attach to .NET Functions",
             "type": "coreclr",
             "request": "attach",
