@@ -23,9 +23,9 @@
 -- 
 -- object: poudrierec2 | type: DATABASE --
 -- DROP DATABASE IF EXISTS poudrierec2;
-CREATE DATABASE poudrierec2
-	ENCODING = 'UTF8'
-	OWNER = poudriereadmin;
+-- CREATE DATABASE poudrierec2
+-- 	ENCODING = 'UTF8'
+-- 	OWNER = poudriereadmin;
 -- ddl-end --
 
 
@@ -48,8 +48,8 @@ CREATE TABLE poudrierec2.jobconfigs (
 	id uuid NOT NULL DEFAULT gen_random_uuid(),
 	title text NOT NULL,
 	portstree uuid NOT NULL,
-	jail text NOT NULL,
 	portset uuid NOT NULL,
+	jail text NOT NULL,
 	CONSTRAINT configs_pk PRIMARY KEY (id)
 
 );
@@ -83,11 +83,11 @@ ALTER TABLE poudrierec2.configoptions OWNER TO poudriereadmin;
 -- object: poudrierec2.packageoptions | type: TABLE --
 -- DROP TABLE IF EXISTS poudrierec2.packageoptions CASCADE;
 CREATE TABLE poudrierec2.packageoptions (
-	configfile uuid NOT NULL,
 	category text,
 	package text,
 	set text[] NOT NULL,
 	unset text[] NOT NULL,
+	configfile uuid NOT NULL,
 	CONSTRAINT pkgoptions_valid_spec CHECK ((category IS NULL AND package IS NULL) OR
 (category IS NOT NULL))
 
@@ -512,6 +512,30 @@ CREATE UNIQUE INDEX configfiles_index_undeleted_titles ON poudrierec2.configfile
 	WHERE (not deleted);
 -- ddl-end --
 
+-- object: poudrierec2.schedules | type: TABLE --
+-- DROP TABLE IF EXISTS poudrierec2.schedules CASCADE;
+CREATE TABLE poudrierec2.schedules (
+	jobconfig uuid NOT NULL,
+	runat text NOT NULL
+);
+-- ddl-end --
+COMMENT ON COLUMN poudrierec2.schedules.runat IS E'Crontab string to evaluate for scheduling jobs.';
+-- ddl-end --
+ALTER TABLE poudrierec2.schedules OWNER TO poudriereadmin;
+-- ddl-end --
+
+-- object: schedules_unique | type: INDEX --
+-- DROP INDEX IF EXISTS poudrierec2.schedules_unique CASCADE;
+CREATE UNIQUE INDEX schedules_unique ON poudrierec2.schedules
+	USING btree
+	(
+	  jobconfig,
+	  runat
+	);
+-- ddl-end --
+COMMENT ON INDEX poudrierec2.schedules_unique IS E'Schedule crontabs for a job must be distinct.';
+-- ddl-end --
+
 -- object: configfile_id | type: CONSTRAINT --
 -- ALTER TABLE poudrierec2.configoptions DROP CONSTRAINT IF EXISTS configfile_id CASCADE;
 ALTER TABLE poudrierec2.configoptions ADD CONSTRAINT configfile_id FOREIGN KEY (configfile)
@@ -538,6 +562,13 @@ ON DELETE NO ACTION ON UPDATE NO ACTION;
 ALTER TABLE poudrierec2.portset_members ADD CONSTRAINT portset_member_fk FOREIGN KEY (portset)
 REFERENCES poudrierec2.portsets (id) MATCH FULL
 ON DELETE RESTRICT ON UPDATE NO ACTION;
+-- ddl-end --
+
+-- object: schedules_jobconfig_fk | type: CONSTRAINT --
+-- ALTER TABLE poudrierec2.schedules DROP CONSTRAINT IF EXISTS schedules_jobconfig_fk CASCADE;
+ALTER TABLE poudrierec2.schedules ADD CONSTRAINT schedules_jobconfig_fk FOREIGN KEY (jobconfig)
+REFERENCES poudrierec2.jobconfigs (id) MATCH FULL
+ON DELETE CASCADE ON UPDATE NO ACTION;
 -- ddl-end --
 
 

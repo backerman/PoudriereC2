@@ -4,8 +4,10 @@ open System
 [<AutoOpen>]
 module ConfigTypes =
 
+    /// Run a specific job with a specific crontab schedule.
     type JobSchedule =
-        { RunAt: string }
+        { JobId: Guid
+          RunAt: string }
 
     type PackageOptions =
         { Id: int
@@ -45,13 +47,14 @@ module ConfigTypes =
         | PoudriereConf of ConfigOption list
         | MakeConf of MakeConfOptions
 
+    /// The configuration of a build job.
     type JobConfig =
         { Id: Guid
           Title: string
-          PortsTree: string
-          PortSet: string
+          PortsTree: Guid
+          PortSet: Guid
           Jail: string
-          ConfigFiles: ConfigFileMetadata list }
+          ConfigFiles: Guid list }
     
     type PortsTreeMethod =
         | Null

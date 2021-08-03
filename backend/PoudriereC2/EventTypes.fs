@@ -7,6 +7,15 @@ open System.Text.Json.Serialization
 [<AutoOpen>]
 module Types =
 
+    /// A virtual machine (as passed in request)
+    type VirtualMachineInfo =
+        {
+            /// The virtual machine's VM name
+            Name: string
+            /// The virtual machine's GUID
+            VmId: Guid
+        }
+
     /// A client heartbeat.
     type HeartbeatInfo =
         {
