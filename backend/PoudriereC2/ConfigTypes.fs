@@ -50,6 +50,7 @@ module ConfigTypes =
     /// The configuration of a build job.
     type JobConfig =
         { Id: Guid
+          Deleted: bool
           Title: string
           PortsTree: Guid
           PortSet: Guid

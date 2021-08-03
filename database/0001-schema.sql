@@ -50,6 +50,7 @@ CREATE TABLE poudrierec2.jobconfigs (
 	portstree uuid NOT NULL,
 	portset uuid NOT NULL,
 	jail text NOT NULL,
+	deleted bool NOT NULL DEFAULT false,
 	CONSTRAINT configs_pk PRIMARY KEY (id)
 
 );
@@ -161,20 +162,16 @@ ALTER TABLE poudrierec2.builds OWNER TO poudriereadmin;
 -- object: poudrierec2.virtualmachines | type: TABLE --
 -- DROP TABLE IF EXISTS poudrierec2.virtualmachines CASCADE;
 CREATE TABLE poudrierec2.virtualmachines (
-	id integer NOT NULL GENERATED ALWAYS AS IDENTITY ,
 	azuuid uuid NOT NULL,
 	created timestamptz NOT NULL,
 	started timestamptz,
 	stopped timestamptz,
 	deleted timestamptz,
-	CONSTRAINT virtualmachines_pk PRIMARY KEY (id),
-	CONSTRAINT vm_uuid_unique UNIQUE (azuuid)
+	CONSTRAINT virtualmachines_pk PRIMARY KEY (azuuid)
 
 );
 -- ddl-end --
 COMMENT ON TABLE poudrierec2.virtualmachines IS E'Virtual machines used by this system.';
--- ddl-end --
-COMMENT ON COLUMN poudrierec2.virtualmachines.id IS E'A serial number for this VM.';
 -- ddl-end --
 COMMENT ON COLUMN poudrierec2.virtualmachines.azuuid IS E'Azure-generated UUID for this VM.';
 -- ddl-end --
@@ -536,6 +533,40 @@ CREATE UNIQUE INDEX schedules_unique ON poudrierec2.schedules
 COMMENT ON INDEX poudrierec2.schedules_unique IS E'Schedule crontabs for a job must be distinct.';
 -- ddl-end --
 
+-- object: jobconfigs_unique_undeleted_titles | type: INDEX --
+-- DROP INDEX IF EXISTS poudrierec2.jobconfigs_unique_undeleted_titles CASCADE;
+CREATE INDEX jobconfigs_unique_undeleted_titles ON poudrierec2.jobconfigs
+	USING btree
+	(
+	  title
+	)
+	WHERE (not deleted);
+-- ddl-end --
+
+-- object: poudrierec2.jobruns | type: TABLE --
+-- DROP TABLE IF EXISTS poudrierec2.jobruns CASCADE;
+CREATE TABLE poudrierec2.jobruns (
+	jobconfig uuid NOT NULL,
+	requested timestamptz NOT NULL,
+	virtualmachine uuid,
+	started timestamptz,
+	completed timestamptz,
+	CONSTRAINT jobruns_pk PRIMARY KEY (jobconfig)
+
+);
+-- ddl-end --
+COMMENT ON TABLE poudrierec2.jobruns IS E'Historical, current, and scheduled jobs.';
+-- ddl-end --
+ALTER TABLE poudrierec2.jobruns OWNER TO postgres;
+-- ddl-end --
+
+-- object: virtualmachines_fk | type: CONSTRAINT --
+-- ALTER TABLE poudrierec2.jobruns DROP CONSTRAINT IF EXISTS virtualmachines_fk CASCADE;
+ALTER TABLE poudrierec2.jobruns ADD CONSTRAINT virtualmachines_fk FOREIGN KEY (virtualmachine)
+REFERENCES poudrierec2.virtualmachines (azuuid) MATCH FULL
+ON DELETE RESTRICT ON UPDATE NO ACTION;
+-- ddl-end --
+
 -- object: configfile_id | type: CONSTRAINT --
 -- ALTER TABLE poudrierec2.configoptions DROP CONSTRAINT IF EXISTS configfile_id CASCADE;
 ALTER TABLE poudrierec2.configoptions ADD CONSTRAINT configfile_id FOREIGN KEY (configfile)
@@ -569,6 +600,13 @@ ON DELETE RESTRICT ON UPDATE NO ACTION;
 ALTER TABLE poudrierec2.schedules ADD CONSTRAINT schedules_jobconfig_fk FOREIGN KEY (jobconfig)
 REFERENCES poudrierec2.jobconfigs (id) MATCH FULL
 ON DELETE CASCADE ON UPDATE NO ACTION;
+-- ddl-end --
+
+-- object: jobruns_jobconfig_fk | type: CONSTRAINT --
+-- ALTER TABLE poudrierec2.jobruns DROP CONSTRAINT IF EXISTS jobruns_jobconfig_fk CASCADE;
+ALTER TABLE poudrierec2.jobruns ADD CONSTRAINT jobruns_jobconfig_fk FOREIGN KEY (jobconfig)
+REFERENCES poudrierec2.jobconfigs (id) MATCH FULL
+ON DELETE RESTRICT ON UPDATE NO ACTION;
 -- ddl-end --
 
 

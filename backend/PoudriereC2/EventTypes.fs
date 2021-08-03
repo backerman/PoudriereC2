@@ -117,3 +117,11 @@ module Types =
         | OK
         | Error of Error: string
         override this.ToString() = JsonSerializer.Serialize(this, eventSerializationOptions)
+
+    /// One execution (or requested execution) of a job.
+    type JobHistory =
+        { JobConfig: Guid
+          VirtualMachine: Guid option
+          Requested: DateTime
+          Started: DateTime
+          Completed: DateTime }
