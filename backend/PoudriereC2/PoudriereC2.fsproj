@@ -40,6 +40,10 @@
     <Compile Include="ConfigRepository.fs" />
     <Compile Include="ConfigFiles.fs" />
     <Compile Include="ConfigFileOptions.fs" />
+    <Compile Include="JobRepository.fs" />
+    <Compile Include="ScheduleRepository.fs" />
+    <Compile Include="Schedule.fs" />
+    <Compile Include="Jobs.fs" />
     <Compile Include="Program.fs" />
     <None Include="host.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
