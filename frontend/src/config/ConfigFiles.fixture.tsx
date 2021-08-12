@@ -1,10 +1,8 @@
 // import React from 'react';
-import { Meta } from '@storybook/react';
 import { ConfigFiles } from './ConfigFiles';
 import { ConfigFileMetadata, ConfigFileRepository, getDataSource } from '../model/configs';
 import { initializeIcons } from '@fluentui/react/lib/Icons';
 initializeIcons();
-
 
 let sampleList: ConfigFileMetadata[] = [
   {
@@ -24,11 +22,6 @@ let sampleList: ConfigFileMetadata[] = [
   }
 ]
 
-export default {
-  title: 'Config/ConfigFiles',
-  component: ConfigFiles
-} as Meta;
-
 const dataSource = getDataSource(sampleList);
 const emptyDataSource = getDataSource([]);
 
@@ -45,7 +38,10 @@ const erroringDataSource : ConfigFileRepository = {
   }
 }
 
-export const Empty = () => <ConfigFiles dataSource={emptyDataSource} />;
-export const Contents = () => <ConfigFiles dataSource={dataSource} />;
-export const ContentsWithDeleted = () => <ConfigFiles dataSource={dataSource} showDeleted={true} />;
-export const Error = () => <ConfigFiles dataSource={erroringDataSource} />;
+// eslint-disable-next-line import/no-anonymous-default-export
+export default {
+  "Empty":  <ConfigFiles dataSource={emptyDataSource} />,
+  "Contents": <ConfigFiles dataSource={dataSource} />,
+  "Contents with Deleted": <ConfigFiles dataSource={dataSource} showDeleted={true} />,
+  "Error": <ConfigFiles dataSource={erroringDataSource} />
+}
