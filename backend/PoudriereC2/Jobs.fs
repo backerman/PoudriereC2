@@ -16,7 +16,7 @@ type JobAPI (cfg: JobRepository) =
     /// Endpoint called by a worker VM requesting a job.
     [<Function("RequestJob")>]
     member _.requestJob
-        ([<HttpTrigger(AuthorizationLevel.Function, "post", Route="jobRequest")>]
+        ([<HttpTrigger(AuthorizationLevel.Function, "post", Route="jobs/request")>]
          req: HttpRequestData, execContext: FunctionContext) =
             async {
                 let log = execContext.GetLogger()
@@ -38,7 +38,7 @@ type JobAPI (cfg: JobRepository) =
     /// Endpoint called by a worker VM to mark job completed.
     [<Function("CompleteJob")>]
     member _.completeJob
-        ([<HttpTrigger(AuthorizationLevel.Function, "post", Route="completeJob")>]
+        ([<HttpTrigger(AuthorizationLevel.Function, "post", Route="jobs/complete")>]
          req: HttpRequestData, execContext: FunctionContext) =
             async {
                 let response = req.CreateResponse()
