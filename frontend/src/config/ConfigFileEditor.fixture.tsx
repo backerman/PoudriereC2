@@ -1,7 +1,3 @@
-// import React from 'react';
-import { Meta } from '@storybook/react';
-
-import { ConfigFiles } from './ConfigFiles';
 import { ConfigFileMetadata, ConfigFileRepository, getDataSource } from '../model/configs';
 import { initializeIcons } from '@fluentui/react/lib/Icons';
 import { ConfigFileEditor } from './ConfigFileEditor';
@@ -9,7 +5,6 @@ import { useBoolean } from "@fluentui/react-hooks";
 import { DefaultButton } from '@fluentui/react';
 
 initializeIcons();
-
 
 const sampleList: ConfigFileMetadata[] = [
   {
@@ -31,12 +26,7 @@ const sampleList: ConfigFileMetadata[] = [
 
 const dataSource : ConfigFileRepository = getDataSource(sampleList);
 
-export default {
-  title: 'Config/ConfigFileEditor',
-  component: ConfigFiles
-} as Meta;
-
-export const Sample = () => {
+const Sample = () => {
   const [ isOpen, {setTrue: openPanel, setFalse: dismissPanel } ] = useBoolean(false);
   return (
     
@@ -50,3 +40,5 @@ export const Sample = () => {
         recordId={sampleList[0].id} />
     </div>);
 }
+
+export default Sample;
