@@ -25,8 +25,9 @@ type JobRepository (db: DB.dataContext) =
         }
 
     /// Function that gets a VM's next available job.
-    member _.GetNextJob(vmId: Guid) : Async<ConfigFileMetadata list> = 
+    member _.GetNextJob(vmId: Guid) : Async<DatabaseError * ConfigFileMetadata list> = 
         async {
+            let mutable dbError = NoError
             let nextJobQuery =
                 query {
                     for jr in db.Poudrierec2.Jobruns do
@@ -59,5 +60,45 @@ type JobRepository (db: DB.dataContext) =
                           PortSet = cf.Portset
                           Deleted = cf.Deleted
                           FileType = FromString<ConfigFileType>(cf.Configtype) })
-            return configFiles
+
+            match myJob with
+            | Some job ->
+                job.Started <- Some DateTime.Now
+                let! result = DatabaseError.FromQuery (db.SubmitUpdatesAsync())
+                if result <> NoError then
+                    db.ClearUpdates() |> ignore
+                dbError <- result
+            | None -> ()
+            return (dbError, configFiles)
+        }
+
+    member _.CompleteJob(vmId: Guid) : Async<bool * DatabaseError> =
+        async {
+            let thisJob =
+                query {
+                    for j in db.Poudrierec2.Jobruns do
+                    where (j.Virtualmachine = Some vmId
+                           && j.Started.IsSome
+                           && j.Completed.IsNone)
+                    select (Some j)
+                    exactlyOneOrDefault
+                }
+            // result must be declared mutable because otherwise we'd need to
+            // let! within its binding, and you can't await an async within
+            // a let statement.
+            let mutable present, result = (true, NoError)
+            match thisJob with
+            | None ->
+                // Better error handling?
+                present <- false
+                result <- Unknown (Exception "Job not found.")
+            | Some j ->
+                present <- true
+                j.Completed <- Some DateTime.Now
+                let! aResult = DatabaseError.FromQuery (db.SubmitUpdatesAsync())
+                result <- aResult
+                if result <> NoError then
+                    db.ClearUpdates() |> ignore
+
+            return (present, result)
         }

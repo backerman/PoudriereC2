@@ -11,7 +11,7 @@ open FSharp.Data.Sql
 open System.Runtime.InteropServices
 
 
-type JobAPI (cfg: JobRepository) =
+type JobAPI (repo: JobRepository) =
 
     /// Endpoint called by a worker VM requesting a job.
     [<Function("RequestJob")>]
@@ -29,9 +29,22 @@ type JobAPI (cfg: JobRepository) =
                         (Error "Invalid or nonexistent payload")
                     |> ignore
                 | Some vm ->
-                    let! myJob = cfg.GetNextJob(vm.VmId);
-                    response.writeJsonResponse(myJob) |> ignore
-
+                    let! err, myJob = repo.GetNextJob(vm.VmId);
+                    match err with
+                    | NoError ->
+                        response.writeJsonResponse(myJob)
+                    | Unknown exn ->
+                        log.LogError(exn, "Unexpected database error")
+                        response.StatusCode <- HttpStatusCode.InternalServerError
+                        Error "Internal server error."
+                        |> response.writeJsonResponse
+                    | ForeignKeyViolation exn
+                    | UniqueViolation exn ->
+                        log.LogError(exn, "Really unexpected database error")
+                        response.StatusCode <- HttpStatusCode.InternalServerError
+                        Error "Internal server error."
+                        |> response.writeJsonResponse
+                    |> ignore
                 return response
             } |> Async.StartAsTask
 
@@ -41,7 +54,43 @@ type JobAPI (cfg: JobRepository) =
         ([<HttpTrigger(AuthorizationLevel.Function, "post", Route="jobs/complete")>]
          req: HttpRequestData, execContext: FunctionContext) =
             async {
+                let log = execContext.GetLogger()
                 let response = req.CreateResponse()
-                
-                return response.writeJsonResponse(null)
+                let! maybeVm = tryDeserialize<VirtualMachineInfo> req log
+                match maybeVm with
+                | None ->
+                    ()
+                | Some vm ->
+                    let! jobPresent, result = repo.CompleteJob(vm.VmId)
+                    match jobPresent with
+                    | true ->
+                        response.StatusCode <- HttpStatusCode.OK
+                    | false ->
+                        log.LogError("VM {vmId} does not have a current job", vm.VmId)
+                        response.StatusCode <- HttpStatusCode.NotFound
+
+                    match result with
+                    | NoError ->
+                        if jobPresent then
+                            response.writeJsonResponse OK
+                            |> ignore
+                    | Unknown exn ->
+                        log.LogError(exn, "Unexpected database error")
+                        response.StatusCode <- HttpStatusCode.InternalServerError
+                        Error "Internal server error."
+                        |> response.writeJsonResponse
+                        |> ignore
+                    | ForeignKeyViolation exn
+                    | UniqueViolation exn ->
+                        log.LogError(exn, "Really unexpected database error")
+                        response.StatusCode <- HttpStatusCode.InternalServerError
+                        Error "Internal server error."
+                        |> response.writeJsonResponse
+                        |> ignore
+                    if response.StatusCode = HttpStatusCode.NotFound then
+                        Error "VM does not have a current job."
+                        |> response.writeJsonResponse
+                        |> ignore
+
+                return response
             } |> Async.StartAsTask

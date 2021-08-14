@@ -1,4 +1,5 @@
 BEGIN WORK;
+
 INSERT INTO poudrierec2.jails (name, version, architecture)
 VALUES ('13_0-amd64', '13.0-RELEASE', 'amd64');
 
@@ -42,4 +43,14 @@ INSERT INTO poudrierec2.jobconfigs_configfiles (id_jobconfigs, id_configfiles)
 VALUES
 ('209fc7b5-18c5-40e1-a205-4ae82790621e', '7557d8a8-bba5-4c99-ba6f-2ffbebb0be63'),
 ('209fc7b5-18c5-40e1-a205-4ae82790621e', '97241b1e-9c04-4b58-9cdc-4c90eef35225');
+
+INSERT INTO poudrierec2.virtualmachines (azuuid, created)
+VALUES
+('0f2bb76c-b639-43d2-98d6-5c5dceb8ffe3', '2021-08-01 01:02:03Z'),
+('94354c6f-1269-480e-9a81-543665e93c15', '2021-07-01 16:07:08Z');
+
+INSERT INTO poudrierec2.jobruns (jobconfig, requested, virtualmachine)
+VALUES
+('209fc7b5-18c5-40e1-a205-4ae82790621e', '2021-08-05 00:00:00Z', '0f2bb76c-b639-43d2-98d6-5c5dceb8ffe3');
+
 COMMIT;

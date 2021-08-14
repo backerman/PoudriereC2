@@ -135,30 +135,6 @@ COMMENT ON COLUMN poudrierec2.availableoptions.defaultvalue IS E'The option''s d
 ALTER TABLE poudrierec2.availableoptions OWNER TO poudriereadmin;
 -- ddl-end --
 
--- object: poudrierec2.builds | type: TABLE --
--- DROP TABLE IF EXISTS poudrierec2.builds CASCADE;
-CREATE TABLE poudrierec2.builds (
-	config uuid NOT NULL,
-	started timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	stopped timestamptz,
-	vm uuid NOT NULL,
-	CONSTRAINT builds_pk PRIMARY KEY (config,started)
-
-);
--- ddl-end --
-COMMENT ON TABLE poudrierec2.builds IS E'Bulk builds.';
--- ddl-end --
-COMMENT ON COLUMN poudrierec2.builds.config IS E'The configuration used.';
--- ddl-end --
-COMMENT ON COLUMN poudrierec2.builds.started IS E'The start time of this build.';
--- ddl-end --
-COMMENT ON COLUMN poudrierec2.builds.stopped IS E'The stop time of this build.';
--- ddl-end --
-COMMENT ON COLUMN poudrierec2.builds.vm IS E'The virtual machine assigned to this build.';
--- ddl-end --
-ALTER TABLE poudrierec2.builds OWNER TO poudriereadmin;
--- ddl-end --
-
 -- object: poudrierec2.virtualmachines | type: TABLE --
 -- DROP TABLE IF EXISTS poudrierec2.virtualmachines CASCADE;
 CREATE TABLE poudrierec2.virtualmachines (
@@ -198,21 +174,17 @@ CREATE INDEX index_vm_azuuid ON poudrierec2.virtualmachines
 -- object: poudrierec2.heartbeats | type: TABLE --
 -- DROP TABLE IF EXISTS poudrierec2.heartbeats CASCADE;
 CREATE TABLE poudrierec2.heartbeats (
-	config uuid NOT NULL,
-	started timestamptz NOT NULL,
+	timereported timestamptz NOT NULL DEFAULT (NOW() AT TIME ZONE 'UTC'),
+	virtualmachine uuid NOT NULL,
 	loadaverage float[] NOT NULL,
-	CONSTRAINT hb_loadavg_length CHECK (ARRAY_LENGTH(loadaverage, 1) = 3)
+	CONSTRAINT hb_loadavg_length CHECK (ARRAY_LENGTH(loadaverage, 1) = 3),
+	CONSTRAINT heartbeats_pk PRIMARY KEY (timereported,virtualmachine)
 
 );
 -- ddl-end --
-ALTER TABLE poudrierec2.heartbeats OWNER TO poudriereadmin;
+COMMENT ON COLUMN poudrierec2.heartbeats.virtualmachine IS E'Azure-generated GUID of the virtual machine reporting this heartbeat.';
 -- ddl-end --
-
--- object: builds_fk | type: CONSTRAINT --
--- ALTER TABLE poudrierec2.heartbeats DROP CONSTRAINT IF EXISTS builds_fk CASCADE;
-ALTER TABLE poudrierec2.heartbeats ADD CONSTRAINT builds_fk FOREIGN KEY (config,started)
-REFERENCES poudrierec2.builds (config,started) MATCH FULL
-ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE poudrierec2.heartbeats OWNER TO poudriereadmin;
 -- ddl-end --
 
 -- object: poudrierec2.configfiles | type: TABLE --
@@ -551,7 +523,7 @@ CREATE TABLE poudrierec2.jobruns (
 	virtualmachine uuid,
 	started timestamptz,
 	completed timestamptz,
-	CONSTRAINT jobruns_pk PRIMARY KEY (jobconfig)
+	CONSTRAINT jobruns_pk PRIMARY KEY (jobconfig,requested)
 
 );
 -- ddl-end --
@@ -574,16 +546,9 @@ REFERENCES poudrierec2.configfiles (id) MATCH FULL
 ON DELETE NO ACTION ON UPDATE NO ACTION;
 -- ddl-end --
 
--- object: build_config_id | type: CONSTRAINT --
--- ALTER TABLE poudrierec2.builds DROP CONSTRAINT IF EXISTS build_config_id CASCADE;
-ALTER TABLE poudrierec2.builds ADD CONSTRAINT build_config_id FOREIGN KEY (config)
-REFERENCES poudrierec2.jobconfigs (id) MATCH FULL
-ON DELETE NO ACTION ON UPDATE NO ACTION;
--- ddl-end --
-
--- object: build_vm_uuid | type: CONSTRAINT --
--- ALTER TABLE poudrierec2.builds DROP CONSTRAINT IF EXISTS build_vm_uuid CASCADE;
-ALTER TABLE poudrierec2.builds ADD CONSTRAINT build_vm_uuid FOREIGN KEY (vm)
+-- object: heartbeat_virtualmachine_fk | type: CONSTRAINT --
+-- ALTER TABLE poudrierec2.heartbeats DROP CONSTRAINT IF EXISTS heartbeat_virtualmachine_fk CASCADE;
+ALTER TABLE poudrierec2.heartbeats ADD CONSTRAINT heartbeat_virtualmachine_fk FOREIGN KEY (virtualmachine)
 REFERENCES poudrierec2.virtualmachines (azuuid) MATCH FULL
 ON DELETE NO ACTION ON UPDATE NO ACTION;
 -- ddl-end --
