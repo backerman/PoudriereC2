@@ -1,10 +1,10 @@
 version: 2
 updates:
   - package-ecosystem: "nuget"
-    directory: "/PoudriereC2"
+    directory: "/backend/PoudriereC2"
     schedule:
       interval: "daily"
   - package-ecosystem: "nuget"
-    directory: "/PoudriereC2.Tests"
+    directory: "/backend/PoudriereC2.Tests"
     schedule:
       interval: "daily"
