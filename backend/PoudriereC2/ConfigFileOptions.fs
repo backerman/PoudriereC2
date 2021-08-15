@@ -15,7 +15,7 @@ type ConfigFileOptionsApi (cfg: ConfigRepository) =
         req: HttpRequestData) (execContext: FunctionContext) (configFile: string) =
             async {
                 let log = execContext.GetLogger()
-                let! opts = cfg.getConfigFileOptions configFile
+                let! opts = cfg.GetConfigFileOptions configFile
                 // Should we error if there's no such file?
                 let response = req.CreateResponse()
                 return response.writeJsonResponse opts
@@ -41,7 +41,7 @@ type ConfigFileOptionsApi (cfg: ConfigRepository) =
                         (Error "At least one option must be provided")
                     |> ignore
                 | Some opts ->
-                    let! result = cfg.addConfigFileOptions configFile opts
+                    let! result = cfg.AddConfigFileOptions configFile opts
                     match result with
                     | NoError ->
                         response.StatusCode <- HttpStatusCode.OK
@@ -92,7 +92,7 @@ type ConfigFileOptionsApi (cfg: ConfigRepository) =
                     |> ignore
                 | Some opts -> 
                     response.StatusCode <- HttpStatusCode.NoContent
-                    let! _ = cfg.deleteConfigFileOptions configFile opts
+                    let! _ = cfg.DeleteConfigFileOptions configFile opts
                     ()
                 return response
             } |> Async.StartAsTask

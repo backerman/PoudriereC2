@@ -27,7 +27,7 @@ type ConfigFileApi (cfg: ConfigRepository) =
                         (Error "Invalid or nonexistent payload")
                     |> ignore
                 | Some meta ->
-                    let! result = cfg.newConfigFile meta
+                    let! result = cfg.NewConfigFile meta
                     match result with
                     | NoError ->
                         response.StatusCode <- HttpStatusCode.OK
@@ -74,7 +74,7 @@ type ConfigFileApi (cfg: ConfigRepository) =
                 | null -> None
                 | _ -> Some configFile
             async {
-                let! files = cfg.getConfigFiles(?configFile = configFileOpt)
+                let! files = cfg.GetConfigFiles(?configFile = configFileOpt)
                 let response = req.CreateResponse(HttpStatusCode.OK)
                 return response.writeJsonResponse files
             } |> Async.StartAsTask
@@ -89,9 +89,9 @@ type ConfigFileApi (cfg: ConfigRepository) =
                 match pickReturnMediaType req with
                 | Some AnyType
                 | Some PlainText ->
-                    let! configMetadataSeq = cfg.getConfigFiles configFile
+                    let! configMetadataSeq = cfg.GetConfigFiles configFile
                     let! configOptions =
-                        cfg.getConfigFileOptions configFile
+                        cfg.GetConfigFileOptions configFile
                     response.StatusCode <- HttpStatusCode.OK
                     configOptions
                     |> Seq.map

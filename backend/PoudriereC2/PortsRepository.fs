@@ -7,7 +7,7 @@ open FSharp.Data.Sql
 
 type PortsRepository(db: DB.dataContext) =
 
-    member _.getPortsTrees(?portsTree: string) =
+    member _.GetPortsTrees(?portsTree: string) =
         async {
             let filterQuery =
                 match portsTree with
@@ -31,7 +31,7 @@ type PortsRepository(db: DB.dataContext) =
                             (pt.Method, ?url=pt.Url) })
         }
 
-    member _.addPortsTrees (trees: PortsTree list) =
+    member _.AddPortsTrees (trees: PortsTree list) =
         async {
             trees
             |> List.iter
@@ -52,7 +52,7 @@ type PortsRepository(db: DB.dataContext) =
             return result
         }
 
-        member _.updatePortsTree (treeName: string) (tree: PortsTree) =
+        member _.UpdatePortsTree (treeName: string) (tree: PortsTree) =
             async {
                 let! row =
                     query {

@@ -23,7 +23,7 @@ type PortsTreesApi (cfg: PortsRepository) =
                     (Error "Invalid or nonexistent payload")
                 |> ignore
             | Some meta ->
-                let! result = cfg.addPortsTrees [meta]
+                let! result = cfg.AddPortsTrees [meta]
                 match result with
                 | NoError ->
                     response.StatusCode <- HttpStatusCode.OK
@@ -68,7 +68,7 @@ type PortsTreesApi (cfg: PortsRepository) =
             | null -> None
             | _ -> Some treeName
         async {
-            let! files = cfg.getPortsTrees() // FIXME ignores optional parameter
+            let! files = cfg.GetPortsTrees() // FIXME ignores optional parameter
             let response = req.CreateResponse(HttpStatusCode.OK)
             return response.writeJsonResponse files
         } |> Async.StartAsTask
@@ -86,7 +86,7 @@ type PortsTreesApi (cfg: PortsRepository) =
                     (HttpStatusCode.BadRequest)
                 |> ignore
             | Some meta ->
-                let! result = cfg.updatePortsTree treeName meta
+                let! result = cfg.UpdatePortsTree treeName meta
                 match result with
                 | NoError ->
                     req.CreateResponse

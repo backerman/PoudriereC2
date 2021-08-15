@@ -9,7 +9,7 @@ open System.Linq
 
 type ConfigRepository (db: DB.dataContext) =
 
-    member _.getConfigFileOptions (configFile: string) =
+    member _.GetConfigFileOptions (configFile: string) =
         async {
             let! opts =
                 query {
@@ -22,7 +22,7 @@ type ConfigRepository (db: DB.dataContext) =
             return opts
         }
 
-    member _.getConfigFiles (?configFile: string) =
+    member _.GetConfigFiles (?configFile: string) =
         async {
             let filterQuery =
                 match configFile with
@@ -44,7 +44,7 @@ type ConfigRepository (db: DB.dataContext) =
             return configFiles
         }
     
-    member _.newConfigFile (metadata: ConfigFileMetadata) : Async<DatabaseError> =
+    member _.NewConfigFile (metadata: ConfigFileMetadata) : Async<DatabaseError> =
         async {
             let row = db.Poudrierec2.Configfiles.Create()
             row.Name <- metadata.Name
@@ -62,7 +62,7 @@ type ConfigRepository (db: DB.dataContext) =
             return result
         }
 
-    member _.addConfigFileOptions (configFile: string) (options: ConfigOption list)
+    member _.AddConfigFileOptions (configFile: string) (options: ConfigOption list)
             : Async<DatabaseError> =
         async {
             options
@@ -79,7 +79,7 @@ type ConfigRepository (db: DB.dataContext) =
             return result
         }
 
-    member _.deleteConfigFileOptions (configFile: string) (options: string list)
+    member _.DeleteConfigFileOptions (configFile: string) (options: string list)
             : Async<DatabaseError> =
         async {
             let q =
