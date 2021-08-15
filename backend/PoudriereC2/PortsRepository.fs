@@ -54,13 +54,12 @@ type PortsRepository(db: DB.dataContext) =
 
         member _.updatePortsTree (treeName: string) (tree: PortsTree) =
             async {
-                let! rows =
+                let! row =
                     query {
                         for pt in db.Poudrierec2.Portstrees do
                         where (pt.Name = treeName)
                         select pt
-                    } |> Seq.executeQueryAsync
-                let row = Seq.exactlyOne rows
+                    } |> Seq.exactlyOneAsync
                 row.Name <- tree.Name
                 row.Method <- tree.Method.ToString()
                 row.Url <-

@@ -74,15 +74,14 @@ type JobRepository (db: DB.dataContext) =
 
     member _.CompleteJob(vmId: Guid) : Async<bool * DatabaseError> =
         async {
-            let thisJob =
+            let! thisJob =
                 query {
                     for j in db.Poudrierec2.Jobruns do
                     where (j.Virtualmachine = Some vmId
                            && j.Started.IsSome
                            && j.Completed.IsNone)
-                    select (Some j)
-                    exactlyOneOrDefault
-                }
+                    select j
+                } |> Seq.tryExactlyOneAsync
             // result must be declared mutable because otherwise we'd need to
             // let! within its binding, and you can't await an async within
             // a let statement.
