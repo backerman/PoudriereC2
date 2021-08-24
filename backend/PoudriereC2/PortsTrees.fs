@@ -10,7 +10,7 @@ open System.Net
 type PortsTreesApi (cfg: PortsRepository) =
     [<Function("NewPortsTree")>]
     member _.NewPortsTree
-        ([<HttpTrigger(AuthorizationLevel.Function, "put", Route="portstrees")>]
+        ([<HttpTrigger(AuthorizationLevel.Anonymous, "put", Route="portstrees")>]
          req: HttpRequestData, execContext: FunctionContext) =
         async {
             let log = execContext.GetLogger()
@@ -60,7 +60,7 @@ type PortsTreesApi (cfg: PortsRepository) =
 
     [<Function("GetPortsTrees")>]
     member _.GetPortsTrees
-        ([<HttpTrigger(AuthorizationLevel.Function, "get", Route="portstrees/{treeName?}")>]
+        ([<HttpTrigger(AuthorizationLevel.Anonymous, "get", Route="portstrees/{treeName?}")>]
          req: HttpRequestData, execContext: FunctionContext, treeName: string) =
         let log = execContext.GetLogger()
         let treeNameOpt =
@@ -75,7 +75,7 @@ type PortsTreesApi (cfg: PortsRepository) =
 
     [<Function("ModifyPortsTree")>]
     member _.ModifyPortsTree
-        ([<HttpTrigger(AuthorizationLevel.Function, "patch", Route="portstrees/{treeName}")>]
+        ([<HttpTrigger(AuthorizationLevel.Anonymous, "patch", Route="portstrees/{treeName}")>]
          req: HttpRequestData, execContext: FunctionContext, treeName: string) =
         let log = execContext.GetLogger()
         async {

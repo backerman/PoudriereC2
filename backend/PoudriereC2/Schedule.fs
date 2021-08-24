@@ -14,7 +14,7 @@ type ScheduleApi (jobs: JobRepository, sched: ScheduleRepository) =
     /// Schedule a job.
     [<Function("ScheduleJob")>]
     member _.scheduleJob
-        ([<HttpTrigger(AuthorizationLevel.Function, "put", Route="jobs/schedule")>]
+        ([<HttpTrigger(AuthorizationLevel.Anonymous, "put", Route="jobs/schedule")>]
          req: HttpRequestData, execContext: FunctionContext) =
         async {
             let log = execContext.GetLogger()

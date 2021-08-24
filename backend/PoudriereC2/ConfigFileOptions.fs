@@ -11,7 +11,7 @@ type ConfigFileOptionsApi (cfg: ConfigRepository) =
 
     [<Function("GetConfigFileOptions")>]
     member _.getConfigFileOptions
-        ([<HttpTrigger(AuthorizationLevel.Function, "get", Route="configurationfiles/{configFile:guid}/options")>]
+        ([<HttpTrigger(AuthorizationLevel.Anonymous, "get", Route="configurationfiles/{configFile:guid}/options")>]
         req: HttpRequestData) (execContext: FunctionContext) (configFile: string) =
             async {
                 let log = execContext.GetLogger()
@@ -23,7 +23,7 @@ type ConfigFileOptionsApi (cfg: ConfigRepository) =
 
     [<Function("AddConfigFileOptions")>]
     member _.addConfigFileOptions
-        ([<HttpTrigger(AuthorizationLevel.Function, "put", Route="configurationfiles/{configFile:guid}/options")>]
+        ([<HttpTrigger(AuthorizationLevel.Anonymous, "put", Route="configurationfiles/{configFile:guid}/options")>]
         req: HttpRequestData) (execContext: FunctionContext) (configFile: string) =
             async {
                 let log = execContext.GetLogger()
@@ -73,7 +73,7 @@ type ConfigFileOptionsApi (cfg: ConfigRepository) =
 
     [<Function("DeleteConfigFileOptions")>]
     member _.deleteConfigFileOptions
-        ([<HttpTrigger(AuthorizationLevel.Function, "delete", Route="configurationfiles/{configFile:guid}/options")>]
+        ([<HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route="configurationfiles/{configFile:guid}/options")>]
         req: HttpRequestData) (execContext: FunctionContext) (configFile: string) =
             async {
                 let log = execContext.GetLogger()

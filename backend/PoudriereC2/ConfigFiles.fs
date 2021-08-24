@@ -14,7 +14,7 @@ type ConfigFileApi (cfg: ConfigRepository) =
 
     [<Function("NewConfigFile")>]
     member _.newConfigFile
-        ([<HttpTrigger(AuthorizationLevel.Function, "put", Route="configurationfiles/metadata")>]
+        ([<HttpTrigger(AuthorizationLevel.Anonymous, "put", Route="configurationfiles/metadata")>]
          req: HttpRequestData, execContext: FunctionContext) =
             async {
                 let log = execContext.GetLogger()
@@ -66,7 +66,7 @@ type ConfigFileApi (cfg: ConfigRepository) =
 
     [<Function("GetConfigFilesMetadata")>]
     member _.getConfigFileMetadata
-        ([<HttpTrigger(AuthorizationLevel.Function, "get", Route="configurationfiles/metadata/{configFile:guid?}")>]
+        ([<HttpTrigger(AuthorizationLevel.Anonymous, "get", Route="configurationfiles/metadata/{configFile:guid?}")>]
          req: HttpRequestData, execContext: FunctionContext, [<Optional>]configFile: string) =
             let log = execContext.GetLogger()
             let configFileOpt =
@@ -81,7 +81,7 @@ type ConfigFileApi (cfg: ConfigRepository) =
 
     [<Function("GenerateConfigFile")>]
     member _.generateConfigFile
-        ([<HttpTrigger(AuthorizationLevel.Function, "get", Route="configurationfiles/{configFile:guid}")>]
+        ([<HttpTrigger(AuthorizationLevel.Anonymous, "get", Route="configurationfiles/{configFile:guid}")>]
         req: HttpRequestData) (execContext: FunctionContext) (configFile: string) =
             async {
                 let log = execContext.GetLogger()
