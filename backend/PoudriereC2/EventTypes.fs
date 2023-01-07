@@ -29,8 +29,10 @@ module Types =
 
     /// Payload for a jail event.
     type JailInfo =
-        /// The path at which the jail root is mounted in the host filesystem.
-        { MountPath: string }
+        { 
+            /// The path at which the jail root is mounted in the host filesystem.
+            MountPath: string
+        }
 
     /// Payload for a builder event.
     type BuilderInfo =

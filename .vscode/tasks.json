@@ -69,7 +69,7 @@
 			"type": "func",
 			"dependsOn": "build",
 			"options": {
-				"cwd": "${workspaceFolder}/backend/PoudriereC2/bin/Debug/net5.0"
+				"cwd": "${workspaceFolder}/backend/PoudriereC2/bin/Debug/net6.0"
 			},
 			"command": "host start",
 			"isBackground": true,

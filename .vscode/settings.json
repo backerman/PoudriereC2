@@ -1,5 +1,5 @@
 {
-    "azureFunctions.deploySubpath": "backend/PoudriereC2/bin/Release/net5.0/publish",
+    "azureFunctions.deploySubpath": "backend/PoudriereC2/bin/Release/net6.0/publish",
     "azureFunctions.projectLanguage": "F#",
     "azureFunctions.projectRuntime": "~3",
     "debug.internalConsoleOptions": "neverOpen",

@@ -18,7 +18,7 @@ let Owner = "poudrierec2"
 type DB = SqlDataProvider<
             DatabaseVendor=Common.DatabaseProviderTypes.POSTGRESQL,
             ConnectionString=ConnectionString,
-            UseOptionTypes=true,
+            UseOptionTypes=Common.NullableColumnType.OPTION,
             Owner=Owner>
 
 type DatabaseError =
@@ -27,9 +27,9 @@ type DatabaseError =
     | UniqueViolation of PostgresException
     | Unknown of Exception
 
-    static member FromQuery q =
+    static member FromQuery (q: Threading.Tasks.Task) =
         async {
-            let! opResult = Async.Catch q
+            let! opResult = Async.AwaitTask q |> Async.Catch
             return
                 match opResult with
                 | Choice1Of2 _ -> NoError
