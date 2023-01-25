@@ -8,6 +8,16 @@ Not an official Microsoft project. This README is not yet complete.
 
 ### Load database
 
+To log in with Azure Active Directory, specify the username as the tenant user (without the tenant domain) and set the password to a bearer token:
+
+```powershell
+$Env:PGPASSWORD=(Get-AzAccessToken -ResourceUrl "https://ossrdbms-aad$((Get-AzContext).Environment.SqlDatabaseDnsSuffix)").Token
+```
+or
+```shell
+export PGPASSWORD=$(az account get-access-token --resource-type oss-rdbms --query "[accessToken]" -o tsv)
+```
+
 Discussion: Azure Database for PostgreSQL vs IaaS
 
 ```postgresql
