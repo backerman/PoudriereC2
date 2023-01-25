@@ -29,10 +29,12 @@ param (
 $baseDir = Split-Path $PSCommandPath
 
 $psqlArgs = @()
-$env:PGSSLMODE = "require"
 
 if (-not [string]::IsNullOrWhiteSpace($PsqlHost)) {
     $psqlArgs += "-h", $PsqlHost
+    if (-not ($PsqlHost -eq "localhost" -or $PsqlHost -eq "::1" -or $PsqlHost -eq "127.0.0.1")) {
+        $env:PGSSLMODE = "require"
+    }
 }
 
 if (-not [string]::IsNullOrWhiteSpace($PsqlUser)) {
