@@ -529,7 +529,7 @@ CREATE TABLE poudrierec2.jobruns (
 -- ddl-end --
 COMMENT ON TABLE poudrierec2.jobruns IS E'Historical, current, and scheduled jobs.';
 -- ddl-end --
-ALTER TABLE poudrierec2.jobruns OWNER TO postgres;
+ALTER TABLE poudrierec2.jobruns OWNER TO poudriereadmin;
 -- ddl-end --
 
 -- object: virtualmachines_fk | type: CONSTRAINT --

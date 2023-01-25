@@ -29,6 +29,7 @@ param (
 $baseDir = Split-Path $PSCommandPath
 
 $psqlArgs = @()
+$env:PGSSLMODE = "require"
 
 if (-not [string]::IsNullOrWhiteSpace($PsqlHost)) {
     $psqlArgs += "-h", $PsqlHost
@@ -41,7 +42,7 @@ if (-not [string]::IsNullOrWhiteSpace($PsqlUser)) {
 Get-ChildItem (Join-Path $baseDir "createdb") |
     Where-Object -Property Name -Like "*.sql" |
     ForEach-Object {
-        psql @psqlArgs -f $_.FullName
+        psql @psqlArgs -d postgres -f $_.FullName
     }
 
 # Commands from here use the database created above.
