@@ -6,6 +6,7 @@ open Npgsql
 open System
 open Microsoft.Extensions.Logging
 open System.Net
+open Azure.Core
 
 [<Literal>]
 let ConnectionString =
@@ -72,3 +73,13 @@ type DatabaseError =
             log.LogError(exn, failureMessage, failureMessageArgs)
             {| httpCode = HttpStatusCode.InternalServerError
                result = Error "An internal error occurred." |}
+
+/// Get an access token (MSI or otherwise) from AAD.
+let getAccessTokenWithScope (scopeUri: string) =
+    let tokenProvider = Azure.Identity.DefaultAzureCredential false
+    let ctx = new TokenRequestContext [| scopeUri |]
+    let token = tokenProvider.GetToken(ctx, System.Threading.CancellationToken.None)
+    token.Token
+
+/// Get an access token (MSI or otherwise) from AAD for PostgreSQL.
+let getAccessToken () = getAccessTokenWithScope "https://ossrdbms-aad.database.windows.net"

@@ -18,11 +18,15 @@ let configuration =
 [<EntryPoint>]
 let main argv =
     let host =
+        let connStr = System.Environment.GetEnvironmentVariable "PostgresConnection"
+        if System.Environment.GetEnvironmentVariable "PGPASSWORD" = null then
+            let accessToken = getAccessToken()
+            System.Environment.SetEnvironmentVariable("PGPASSWORD", accessToken)
         HostBuilder()
             .ConfigureFunctionsWorkerDefaults()
             .ConfigureServices(
                 fun s ->
-                    s.AddSingleton<DB.dataContext> (DB.GetDataContext()) |> ignore
+                    s.AddSingleton<DB.dataContext> (DB.GetDataContext(connStr)) |> ignore
                     s.AddSingleton<ConfigRepository> () |> ignore
                     s.AddSingleton<PortsRepository> () |> ignore
                     s.AddSingleton<JobRepository> () |> ignore
