@@ -71,3 +71,14 @@ service principal will now appear in the application's "Users and Groups" blade.
 #### Get MSI from worker and validate role present
 
 ### Security
+
+## Local development
+
+Install [Azure Functions Core Tools][afct]. Then run `func start` in `backend/Poudrierec2`
+to start the server.
+
+[afct]: https://learn.microsoft.com/en-us/azure/azure-functions/functions-run-local#install-the-azure-functions-core-tools
+
+In a different session, run `npm start` to start a webserver hosting the client.
+
+
