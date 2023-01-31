@@ -19,7 +19,7 @@ let configuration =
 let main argv =
     let host =
         let connStr = System.Environment.GetEnvironmentVariable "PostgresConnection"
-        if System.Environment.GetEnvironmentVariable "PGPASSWORD" = null then
+        if isNull (System.Environment.GetEnvironmentVariable "PGPASSWORD") then
             let accessToken = getAccessToken()
             System.Environment.SetEnvironmentVariable("PGPASSWORD", accessToken)
         HostBuilder()

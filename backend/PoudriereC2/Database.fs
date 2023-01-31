@@ -77,7 +77,7 @@ type DatabaseError =
 /// Get an access token (MSI or otherwise) from AAD.
 let getAccessTokenWithScope (scopeUri: string) =
     let tokenProvider = Azure.Identity.DefaultAzureCredential false
-    let ctx = new TokenRequestContext [| scopeUri |]
+    let ctx = TokenRequestContext [| scopeUri |]
     let token = tokenProvider.GetToken(ctx, System.Threading.CancellationToken.None)
     token.Token
 
