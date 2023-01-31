@@ -12,7 +12,7 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Update="FSharp.Core" Version="6.0.7" />
     <PackageReference Include="Azure.Identity" Version="1.8.1" />
-    <PackageReference Include="FSharp.Control.FusionTasks" Version="2.5.0" />
+    <PackageReference Include="FSharp.Control.FusionTasks" Version="2.6.0" />
     <PackageReference Include="FSharp.Data.LiteralProviders" Version="1.0.3" />
     <PackageReference Include="FSharp.SystemTextJson" Version="1.1.23" />
     <!-- out of process now -->
