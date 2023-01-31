@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { IColumn, IDetailsListStyleProps, IDetailsListStyles, IStyleFunctionOrObject } from '@fluentui/react';
+import { IColumn } from '@fluentui/react';
 import { ConfigFileMetadata, ConfigFileRepository } from '../model/configs';
 import { sortBy } from '../utils';
 import './ConfigFiles.css';
@@ -78,11 +78,6 @@ export const ConfigFiles =
         const [editorIsOpen, { setTrue: openEditor, setFalse: closeEditor }] = useBoolean(false);
         const [activeRecord, setActiveRecord] = useState('');
         const [itemList, setItemList] = useState([] as ConfigFileMetadata[]);
-        const styles: Partial<IDetailsListStyles> = {
-            root: {
-                font: 'inherit',
-            }
-        };
         let [error, setError] = useState<any>(null);
         let [itemsChanged, renderMe] = useState(0);
         useEffect(() => {
