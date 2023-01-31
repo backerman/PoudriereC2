@@ -27,8 +27,8 @@ const navLinkGroups: INavLinkGroup[] = [
                         key: 'key1',
                     },
                     {
-                        name: 'Ports trees',
-                        url: '/config/trees',
+                        name: 'Portsets',
+                        url: '/config/portsets',
                         key: 'key2',
                     },
                 ],
