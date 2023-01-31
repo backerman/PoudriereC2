@@ -8,7 +8,10 @@ import { getSampleDataSource as getSampleConfigs } from './model/configs.sample'
 import { getSampleDataSource as getSamplePortSets } from './model/portsets.sample';
 import { NavMenu } from './NavMenu';
 
-const stackTokens: IStackTokens = { childrenGap: 15 };
+const stackTokens: IStackTokens = {
+  childrenGap: 15,
+  padding: '2em',
+};
 const stackStyles: Partial<IStackStyles> = {
   root: {
     margin: '0 auto',
@@ -17,6 +20,12 @@ const stackStyles: Partial<IStackStyles> = {
     width: '100%',
   },
 };
+
+const contentStyles: Partial<IStackStyles> = {
+  root: {
+    minWidth: '0' // otherwise it won't shrink when window does
+  }
+}
 
 export const App: React.FunctionComponent = () => {
   const sampleConfigFiles = getSampleConfigs();
@@ -33,7 +42,7 @@ export const App: React.FunctionComponent = () => {
         <Stack.Item>
           <NavMenu />
         </Stack.Item>
-        <Stack.Item>
+        <Stack.Item grow styles={contentStyles}>
           <Switch>
             <Route path="/config/files">
               <ConfigFiles dataSource={sampleConfigFiles} />

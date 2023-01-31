@@ -1,4 +1,4 @@
-import { DetailsList, DetailsListLayoutMode, IDetailsListProps, IDetailsRowProps, MessageBar, MessageBarType } from "@fluentui/react";
+import { ConstrainMode, DetailsList, DetailsListLayoutMode, IDetailsListProps, IDetailsRowProps, MessageBar, MessageBarType } from "@fluentui/react";
 import React from "react";
 
 export interface ItemListProperties extends IDetailsListProps {
@@ -68,6 +68,7 @@ class ItemList<P extends ItemListProperties> extends React.Component<P, ItemList
                     layoutMode={layoutMode}
                     compact={compact ?? false}
                     onRenderRow={onRenderRow}
+                    constrainMode={ConstrainMode.unconstrained}
                 />
             </div>
         );

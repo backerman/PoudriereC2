@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { IColumn } from '@fluentui/react';
+import { IColumn, IDetailsListStyleProps, IDetailsListStyles, IStyleFunctionOrObject } from '@fluentui/react';
 import { ConfigFileMetadata, ConfigFileRepository } from '../model/configs';
 import { sortBy } from '../utils';
 import './ConfigFiles.css';
@@ -20,7 +20,7 @@ const columns: IColumn[] = [
         minWidth: 50,
         maxWidth: 100,
         isResizable: true,
-        targetWidthProportion: 0.05,
+        targetWidthProportion: 0.2,
     },
     {
         key: 'name',
@@ -28,28 +28,29 @@ const columns: IColumn[] = [
         fieldName: 'name',
         isSorted: true,
         isSortedDescending: false,
-        minWidth: 50,
-        maxWidth: 250,
+        minWidth: 100,
+        maxWidth: 1500,
         isResizable: true,
-        targetWidthProportion: 0.05,
-        isCollapsible: true
+        targetWidthProportion: 0.2,
+        isCollapsible: false,
+        isRowHeader: true,
     },
     {
         key: 'portSet',
         name: 'Port set',
         fieldName: 'portSet',
-        minWidth: 50,
-        maxWidth: 100,
+        minWidth: 75,
+        maxWidth: 250,
         isResizable: true,
         targetWidthProportion: 0.2,
-        isCollapsible: true
+        isCollapsible: true,
     },
     {
         key: 'portsTree',
         name: 'Ports tree',
         fieldName: 'portsTree',
-        minWidth: 50,
-        maxWidth: 100,
+        minWidth: 75,
+        maxWidth: 250,
         isResizable: true,
         targetWidthProportion: 0.2,
         isCollapsible: true
@@ -58,10 +59,10 @@ const columns: IColumn[] = [
         key: 'jail',
         name: 'Jail',
         fieldName: 'jail',
-        minWidth: 50,
-        maxWidth: 100,
+        minWidth: 100,
+        maxWidth: 250,
         isResizable: true,
-        targetWidthProportion: 0.2,
+        targetWidthProportion: 1,
         isCollapsible: true
     }
 ]
@@ -77,6 +78,11 @@ export const ConfigFiles =
         const [editorIsOpen, { setTrue: openEditor, setFalse: closeEditor }] = useBoolean(false);
         const [activeRecord, setActiveRecord] = useState('');
         const [itemList, setItemList] = useState([] as ConfigFileMetadata[]);
+        const styles: Partial<IDetailsListStyles> = {
+            root: {
+                font: 'inherit',
+            }
+        };
         let [error, setError] = useState<any>(null);
         let [itemsChanged, renderMe] = useState(0);
         useEffect(() => {
@@ -109,7 +115,7 @@ export const ConfigFiles =
                     closeEditor();
                 }} />
             <ItemList
-                ariaLabel={"List of configuration files"}
+                ariaLabelForGrid={"List of configuration files"}
                 getRowAriaLabel={(r: ConfigFileMetadata) => r.name}
                 error={error}
                 items={itemList}

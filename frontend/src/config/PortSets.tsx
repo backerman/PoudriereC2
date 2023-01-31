@@ -6,7 +6,6 @@ import ItemList from "../ItemList";
 import { sortBy } from "../utils";
 import { PortSetEditor } from "./PortSetEditor";
 
-
 export interface PortSetProps {
     dataSource: PortSetRepository
 }
@@ -18,21 +17,20 @@ const columns: IColumn[] = [
         fieldName: 'name',
         isSorted: true,
         isSortedDescending: false,
-        minWidth: 50,
-        maxWidth: 300,
+        minWidth: 75,
         isResizable: true,
         targetWidthProportion: 0.75,
-        isCollapsible: true
+        isCollapsible: false,
+        isRowHeader: true
     },
     {
         key: 'numPorts',
         name: '# ports',
         fieldName: 'portSet',
         minWidth: 50,
-        maxWidth: 100,
         isResizable: true,
         targetWidthProportion: 0.25,
-        isCollapsible: true,
+        isCollapsible: false,
         onRender: (ps: PortSet) => ps.origins.length
     }
 ]
@@ -72,7 +70,7 @@ export const PortSets = (props: PortSetProps) => {
                     closeEditor();
                 }}/>
             <ItemList
-                ariaLabel={"List of port sets"}
+                ariaLabelForGrid={"List of port sets"}
                 getRowAriaLabel={(r: PortSet) => r.name}
                 columns={columns}
                 items={itemList}
