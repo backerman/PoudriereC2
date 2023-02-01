@@ -1,6 +1,5 @@
 import { INavLink, INavLinkGroup, INavStyles, Nav } from "@fluentui/react";
-import { useCallback } from "react";
-import { useHistory } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const navStyles: Partial<INavStyles> = {
     root: {
@@ -51,12 +50,12 @@ const navLinkGroups: INavLinkGroup[] = [
 ];
 
 export const NavMenu: React.FunctionComponent = () => {
-    const history = useHistory();
+    const navigate = useNavigate();
 
-    const onLinkClick = useCallback((ev?: React.MouseEvent<HTMLElement>, item?: INavLink) => {
+    const onLinkClick = (ev?: React.MouseEvent<HTMLElement>, item?: INavLink) => {
         ev?.preventDefault();
-        if (item != null) history.push(item.url);
-    }, [history]);
+        if (item != null) navigate(item.url);
+    };
 
     return (
         <Nav

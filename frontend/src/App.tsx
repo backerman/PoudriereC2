@@ -1,6 +1,6 @@
 import React from 'react';
 import { Stack, IStackTokens, IStackStyles } from '@fluentui/react';
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import './App.css';
 import { ConfigFiles } from './config/ConfigFiles';
 import { PortSets } from './config/PortSets';
@@ -43,14 +43,12 @@ export const App: React.FunctionComponent = () => {
           <NavMenu />
         </Stack.Item>
         <Stack.Item grow styles={contentStyles}>
-          <Switch>
-            <Route path="/config/files">
-              <ConfigFiles dataSource={sampleConfigFiles} />
-            </Route>
-            <Route path="/config/portsets">
-              <PortSets dataSource={samplePortSets} />
-            </Route>
-          </Switch>
+          <Routes>
+            <Route path="/config/files"
+              element={<ConfigFiles dataSource={sampleConfigFiles} />} />
+            <Route path="/config/portsets"
+              element={<PortSets dataSource={samplePortSets} />} />
+          </Routes>
         </Stack.Item>
       </Stack>
     </Router>
