@@ -44,6 +44,7 @@ export const App: React.FunctionComponent = () => {
         </Stack.Item>
         <Stack.Item grow styles={contentStyles}>
           <Routes>
+            <Route path="/" element={<p>&nbsp;</p>}/>
             <Route path="/config/files"
               element={<ConfigFiles dataSource={sampleConfigFiles} />} />
             <Route path="/config/portsets"
