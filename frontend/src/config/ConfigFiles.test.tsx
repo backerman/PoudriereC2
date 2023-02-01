@@ -52,7 +52,7 @@ it('has a working editor', async () => {
     });
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 
-    userEvent.dblClick(screen.getByText("this is a test"));
+    await userEvent.dblClick(screen.getByText("this is a test"));
     const editor = screen.getByRole("dialog");
     expect(editor).toBeInTheDocument();
 
@@ -61,10 +61,10 @@ it('has a working editor', async () => {
     await waitFor(() => {
         expect(nameField).toHaveValue("this is a test");
     });
-    userEvent.clear(nameField);
-    userEvent.type(nameField, "frodo baggins");
+    await userEvent.clear(nameField);
+    await userEvent.type(nameField, "frodo baggins");
     expect(nameField).toHaveValue("frodo baggins");
-    userEvent.click(screen.getByText("Save"));
+    await userEvent.click(screen.getByText("Save"));
     expect(editor).not.toBeVisible();
 
     // Verify update propagated to list.
