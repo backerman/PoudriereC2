@@ -1,6 +1,13 @@
 import { INavLink, INavLinkGroup, INavStyles, Nav } from "@fluentui/react";
 import { useNavigate } from 'react-router-dom';
 
+function toggleExpand(ev?: React.MouseEvent<HTMLElement>, item?: INavLink) {
+    ev?.preventDefault();
+    if (item != null) {
+        item?.isExpanded ? item.isExpanded = false : item.isExpanded = true;
+    }
+}
+
 const navStyles: Partial<INavStyles> = {
     root: {
         width: "40 em",
@@ -8,17 +15,21 @@ const navStyles: Partial<INavStyles> = {
         border: '1px solid #eee',
         overflowY: 'auto',
     },
+    chevronIcon: {
+        display: 'none',
+    }
 };
+
+
 
 const navLinkGroups: INavLinkGroup[] = [
     {
         links: [
             {
                 name: 'Configuration',
-                url: '/config',
+                url: '#',
                 icon: 'Settings',
                 expandAriaLabel: 'Expand configuration section',
-                collapseAriaLabel: 'Collapse configuration section',
                 links: [
                     {
                         name: 'Files',
@@ -32,6 +43,8 @@ const navLinkGroups: INavLinkGroup[] = [
                     },
                 ],
                 isExpanded: false,
+                forceAnchor: true,
+                onClick: toggleExpand,
             },
             {
                 name: 'Job history',
@@ -54,7 +67,7 @@ export const NavMenu: React.FunctionComponent = () => {
 
     const onLinkClick = (ev?: React.MouseEvent<HTMLElement>, item?: INavLink) => {
         ev?.preventDefault();
-        if (item != null) navigate(item.url);
+        if (item != null && item.url !== "#") navigate(item.url);
     };
 
     return (
