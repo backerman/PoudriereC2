@@ -46,13 +46,13 @@ it('renders errors successfully', async () => {
 it('has a working editor', async () => {
     expect.hasAssertions(); // can't do at least n assertions.
     const sampleData = getSampleDataSource();
-
+    const user = userEvent.setup();
     await act(async () => {
         render(<ConfigFiles dataSource={sampleData}/>);
     });
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 
-    await userEvent.dblClick(screen.getByText("this is a test"));
+    await user.dblClick(screen.getByText("this is a test"));
     const editor = screen.getByRole("dialog");
     expect(editor).toBeInTheDocument();
 
@@ -61,10 +61,10 @@ it('has a working editor', async () => {
     await waitFor(() => {
         expect(nameField).toHaveValue("this is a test");
     });
-    await userEvent.clear(nameField);
-    await userEvent.type(nameField, "frodo baggins");
+    await user.clear(nameField);
+    await user.type(nameField, "frodo baggins");
     expect(nameField).toHaveValue("frodo baggins");
-    await userEvent.click(screen.getByText("Save"));
+    await user.click(screen.getByText("Save"));
     expect(editor).not.toBeVisible();
 
     // Verify update propagated to list.
