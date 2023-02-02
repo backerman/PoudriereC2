@@ -7,37 +7,37 @@ export interface EditorProps {
     headerText: string;
     onSubmit: () => void;
     onDismiss: () => void;
+    children?: React.ReactNode;
 }
 
 const buttonStyles = { root: { marginRight: 8 } };
 
-class Editor<P extends EditorProps, S> extends React.Component<P, S> {
-    onRenderFooterContent = () => {
+export function Editor(props: EditorProps): JSX.Element {
+    const onRenderFooterContent = () => {
         return (
             <div>
-                <PrimaryButton onClick={this.props.onSubmit} styles={buttonStyles}>
+                <PrimaryButton onClick={props.onSubmit} styles={buttonStyles}>
                     Save
                 </PrimaryButton>
-                <DefaultButton onClick={this.props.onDismiss}>Cancel</DefaultButton>
+                <DefaultButton onClick={props.onDismiss}>Cancel</DefaultButton>
             </div>
         )
     };
 
-    render() {
-        return (
-            <Panel
-                isOpen={this.props.isOpen}
-                isBlocking={this.props.isBlocking}
-                headerText={this.props.headerText}
-                closeButtonAriaLabel={"Close"}
-                onRenderFooterContent={this.onRenderFooterContent}
-                isFooterAtBottom={true}
-                onDismiss={this.props.onDismiss}>
-                <Stack verticalAlign="start">
-                    {this.props.children}
-                </Stack>
-            </Panel>)
-    };
+    return (
+        <Panel
+            isOpen={props.isOpen}
+            isBlocking={props.isBlocking}
+            headerText={props.headerText}
+            closeButtonAriaLabel={"Close"}
+            onRenderFooterContent={onRenderFooterContent}
+            isFooterAtBottom={true}
+            onDismiss={props.onDismiss}>
+            <Stack verticalAlign="start">
+                {props.children}
+            </Stack>
+        </Panel>)
+
 }
 
 export default Editor;

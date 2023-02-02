@@ -35,7 +35,7 @@ const columns: IColumn[] = [
     }
 ]
 
-export const PortSets = (props: PortSetProps) => {
+export function PortSets(props: PortSetProps): JSX.Element {
     const [editorIsOpen, { setTrue: openEditor, setFalse: closeEditor }] = useBoolean(false);
     const [activeRecord, setActiveRecord] = useState('');
     const [itemList, setItemList] = useState([] as PortSet[]);
@@ -68,7 +68,7 @@ export const PortSets = (props: PortSetProps) => {
                     await props.dataSource.updatePortSet(activeRecord, ps);
                     renderMe((x) => x + 1);
                     closeEditor();
-                }}/>
+                }} />
             <ItemList
                 ariaLabelForGrid={"List of port sets"}
                 getRowAriaLabel={(r: PortSet) => r.name}

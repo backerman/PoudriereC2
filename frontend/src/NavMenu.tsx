@@ -62,7 +62,7 @@ const navLinkGroups: INavLinkGroup[] = [
     },
 ];
 
-export const NavMenu: React.FunctionComponent = () => {
+export function NavMenu() {
     const navigate = useNavigate();
 
     const onLinkClick = (ev?: React.MouseEvent<HTMLElement>, item?: INavLink) => {

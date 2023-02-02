@@ -1,17 +1,18 @@
-import React from 'react';
-import { Stack, IStackTokens, IStackStyles } from '@fluentui/react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
-import './App.css';
+import { IStackStyles, IStackTokens, Stack } from '@fluentui/react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { ConfigFiles } from './config/ConfigFiles';
 import { PortSets } from './config/PortSets';
 import { getSampleDataSource as getSampleConfigs } from './model/configs.sample';
 import { getSampleDataSource as getSamplePortSets } from './model/portsets.sample';
 import { NavMenu } from './NavMenu';
 
+import './App.css';
+
 const stackTokens: IStackTokens = {
   childrenGap: 15,
   padding: '2em',
 };
+
 const stackStyles: Partial<IStackStyles> = {
   root: {
     margin: '0 auto',
@@ -27,7 +28,7 @@ const contentStyles: Partial<IStackStyles> = {
   }
 }
 
-export const App: React.FunctionComponent = () => {
+export function App(): JSX.Element {
   const sampleConfigFiles = getSampleConfigs();
   const samplePortSets = getSamplePortSets();
 
