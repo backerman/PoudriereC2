@@ -1,13 +1,9 @@
 import { ConstrainMode, DetailsList, DetailsListLayoutMode, IDetailsListProps, IDetailsRowProps, MessageBar, MessageBarType } from "@fluentui/react";
-import React from "react";
+import React, { useState } from "react";
 
 export interface ItemListProperties extends IDetailsListProps {
     error: any
-}
-
-interface ItemListState {
-    items: any[]
-    errorBarClosed: boolean
+    children?: React.ReactNode;
 }
 
 function renderRowDefault(props?: IDetailsRowProps, defaultRender?: (props?: IDetailsRowProps)
@@ -29,50 +25,40 @@ function renderRowDefault(props?: IDetailsRowProps, defaultRender?: (props?: IDe
     }
 }
 
-class ItemList<P extends ItemListProperties> extends React.Component<P, ItemListState> {
-    errorBar: JSX.Element;
+export default function ItemList(props: ItemListProperties): JSX.Element {
+    const [errorBarClosed, setErrorBarClosed] = useState(false);
 
-    constructor(props: P) {
-        super(props);
-
-        this.errorBar =
-            <MessageBar
-                messageBarType={MessageBarType.error}
-                isMultiline={false}
-                onDismiss={this.closeErrorBar}
-                dismissButtonAriaLabel="Close">
-                Error retrieving data.
-            </MessageBar>;
-        this.state = {
-            items: props.items,
-            errorBarClosed: false
-        };
+    function closeErrorBar() {
+        setErrorBarClosed(true);
     }
 
-    closeErrorBar() {
-        this.setState({ errorBarClosed: true });
-    }
+    const errorBar =
+        <MessageBar
+            messageBarType={MessageBarType.error}
+            isMultiline={false}
+            onDismiss={closeErrorBar}
+            dismissButtonAriaLabel="Close">
+            Error retrieving data.
+        </MessageBar>;
 
-    render() {
-        const {
-            compact,
-            error,
-            layoutMode = DetailsListLayoutMode.justified,
-            onRenderRow = renderRowDefault,
-            ...others } = this.props;
-        return (
-            <div className={"ConfigItems"}>
-                {error && !this.state.errorBarClosed && this.errorBar}
-                <DetailsList
-                    {...others}
-                    layoutMode={layoutMode}
-                    compact={compact ?? false}
-                    onRenderRow={onRenderRow}
-                    constrainMode={ConstrainMode.unconstrained}
-                />
-            </div>
-        );
-    }
+    const {
+        items,
+        compact,
+        error,
+        layoutMode = DetailsListLayoutMode.justified,
+        onRenderRow = renderRowDefault,
+        ...others } = props;
+    return (
+        <div className={"ConfigItems"}>
+            {error && !errorBarClosed && errorBar}
+            <DetailsList
+                {...others}
+                items={items}
+                layoutMode={layoutMode}
+                compact={compact ?? false}
+                onRenderRow={onRenderRow}
+                constrainMode={ConstrainMode.unconstrained}
+            />
+        </div>
+    );
 }
-
-export default ItemList;
