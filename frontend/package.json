@@ -20,7 +20,7 @@
     "@types/react-dom": "^17.0.18",
     "@types/react-router-dom": "^5.3.3",
     "cross-env": "^7.0.3",
-    "fast-check": "^2.25.0",
+    "fast-check": "^3.6.2",
     "jest": "^29.4.1",
     "react-cosmos": "^5.7.2",
     "react-scripts": "5.0.1"
