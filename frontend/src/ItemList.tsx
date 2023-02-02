@@ -1,5 +1,6 @@
 import { ConstrainMode, DetailsList, DetailsListLayoutMode, IDetailsListProps, IDetailsRowProps, MessageBar, MessageBarType } from "@fluentui/react";
 import React, { useState } from "react";
+import './ItemList.css';
 
 export interface ItemListProperties extends IDetailsListProps {
     error: any
@@ -49,7 +50,7 @@ export default function ItemList(props: ItemListProperties): JSX.Element {
         onRenderRow = renderRowDefault,
         ...others } = props;
     return (
-        <div className={"ConfigItems"}>
+        <div className={"ItemList"}>
             {error && !errorBarClosed && errorBar}
             <DetailsList
                 {...others}
