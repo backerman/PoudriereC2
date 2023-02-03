@@ -1,6 +1,6 @@
 import { useArgs } from "@storybook/preview-api";
 import { StoryObj } from "@storybook/react";
-import Editor, { EditorProps } from "./Editor";
+import { Editor, EditorProps } from "./Editor";
 
 import { initializeIcons } from '@uifabric/icons';
 import { PrimaryButton } from "@fluentui/react";

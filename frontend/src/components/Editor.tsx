@@ -39,5 +39,3 @@ export function Editor(props: EditorProps): JSX.Element {
         </Panel>)
 
 }
-
-export default Editor;
