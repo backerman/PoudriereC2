@@ -1,7 +1,10 @@
 import { IColumn } from "@fluentui/react";
 import { ComponentMeta, ComponentStory } from "@storybook/react";
+import { initializeIcons } from '@uifabric/icons';
+import 'temporal-polyfill/global';
 import { ItemList } from "./ItemList";
-import 'temporal-polyfill/global'
+
+initializeIcons();
 
 interface ISampleItem {
     id: number;
