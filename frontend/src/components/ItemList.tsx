@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import '/src/styles/ItemList.css';
 
 export interface ItemListProperties extends IDetailsListProps {
-    error: any
+    error?: string
     children?: React.ReactNode;
 }
 
@@ -39,7 +39,7 @@ export function ItemList(props: ItemListProperties): JSX.Element {
             isMultiline={false}
             onDismiss={closeErrorBar}
             dismissButtonAriaLabel="Close">
-            Error retrieving data.
+            {props.error}
         </MessageBar>;
 
     const {
