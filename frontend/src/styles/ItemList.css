@@ -1,0 +1,4 @@
+.ItemList .rowDeleted div {
+    font-style: italic;
+    text-decoration: line-through;
+}
