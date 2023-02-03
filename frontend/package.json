@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@fluentui/react": "^8.105.2",
+    "@fluentui/storybook": "^0.6.22",
     "@next/font": "13.1.6",
     "eslint": "8.33.0",
     "eslint-config-next": "13.1.6",
@@ -24,7 +25,6 @@
   "devDependencies": {
     "@babel/core": "^7.20.12",
     "@playwright/test": "^1.30.0",
-    "@storybook/addon-actions": "^6.5.16",
     "@storybook/addon-essentials": "^6.5.16",
     "@storybook/addon-interactions": "^6.5.16",
     "@storybook/addon-links": "^6.5.16",
