@@ -6,5 +6,8 @@
     "azureFunctions.preDeployTask": "publish",
     "jest.jestCommandLine": "npm test --",
     "jest.rootPath": "frontend",
-    "azureFunctions.projectSubpath": "backend/PoudriereC2"
+    "azureFunctions.projectSubpath": "backend/PoudriereC2",
+    "eslint.workingDirectories": [
+        "frontend"
+    ]
 }
