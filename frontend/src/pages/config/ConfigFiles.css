@@ -1,0 +1,11 @@
+/* This attempt doesn't look quite right.
+.ConfigFiles .rowDeleted span::before {
+    content: " ";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    border-bottom-width: 1px;
+    border-bottom-style: solid;
+    border-bottom-color: #444;
+} */
