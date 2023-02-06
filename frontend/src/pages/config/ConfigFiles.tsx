@@ -77,7 +77,7 @@ export function ConfigFiles(props: ConfigFilesProps): JSX.Element {
     const [editorIsOpen, { setTrue: openEditor, setFalse: closeEditor }] = useBoolean(false);
     const [activeRecord, setActiveRecord] = useState('');
     const [itemList, setItemList] = useState([] as ConfigFileMetadata[]);
-    let [error, setError] = useState<any>(null);
+    let [error, setError] = useState<string | undefined>(undefined);
     let [itemsChanged, renderMe] = useState(0);
     useEffect(() => {
         let isMounted = true;
@@ -89,7 +89,7 @@ export function ConfigFiles(props: ConfigFilesProps): JSX.Element {
                             setItemList(items.filter(itemsFilter).sort(sortBy('name')));
                     }
                 ).catch((err) => {
-                    setError(err);
+                    setError("Error retrieving data.");
                 });
         };
         fetchData();
