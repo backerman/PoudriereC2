@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react';
 import { IColumn } from '@fluentui/react';
 import { ConfigFileMetadata, ConfigFileRepository } from 'src/models/configs';
 import { sortBy } from 'src/utils/utils';
-import './ConfigFiles.css';
 import { ConfigFileEditor } from './ConfigFileEditor';
 import { useBoolean } from '@fluentui/react-hooks';
 import { ItemList } from 'src/components/ItemList';

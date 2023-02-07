@@ -1,6 +1,6 @@
 import { ConstrainMode, DetailsList, DetailsListLayoutMode, IDetailsListProps, IDetailsRowProps, MessageBar, MessageBarType } from "@fluentui/react";
 import React, { useState } from "react";
-import '/src/styles/ItemList.css';
+import styles from './ItemList.module.css';
 
 export interface ItemListProperties extends IDetailsListProps {
     error?: string
@@ -18,7 +18,7 @@ function renderRowDefault(props?: IDetailsRowProps, defaultRender?: (props?: IDe
     let row = props.item;
     if (row.deleted) {
         return (
-            <div className="rowDeleted">
+            <div className={styles.rowDeleted}>
                 {defaultRender(props)}
             </div>);
     } else {
