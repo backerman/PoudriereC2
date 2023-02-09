@@ -1,5 +1,5 @@
 import { getSampleDataSource } from 'src/models/configs.sample';
-import { ConfigFiles } from './ConfigFiles';
+import { ConfigFiles } from 'src/components/config/ConfigFiles';
 
 const samples = getSampleDataSource();
 
