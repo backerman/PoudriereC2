@@ -1,7 +1,8 @@
 import { PortSets } from './PortSets';
-import { getDataSource, PortSet, PortSetRepository } from '../model/portsets';
-import { getSampleDataSource } from '../model/portsets.sample';
+import { getDataSource, PortSet, PortSetRepository } from 'src/models/portsets';
+import { getSampleDataSource } from 'src/models/portsets.sample';
 import { initializeIcons } from '@fluentui/react/lib/Icons';
+import { StoryObj } from '@storybook/react';
 
 initializeIcons();
 
@@ -25,9 +26,21 @@ const erroringDataSource : PortSetRepository = {
     }
 }
 
-// eslint-disable-next-line import/no-anonymous-default-export
 export default {
-    empty: <PortSets dataSource={emptyDataSource} />,
-    contents: <PortSets dataSource={dataSource} />,
-    error: <PortSets dataSource={erroringDataSource} />
+    component: PortSets,
+} as StoryObj<typeof PortSets>;
+
+export const Empty : StoryObj<typeof PortSets> = {
+    name: 'Empty',
+    render: () => <PortSets dataSource={emptyDataSource} />
+}
+
+export const Populated : StoryObj<typeof PortSets> = {
+    name: 'Populated',
+    render: () => <PortSets dataSource={dataSource} />
+}
+
+export const Erroring : StoryObj<typeof PortSets> = {
+    name: 'Erroring',
+    render: () => <PortSets dataSource={erroringDataSource} />
 }
