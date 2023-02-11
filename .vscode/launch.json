@@ -16,9 +16,9 @@
             "internalConsoleOptions": "neverOpen",
             "disableOptimisticBPs": true,
             "cwd": "${workspaceFolder}/frontend",
-            "runtimeExecutable": "npm",
+            "runtimeExecutable": "yarn",
             "args": [
-                "test",
+                "jest",
                 "--",
                 "--runInBand",
                 "--watchAll=false"

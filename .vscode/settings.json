@@ -4,7 +4,10 @@
     "azureFunctions.projectRuntime": "~4",
     "debug.internalConsoleOptions": "neverOpen",
     "azureFunctions.preDeployTask": "publish",
-    "jest.jestCommandLine": "npm test --",
+    "jest.jestCommandLine": "yarn jest",
     "jest.rootPath": "frontend",
-    "azureFunctions.projectSubpath": "backend/PoudriereC2"
+    "azureFunctions.projectSubpath": "backend/PoudriereC2",
+    "eslint.workingDirectories": [
+        "frontend"
+    ]
 }
