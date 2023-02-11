@@ -1,6 +1,7 @@
 module Facefault.PoudriereC2.Entry
 
 open Facefault.PoudriereC2.Database
+open Microsoft.Azure.Functions.Worker
 open Microsoft.Extensions.Hosting
 open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Configuration
@@ -23,7 +24,12 @@ let main argv =
             let accessToken = getAccessToken()
             System.Environment.SetEnvironmentVariable("PGPASSWORD", accessToken)
         HostBuilder()
-            .ConfigureFunctionsWorkerDefaults()
+            .ConfigureFunctionsWorkerDefaults(
+                fun (_: HostBuilderContext) (builder: IFunctionsWorkerApplicationBuilder) ->
+                    builder.UseWhen<AADMiddleware>(
+                        fun _ -> configuration.["AZURE_FUNCTIONS_ENVIRONMENT"] <> "Development"
+                    ) |> ignore
+            )
             .ConfigureServices(
                 fun s ->
                     s.AddSingleton<DB.dataContext> (DB.GetDataContext(connStr)) |> ignore

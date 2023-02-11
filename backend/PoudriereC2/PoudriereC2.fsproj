@@ -36,7 +36,7 @@
     <ItemGroup>
       <DevLocalSettings Include="local.settings-dev.json" />
     </ItemGroup>
-    <Copy Condition="!Exists('local.settings.json')" SourceFiles="@(DevLocalSettings)" DestinationFiles="@(DevLocalSettings->'local.settings.json')">
+    <Copy Condition="!Exists('local.settings.json')" SourceFiles="@(DevLocalSettings)" DestinationFiles="@(DevLocalSettings-&gt;'local.settings.json')">
     </Copy>
   </Target>
   <ItemGroup>
@@ -54,6 +54,7 @@
     <Compile Include="ScheduleRepository.fs" />
     <Compile Include="Schedule.fs" />
     <Compile Include="Jobs.fs" />
+    <Compile Include="AADMiddleware.fs" />
     <Compile Include="Program.fs" />
     <None Include="host.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
