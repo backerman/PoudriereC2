@@ -18,6 +18,22 @@ or
 export PGPASSWORD=$(az account get-access-token --resource-type oss-rdbms --query "[accessToken]" -o tsv)
 ```
 
+### Redeploying the function
+If the function is deleted and redeployed, its AAD managed service identity
+will have a different GUID, and PostgreSQL authentication will fail. To fix
+this issue, query AAD for the new GUID:
+
+```shell
+# Get the SP ID
+az ad sp list --display-name ffpoudrierec2 --filter "servicePrincipalType eq 'ManagedIdentity'" --query '[].id'
+```
+
+Then open `psql` and update the role's security label:
+
+```sql
+security label for "pgaadauth" on role ffpoudrierec2 is 'aadauth,oid=<SP-GUID-goes-here>,type=service';
+```
+
 Discussion: Azure Database for PostgreSQL vs IaaS
 
 ```postgresql
