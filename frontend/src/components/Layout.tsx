@@ -1,6 +1,7 @@
 import { getTheme, IStackItemStyles, IStackStyles, IStackTokens, ITextStyles, Stack, Text } from "@fluentui/react";
 import { ReactElement, ReactNode } from "react"
 import { NavMenu } from "./NavMenu"
+import { TopBar } from "./TopBar";
 
 const stackTokens: IStackTokens = {
   childrenGap: 15,
@@ -26,28 +27,18 @@ interface IHasChildren {
   children?: ReactNode
 }
 
-const theme = getTheme();
-const topbarStyles: IStackItemStyles = {
-  root: {
-    background: theme.palette.themePrimary,
-    padding: '0.5rem'
-  }
-}
-
-const topbarTextStyles: ITextStyles = {
-  root: {
-    color: theme.palette.white
-  }
-}
-
 export default function Layout({ children }: IHasChildren): ReactElement {
   return (
     <>
       <Stack>
-        <Stack.Item styles={topbarStyles}>
-          <Text variant='large' styles={topbarTextStyles}>
-            Poudriere configuration
-          </Text>
+        <Stack.Item>
+          <TopBar
+            user={{
+              name: 'Erik Mustermann',
+              upn: 'erik.x.mustermann@example.com',
+              initials: 'EM'
+            }}
+          />
         </Stack.Item>
         <Stack
           horizontal
