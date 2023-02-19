@@ -32,13 +32,7 @@ export default function Layout({ children }: IHasChildren): ReactElement {
     <>
       <Stack>
         <Stack.Item>
-          <TopBar
-            user={{
-              name: 'Erik Mustermann',
-              upn: 'erik.x.mustermann@example.com',
-              initials: 'EM'
-            }}
-          />
+          <TopBar/>
         </Stack.Item>
         <Stack
           horizontal

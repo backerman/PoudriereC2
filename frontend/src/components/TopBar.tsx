@@ -1,3 +1,4 @@
+import { useMsal } from '@azure/msal-react';
 import {
     CommandBar,
     getTheme,
@@ -10,13 +11,9 @@ import {
     PersonaSize,
     Text
 } from '@fluentui/react';
+import { useEffect, useState } from 'react';
 
 export interface ITopBarProps {
-    user: {
-        name: string,
-        upn: string,
-        initials?: string
-    },
     onLogout?: (ev?: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>,
         item?: IContextualMenuItem) => boolean | void
 }
@@ -52,7 +49,30 @@ const personaStyles: Partial<IPersonaStyles> = {
     }
 }
 
+type AuthState = {
+    name: string;
+    username: string;
+}
+
 export function TopBar(props: ITopBarProps): JSX.Element {
+    const { accounts, instance, inProgress } = useMsal();
+    const [user, setUser] = useState<AuthState>({
+        name: 'The Man With No Name',
+        username: 'manwithnoname@example.com'
+    });
+    useEffect(() =>{
+        if (!instance.getActiveAccount() && accounts.length > 0) {
+            instance.setActiveAccount(accounts[0]);
+        }
+        const activeAcct = instance.getActiveAccount();
+
+        if (activeAcct) {
+            setUser({
+                name: activeAcct.name || '',
+                username: activeAcct.username
+            });
+        }
+    }, [accounts, instance]);
 
     const barItems: ICommandBarItemProps[] = [
         {
@@ -134,10 +154,10 @@ export function TopBar(props: ITopBarProps): JSX.Element {
                 return (
                     <Persona
                         size={PersonaSize.size32}
-                        text={props.user.name}
-                        imageInitials={props.user.initials}
+                        text={user.name}
+                        imageInitials={"XX"}
                         showSecondaryText={true}
-                        secondaryText={props.user.upn}
+                        secondaryText={user.username}
                         styles={personaStyles}
                     />
                 )
