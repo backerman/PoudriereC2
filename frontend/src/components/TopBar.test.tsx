@@ -45,9 +45,13 @@ it('renders the top bar', async () => {
     expect.hasAssertions();
     await waitFor(async () => {
         const menu = screen.getByLabelText("User menu");
+        const userInitials: string =
+            userAcctInfo.name?.split(' ').map((n) => n[0]).join('')
+            || 'If the initials are undefined, something has gone horribly wrong';
         expect(menu).toBeVisible();
         expect(menu).toHaveTextContent(userAcctInfo.username);
         expect(menu).toHaveTextContent(userAcctInfo.name!);
+        expect(menu).toHaveTextContent(userInitials)
         expect(logoutCallback).not.toHaveBeenCalled();
     });
 });
@@ -69,7 +73,7 @@ it('calls the logout callback when the logout button is clicked', async () => {
     const menu = screen.getByLabelText("User menu");
     // If skipHover isn't set, user-event will think pointer-events has been
     // set to none further up the DOM tree, and will throw an error.
-    const user = userEvent.setup({skipHover: true});
+    const user = userEvent.setup({ skipHover: true });
     expect(menu).toHaveAttribute("aria-expanded", "false");
     await user.click(menu);
     expect(menu).toHaveAttribute("aria-expanded", "true");

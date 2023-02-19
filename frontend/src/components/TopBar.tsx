@@ -52,12 +52,14 @@ const personaStyles: Partial<IPersonaStyles> = {
 type AuthState = {
     name: string;
     username: string;
+    initials: string;
 }
 
 export function TopBar(props: ITopBarProps): JSX.Element {
     const { accounts, instance, inProgress } = useMsal();
     const [user, setUser] = useState<AuthState>({
         name: 'The Man With No Name',
+        initials: 'NN',
         username: 'manwithnoname@example.com'
     });
     useEffect(() =>{
@@ -69,7 +71,8 @@ export function TopBar(props: ITopBarProps): JSX.Element {
         if (activeAcct) {
             setUser({
                 name: activeAcct.name || '',
-                username: activeAcct.username
+                username: activeAcct.username,
+                initials: activeAcct.name?.split(' ').map((n) => n[0]).join('') || ''
             });
         }
     }, [accounts, instance]);
@@ -155,7 +158,7 @@ export function TopBar(props: ITopBarProps): JSX.Element {
                     <Persona
                         size={PersonaSize.size32}
                         text={user.name}
-                        imageInitials={"XX"}
+                        imageInitials={user.initials}
                         showSecondaryText={true}
                         secondaryText={user.username}
                         styles={personaStyles}
