@@ -56,7 +56,7 @@ type AuthState = {
 }
 
 export function TopBar(props: ITopBarProps): JSX.Element {
-    const { accounts, instance, inProgress } = useMsal();
+    const { accounts, instance } = useMsal();
     const [user, setUser] = useState<AuthState>({
         name: 'The Man With No Name',
         initials: 'NN',
