@@ -55,6 +55,19 @@ type AuthState = {
     initials: string;
 }
 
+function renderUser(user: AuthState) {
+    return (
+        <Persona
+            size={PersonaSize.size32}
+            text={user.name}
+            imageInitials={user.initials}
+            showSecondaryText={true}
+            secondaryText={user.username}
+            styles={personaStyles}
+        />
+    )
+}
+
 export function TopBar(props: ITopBarProps): JSX.Element {
     const { accounts, instance } = useMsal();
     const [user, setUser] = useState<AuthState>({
@@ -62,7 +75,8 @@ export function TopBar(props: ITopBarProps): JSX.Element {
         initials: 'NN',
         username: 'manwithnoname@example.com'
     });
-    useEffect(() =>{
+
+    useEffect(() => {
         if (!instance.getActiveAccount() && accounts.length > 0) {
             instance.setActiveAccount(accounts[0]);
         }
@@ -153,18 +167,7 @@ export function TopBar(props: ITopBarProps): JSX.Element {
                     color: theme.palette.white,
                 }
             },
-            onRenderChildren: () => {
-                return (
-                    <Persona
-                        size={PersonaSize.size32}
-                        text={user.name}
-                        imageInitials={user.initials}
-                        showSecondaryText={true}
-                        secondaryText={user.username}
-                        styles={personaStyles}
-                    />
-                )
-            },
+            onRenderChildren: () => renderUser(user),
             subMenuProps: {
                 items: [
                     {
