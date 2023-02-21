@@ -20,6 +20,7 @@ type PortsRepository(db: DB.dataContext) =
                 query {
                     for pt in db.Poudrierec2.Portstrees do
                     where ((%filterQuery) pt)
+                    sortBy pt.Name
                     select pt
                 } |> Seq.executeQueryAsync
             return

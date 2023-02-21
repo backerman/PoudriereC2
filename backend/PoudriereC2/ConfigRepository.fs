@@ -32,6 +32,7 @@ type ConfigRepository (db: DB.dataContext) =
                 query {
                     for file in db.Poudrierec2.Configfiles do
                     where ((%filterQuery) file)
+                    sortBy file.Id
                     select
                         { Id = file.Id
                           Deleted = file.Deleted

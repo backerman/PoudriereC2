@@ -22,6 +22,7 @@ type ScheduleRepository (db: DB.dataContext) =
             let! scheds =
                 query {
                     for s in db.Poudrierec2.Schedules do
+                    sortBy s.Jobconfig
                     select {
                         JobId = s.Jobconfig
                         RunAt = s.Runat
