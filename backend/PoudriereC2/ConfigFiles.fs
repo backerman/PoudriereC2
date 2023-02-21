@@ -12,8 +12,8 @@ open System.Runtime.InteropServices
 
 type ConfigFileApi (cfg: ConfigRepository) =
 
-    [<Function("NewConfigFile")>]
-    member _.newConfigFile
+    [<Function("NewOrUpdateConfigFile")>]
+    member _.newOrUpdateConfigFile
         ([<HttpTrigger(AuthorizationLevel.Anonymous, "put", Route="configurationfiles/metadata")>]
          req: HttpRequestData, execContext: FunctionContext) =
             async {
@@ -27,7 +27,7 @@ type ConfigFileApi (cfg: ConfigRepository) =
                         (Error "Invalid or nonexistent payload")
                     |> ignore
                 | Some meta ->
-                    let! result = cfg.NewConfigFile meta
+                    let! result = cfg.NewOrUpdateConfigFile meta
                     match result with
                     | NoError ->
                         response.StatusCode <- HttpStatusCode.OK

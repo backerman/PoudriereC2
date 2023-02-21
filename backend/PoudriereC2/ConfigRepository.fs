@@ -45,7 +45,7 @@ type ConfigRepository (db: DB.dataContext) =
             return configFiles
         }
     
-    member _.NewConfigFile (metadata: ConfigFileMetadata) : Async<DatabaseError> =
+    member _.NewOrUpdateConfigFile (metadata: ConfigFileMetadata) : Async<DatabaseError> =
         async {
             let row = db.Poudrierec2.Configfiles.Create()
             row.Name <- metadata.Name
@@ -56,7 +56,7 @@ type ConfigRepository (db: DB.dataContext) =
             row.Portstree <- metadata.PortsTree
             row.Configtype <- UnionToString metadata.FileType
 
-            row.OnConflict <- Common.OnConflict.Throw
+            row.OnConflict <- Common.OnConflict.Update
             let! result = DatabaseError.FromQuery (db.SubmitUpdatesAsync())
             if result <> NoError then
                 db.ClearUpdates() |> ignore

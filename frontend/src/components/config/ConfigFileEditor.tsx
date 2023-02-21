@@ -1,13 +1,13 @@
 import { Dropdown, IDropdownOption, TextField } from "@fluentui/react";
-import { useCallback, useEffect, useReducer } from "react";
+import { useCallback, useEffect, useReducer, useState } from "react";
 import { Editor } from "@/components/Editor";
 import { ConfigFileMetadata, ConfigFileRepository } from "src/models/configs";
 
 export type ConfigFileEditorProps =
     {
         isOpen: boolean
+        record: ConfigFileMetadata
         recordId: string
-        dataSource: ConfigFileRepository
         onSubmit?: (formData: ConfigFileMetadata) => void
         onDismiss: () => void
     }
@@ -39,18 +39,15 @@ export function ConfigFileEditor(props: ConfigFileEditorProps): JSX.Element {
         }
         return newState;
     }
-
+    let [mostRecentPropsRecord, setMostRecentPropsRecord] = useState(props.record);
     let [configFileData, setState] =
-        useReducer(updateState, {} as ConfigFileMetadata)
-
-    useEffect(() => {
-        if (props.recordId) {
-            props.dataSource.getConfigFile(props.recordId)
-                .then((newRecord: ConfigFileMetadata | undefined) => {
-                    setState(newRecord || {} as ConfigFileMetadata);
-                });
-        }
-    }, [props.dataSource, props.recordId]);
+        useReducer(updateState, {} as ConfigFileMetadata);
+    // The state isn't reinitialized when the props change, so do that
+    // manually.
+    if (props.record != mostRecentPropsRecord) {
+        setState(props.record);
+        setMostRecentPropsRecord(props.record);
+    }
 
     const onTextChange = useCallback((fieldName: keyof ConfigFileMetadata) => {
         return (event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string) => {

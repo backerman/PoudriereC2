@@ -1,13 +1,27 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { IColumn } from '@fluentui/react';
 import { ConfigFileMetadata, ConfigFileRepository } from 'src/models/configs';
-import { sortBy } from 'src/utils/utils';
 import { ConfigFileEditor } from './ConfigFileEditor';
 import { useBoolean } from '@fluentui/react-hooks';
 import { ItemList } from 'src/components/ItemList';
+import useSWR from 'swr';
+
+const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+
+const fetcher = (url: RequestInfo | URL, ...args: any[]) =>
+    fetch(`${baseUrl}${url}`, ...args)
+        .then(async (res) => {
+            return res;
+        })
+        .then((res) => {
+            if (res.ok) {
+                return res.json();
+            } else {
+                throw new Error(res.statusText);
+            }
+        });
 
 type ConfigFilesProps = {
-    dataSource: ConfigFileRepository;
     showDeleted?: boolean;
 }
 
@@ -75,45 +89,34 @@ export function ConfigFiles(props: ConfigFilesProps): JSX.Element {
     }, [props.showDeleted]);
     const [editorIsOpen, { setTrue: openEditor, setFalse: closeEditor }] = useBoolean(false);
     const [activeRecord, setActiveRecord] = useState('');
-    const [itemList, setItemList] = useState([] as ConfigFileMetadata[]);
-    let [error, setError] = useState<string | undefined>(undefined);
-    let [itemsChanged, renderMe] = useState(0);
-    useEffect(() => {
-        let isMounted = true;
-        async function fetchData() {
-            props.dataSource.getConfigFiles()
-                .then(
-                    (items: ConfigFileMetadata[]) => {
-                        if (isMounted)
-                            setItemList(items.filter(itemsFilter).sort(sortBy('name')));
-                    }
-                ).catch((err) => {
-                    setError("Error retrieving data.");
-                });
-        };
-        fetchData();
-        return () => { isMounted = false; }
-    }, [itemsFilter, props.dataSource, itemsChanged]);
-
+    const { data, error, isLoading, mutate } = useSWR<ConfigFileMetadata[]>('/api/configurationfiles/metadata', fetcher);
     return (<div className={"ConfigFiles"}>
         <ConfigFileEditor
-            dataSource={props.dataSource}
+            record={data?.find((r) => r.id === activeRecord) || {} as ConfigFileMetadata}
             isOpen={editorIsOpen}
             recordId={activeRecord}
             onDismiss={closeEditor}
-            onSubmit={async (meta) => {
-                await props.dataSource.updateConfigFile(meta);
-                // force rerender.
-                renderMe((x) => x + 1);
+            onSubmit={async (meta: ConfigFileMetadata) => {
+                await mutate(
+                    async () => {
+                        await
+                            fetcher('/api/configurationfiles/metadata',
+                                {
+                                    method: 'PUT',
+                                    body: JSON.stringify(meta)
+                                });
+                        return data?.map((r) => r.id === meta.id ? meta : r);
+                    });
                 closeEditor();
             }} />
         <ItemList
+            enableShimmer={isLoading}
             ariaLabelForGrid={"List of configuration files"}
             getRowAriaLabel={(r: ConfigFileMetadata) => r.name}
-            error={error}
-            items={itemList}
+            error={error?.toString()}
+            items={data || []}
             columns={columns}
-            getKey={(f: ConfigFileMetadata) => f.id}
+            getKey={data ? (f: ConfigFileMetadata) => f.id : undefined}
             onItemInvoked={(item: ConfigFileMetadata) => {
                 setActiveRecord(item.id);
                 openEditor();

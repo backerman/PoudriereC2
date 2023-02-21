@@ -1,10 +1,11 @@
-import { ConstrainMode, DetailsList, DetailsListLayoutMode, IDetailsListProps, IDetailsRowProps, MessageBar, MessageBarType } from "@fluentui/react";
+import { ConstrainMode, DetailsList, DetailsListLayoutMode, IDetailsListProps, IDetailsRowProps, MessageBar, MessageBarType, ShimmeredDetailsList } from "@fluentui/react";
 import React, { useState } from "react";
 import styles from './ItemList.module.css';
 
 export interface ItemListProperties extends IDetailsListProps {
     error?: string
     children?: React.ReactNode;
+    enableShimmer?: boolean;
 }
 
 function renderRowDefault(props?: IDetailsRowProps, defaultRender?: (props?: IDetailsRowProps)
@@ -48,12 +49,14 @@ export function ItemList(props: ItemListProperties): JSX.Element {
         error,
         layoutMode = DetailsListLayoutMode.justified,
         onRenderRow = renderRowDefault,
+        enableShimmer,
         ...others } = props;
     return (
         <div className={"ItemList"}>
             {error && !errorBarClosed && errorBar}
-            <DetailsList
+            <ShimmeredDetailsList
                 {...others}
+                enableShimmer={enableShimmer || false}
                 items={items}
                 layoutMode={layoutMode}
                 compact={compact ?? false}

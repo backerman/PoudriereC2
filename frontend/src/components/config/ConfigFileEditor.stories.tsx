@@ -21,7 +21,7 @@ export default {
                 </PrimaryButton>
                 <ConfigFileEditor
                 isOpen={args.isOpen}
-                dataSource={dataSource}
+                record={sampleData.find((item) => item.id == args.recordId) || sampleData[0]}
                 onDismiss={() => updateArgs({isOpen: false})}
                 recordId={args.recordId} />
             </div>
@@ -45,7 +45,6 @@ const dataSource: ConfigFileRepository = getSampleDataSource();
 
 export const Editor : StoryObj<typeof ConfigFileEditor> = {
     args: {
-        dataSource: dataSource,
         recordId: sampleData[1].id
     },
 }

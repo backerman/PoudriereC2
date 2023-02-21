@@ -1,7 +1,8 @@
 import { initializeIcons } from '@fluentui/react/lib/Icons';
 import { StoryObj } from '@storybook/react';
-import { sampleData, getSampleDataSource } from 'src/models/configs.sample';
+import { sampleData } from 'src/models/configs.sample';
 import { ConfigFiles } from './ConfigFiles';
+import { rest } from 'msw';
 
 initializeIcons();
 
@@ -21,11 +22,19 @@ export default {
     }
 } as StoryObj<typeof ConfigFiles>;
 
-const dataSource = getSampleDataSource();
-
 export const ConfigFilesPopulated: StoryObj<typeof ConfigFiles> = {
     args: {
-        dataSource: dataSource,
         showDeleted: true,
+    },
+    parameters: {
+        msw: {
+            handlers: [
+                rest.get('/api/configurationfiles/metadata', (req, res, ctx) => {
+                    return res(
+                        ctx.json(sampleData)
+                    )
+                })
+            ]
+        }
     }
 }
