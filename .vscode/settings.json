@@ -9,5 +9,6 @@
     "azureFunctions.projectSubpath": "backend/PoudriereC2",
     "eslint.workingDirectories": [
         "frontend"
-    ]
+    ],
+    "sarif-viewer.connectToGithubCodeScanning": "on"
 }
