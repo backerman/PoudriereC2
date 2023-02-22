@@ -90,3 +90,7 @@ module ConfigTypes =
     type PortsTree =
         { Name: string
           Method: PortsTreeMethod }
+    
+    type PortSet =
+        { Id: Guid
+          Name: string }

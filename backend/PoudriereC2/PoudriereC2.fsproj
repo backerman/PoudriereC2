@@ -47,6 +47,8 @@
     <Compile Include="Serialization.fs" />
     <Compile Include="PortsRepository.fs" />
     <Compile Include="PortsTrees.fs" />
+    <Compile Include="PortSetsRepository.fs" />
+    <Compile Include="PortSets.fs" />
     <Compile Include="ConfigRepository.fs" />
     <Compile Include="ConfigFiles.fs" />
     <Compile Include="ConfigFileOptions.fs" />
