@@ -1,5 +1,4 @@
-import { ConfigFileRepository } from 'src/models/configs';
-import { getSampleDataSource, sampleData } from 'src/models/configs.sample';
+import { sampleData } from 'src/models/configs.sample';
 import { initializeIcons } from '@fluentui/react/lib/Icons';
 import { ConfigFileEditor } from './ConfigFileEditor';
 import { PrimaryButton } from '@fluentui/react';
@@ -40,8 +39,6 @@ export default {
         }
     }
 } as StoryObj<typeof ConfigFileEditor>;
-
-const dataSource: ConfigFileRepository = getSampleDataSource();
 
 export const Editor : StoryObj<typeof ConfigFileEditor> = {
     args: {

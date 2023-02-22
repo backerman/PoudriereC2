@@ -1,7 +1,7 @@
 import { Dropdown, IDropdownOption, TextField } from "@fluentui/react";
-import { useCallback, useEffect, useReducer, useState } from "react";
+import { useCallback, useReducer, useState } from "react";
 import { Editor } from "@/components/Editor";
-import { ConfigFileMetadata, ConfigFileRepository } from "src/models/configs";
+import { ConfigFileMetadata } from "src/models/configs";
 
 export type ConfigFileEditorProps =
     {
