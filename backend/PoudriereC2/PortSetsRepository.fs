@@ -4,6 +4,7 @@ open Facefault.PoudriereC2
 open Facefault.PoudriereC2.Database
 open System
 open FSharp.Data.Sql
+open System.Linq
 
 type PortSetsRepository(db: DB.dataContext) =
     member _.GetPortSets(portSet: Guid option) =
@@ -40,4 +41,33 @@ type PortSetsRepository(db: DB.dataContext) =
                 |> Seq.executeQueryAsync
 
             return ports
+        }
+
+    member _.AddPortSetMembers (portSet: Guid) (ports: string list) =
+        async {
+            ports
+            |> List.map (fun port -> db.Poudrierec2.PortsetMembers.Create())
+            |> List.zip ports
+            |> List.map (fun (port, row) ->
+                row.Portname <- port
+                row.Portset <- portSet
+                row.OnConflict <- Common.OnConflict.DoNothing
+                row)
+            |> ignore
+
+            let! result = DatabaseError.FromQuery (db.SubmitUpdatesAsync())
+            return result
+        }
+
+    member _.DeletePortSetMembers (portSet: Guid) (ports: string list) =
+        async {
+            let q =
+                query {
+                    for psm in db.Poudrierec2.PortsetMembers do
+                    where (psm.Portset = portSet && ports.Contains(psm.Portname))
+                } |> Seq.``delete all items from single table``
+            let! result = DatabaseError.FromQuery q
+            if result <> NoError then
+                db.ClearUpdates() |> ignore
+            return result
         }

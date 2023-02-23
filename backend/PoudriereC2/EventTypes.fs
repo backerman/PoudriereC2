@@ -106,6 +106,10 @@ module Types =
                 (typeof<ConfigFileType>, JsonFSharpOptions(
                     unionEncoding = JsonUnionEncoding.UnwrapFieldlessTags,
                     unionTagNamingPolicy = LowerCaseNamingPolicy()))
+                (typeof<PortSetUpdate>, JsonFSharpOptions(
+                    unionTagName = "action",
+                    unionTagNamingPolicy = LowerCaseNamingPolicy()
+                ))
             ]
         ) |> options.Converters.Add
         options

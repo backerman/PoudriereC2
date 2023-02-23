@@ -37,6 +37,27 @@ type JsonTests() =
         JsonSerializer.Deserialize<Event>(actual, eventSerializationOptions)
         |> should equal anEvent
 
+    [<Test>]
+    member _.TestPortSetUpdateSerialization () =
+        let someUpdates: PortSetUpdate list =
+            [
+                Add [ "www/apache24"; "security/tailscale" ] ;
+                Delete [ "www/apache24" ]
+            ]
+        let expectedSerializations =
+            [ 
+                """{"action":"add","ports":["www/apache24","security/tailscale"]}"""
+                """{"action":"delete","ports":["www/apache24"]}"""
+            ]
+        let actualSerializations =
+            someUpdates
+            |> List.map (fun x -> JsonSerializer.Serialize(x, eventSerializationOptions))
+        actualSerializations
+        |> should equal expectedSerializations
+        let actualJsonList = "[" + (actualSerializations |> String.concat ", ") + "]" 
+        JsonSerializer.Deserialize<PortSetUpdate list>(actualJsonList, eventSerializationOptions)
+        |> should equal someUpdates
+
     [<SetUp>]
     member _.setup () =
         FSharpCustomMessageFormatter() |> ignore
