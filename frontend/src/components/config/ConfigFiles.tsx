@@ -5,21 +5,7 @@ import { ConfigFileEditor } from './ConfigFileEditor';
 import { useBoolean } from '@fluentui/react-hooks';
 import { ItemList } from 'src/components/ItemList';
 import useSWR from 'swr';
-
-const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '';
-
-const fetcher = (url: RequestInfo | URL, ...args: any[]) =>
-    fetch(`${baseUrl}${url}`, ...args)
-        .then(async (res) => {
-            return res;
-        })
-        .then((res) => {
-            if (res.ok) {
-                return res.json();
-            } else {
-                throw new Error(res.statusText);
-            }
-        });
+import { fetcher } from 'src/utils/fetcher';
 
 type ConfigFilesProps = {
     showDeleted?: boolean;
@@ -114,7 +100,7 @@ export function ConfigFiles(props: ConfigFilesProps): JSX.Element {
             ariaLabelForGrid={"List of configuration files"}
             getRowAriaLabel={(r: ConfigFileMetadata) => r.name}
             error={error?.toString()}
-            items={data || []}
+            items={(data || []).filter(itemsFilter)}
             columns={columns}
             getKey={data ? (f: ConfigFileMetadata) => f.id : undefined}
             onItemInvoked={(item: ConfigFileMetadata) => {
