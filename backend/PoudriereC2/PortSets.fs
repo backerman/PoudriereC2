@@ -65,7 +65,7 @@ type PortSetsApi (ps: PortSetsRepository) =
                     response.StatusCode <- HttpStatusCode.UnprocessableEntity
                     log.LogError
                         ("Failed modification of port set {PortSet}: {ViolatedConstraint} violated",
-                            portset, ex.ConstraintName)
+                         portset, ex.ConstraintName)
                     response.writeJsonResponse
                         (Error "Referential integrity violation")
                     |> ignore
