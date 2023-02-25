@@ -1,13 +1,12 @@
 import { IconButton, Stack, TextField } from "@fluentui/react";
-import { useEffect, useReducer, useRef, useState } from "react";
+import { useReducer, useRef, useState } from "react";
 import { Editor } from "../Editor";
 import { ItemList } from "../ItemList";
-import { PortSet, PortSetRepository } from "src/models/portsets";
+import { PortSet } from "src/models/portsets";
 
 export interface PortSetEditorProps {
     isOpen: boolean
-    recordId: string
-    dataSource: PortSetRepository
+    record: PortSet | undefined
     onSubmit: (formData: PortSet) => void
     onDismiss: () => void
 }
@@ -44,22 +43,6 @@ export function PortSetEditor(props: PortSetEditorProps): JSX.Element {
     let [error, setError] = useState<any>(null);
     let originalValue = useRef<PortSet>({ id: '', name: '', origins: [] });
 
-    useEffect(() => {
-        if (props.recordId) {
-            props.dataSource.getPortSet(props.recordId)
-                .then((newRecord: PortSet | undefined) => {
-                    setOrigins(newRecord?.origins.sort() || []);
-                    setPortSetName(newRecord?.name || '');
-                    if (newRecord != null) {
-                        originalValue.current = { ...newRecord }
-                    };
-                })
-                .catch((error: any) => {
-                    setError(error);
-                });;
-        }
-    }, [props.dataSource, props.recordId]);
-
     // The text field for adding an origin.
     const [originName, updateOriginName] = useState('');
 
@@ -77,7 +60,7 @@ export function PortSetEditor(props: PortSetEditorProps): JSX.Element {
             }}
             onSubmit={() => {
                 props.onSubmit({
-                    id: props.recordId,
+                    id: props.record?.id || '',
                     name: portSetName,
                     origins: origins
                 })
@@ -113,7 +96,7 @@ export function PortSetEditor(props: PortSetEditorProps): JSX.Element {
                     onRender: (item) => <span>{item}</span>
                 }]}
                 getRowAriaLabel={(r: string) => r}
-                items={origins}
+                items={props.record?.origins || []}
                 error={error}>
             </ItemList>
         </Editor>)

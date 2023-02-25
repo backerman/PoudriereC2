@@ -43,31 +43,30 @@ type PortSetsRepository(db: DB.dataContext) =
             return ports
         }
 
-    member _.AddPortSetMembers (portSet: Guid) (ports: string list) =
+    /// Process one or more add/delete actions on a port set as part of a
+    /// single transaction. The order of operations within the transaction
+    /// is not guaranteed.
+    member _.UpdatePortSetMembers (portSet: Guid) (actions: PortSetUpdate list) =
+        let processAction (action: PortSetUpdate) =
+            match action with
+                | Add ports ->
+                    ports
+                    |> List.map (fun port -> db.Poudrierec2.PortsetMembers.Create())
+                    |> List.zip ports
+                    |> List.map (fun (port, row) ->
+                        row.Portname <- port
+                        row.Portset <- portSet
+                        row.OnConflict <- Common.OnConflict.DoNothing
+                        row)
+                    |> ignore
+                | Delete ports ->
+                    query {
+                        for psm in db.Poudrierec2.PortsetMembers do
+                        where (psm.Portset = portSet && ports.Contains(psm.Portname))
+                    } |> Seq.iter (fun row -> row.Delete())
         async {
-            ports
-            |> List.map (fun port -> db.Poudrierec2.PortsetMembers.Create())
-            |> List.zip ports
-            |> List.map (fun (port, row) ->
-                row.Portname <- port
-                row.Portset <- portSet
-                row.OnConflict <- Common.OnConflict.DoNothing
-                row)
-            |> ignore
-
+            actions
+            |> List.iter processAction
             let! result = DatabaseError.FromQuery (db.SubmitUpdatesAsync())
-            return result
-        }
-
-    member _.DeletePortSetMembers (portSet: Guid) (ports: string list) =
-        async {
-            let q =
-                query {
-                    for psm in db.Poudrierec2.PortsetMembers do
-                    where (psm.Portset = portSet && ports.Contains(psm.Portname))
-                } |> Seq.``delete all items from single table``
-            let! result = DatabaseError.FromQuery q
-            if result <> NoError then
-                db.ClearUpdates() |> ignore
             return result
         }

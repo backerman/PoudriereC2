@@ -84,6 +84,11 @@ module Types =
             Event: EventDetail
         }
 
+    /// A standard container for operation results.
+    type FunctionResult =
+        | OK
+        | Error of Error: string
+
     type LowerCaseNamingPolicy() =
         inherit JsonNamingPolicy()
         override _.ConvertName (n: string) : string =
@@ -108,21 +113,16 @@ module Types =
                     unionTagNamingPolicy = LowerCaseNamingPolicy()))
                 (typeof<PortSetUpdate>, JsonFSharpOptions(
                     unionTagName = "action",
-                    unionTagNamingPolicy = LowerCaseNamingPolicy()
-                ))
+                    unionTagNamingPolicy = LowerCaseNamingPolicy()))
+                (typeof<FunctionResult>, JsonFSharpOptions(
+                    unionTagName = "result",
+                    unionTagNamingPolicy = LowerCaseNamingPolicy()))
             ]
         ) |> options.Converters.Add
         options
     
     /// The JSON serialization options to use for types in this module.
     let eventSerializationOptions = serializationOptions EventType
-
-    /// A standard container for operation results.
-    [<JsonFSharpConverter(unionEncoding = JsonUnionEncoding.Untagged)>]
-    type FunctionResult =
-        | OK
-        | Error of Error: string
-        override this.ToString() = JsonSerializer.Serialize(this, eventSerializationOptions)
 
     /// One execution (or requested execution) of a job.
     type JobHistory =

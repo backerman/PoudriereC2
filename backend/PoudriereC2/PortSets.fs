@@ -29,14 +29,15 @@ type PortSetsApi (ps: PortSetsRepository) =
             return response.writeJsonResponse portsets
         } |> Async.StartAsTask
 
-    [<Function("AddDeletePortSetMembers")>]
-    member _.AddDeletePortSetMembers
+    [<Function("UpdatePortSetMembers")>]
+    member _.UpdatePortSetMembers
         ([<HttpTrigger(AuthorizationLevel.Anonymous, "patch", Route="portsets/{portset}/members")>]
          req: HttpRequestData, execContext: FunctionContext, portset: Guid) =
         let log = execContext.GetLogger()
         async {
-            let! portSetUpdate = tryDeserialize<PortSetUpdate> req log
+            let! portSetUpdate = tryDeserialize<PortSetUpdate list> req log
             let response = req.CreateResponse(HttpStatusCode.OK)
+
             match portSetUpdate with
             | None ->
                 response.StatusCode <- HttpStatusCode.BadRequest
@@ -44,9 +45,7 @@ type PortSetsApi (ps: PortSetsRepository) =
                 |> ignore
             | Some psu ->
                 let! result =
-                    match psu with
-                    | Add ports -> ps.AddPortSetMembers portset ports
-                    | Delete ports -> ps.DeletePortSetMembers portset ports
+                    ps.UpdatePortSetMembers portset psu
                 match result with
                 | NoError ->
                     response.StatusCode <- HttpStatusCode.OK

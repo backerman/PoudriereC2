@@ -57,6 +57,21 @@ type JsonTests() =
         let actualJsonList = "[" + (actualSerializations |> String.concat ", ") + "]" 
         JsonSerializer.Deserialize<PortSetUpdate list>(actualJsonList, eventSerializationOptions)
         |> should equal someUpdates
+    
+    [<Test>]
+    member _.TestFunctionResultSerialization () =
+        let successResult = 
+            OK
+        let successExpected = """{"result":"ok"}"""
+        JsonSerializer.Serialize(successResult, eventSerializationOptions)
+        |> should equal successExpected
+        let failureResult = 
+            Error "Trapped in space warped by someone"
+        let failureExpected = """{"result":"error","error":"Trapped in space warped by someone"}"""
+        JsonSerializer.Serialize(failureResult, eventSerializationOptions)
+        |> should equal failureExpected
+
+    [<Test>]
 
     [<SetUp>]
     member _.setup () =

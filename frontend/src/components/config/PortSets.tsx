@@ -1,14 +1,12 @@
 import { IColumn } from "@fluentui/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useBoolean } from '@fluentui/react-hooks';
-import { PortSet, PortSetRepository } from "src/models/portsets";
+import { PortSet } from "src/models/portsets";
 import { ItemList } from "../ItemList";
 import { sortBy } from "src/utils/utils";
 import { PortSetEditor } from "./PortSetEditor";
-
-export interface PortSetProps {
-    dataSource: PortSetRepository
-}
+import { fetcher, FunctionResult } from "@/utils/fetcher";
+import useSWR from 'swr';
 
 const columns: IColumn[] = [
     {
@@ -35,49 +33,59 @@ const columns: IColumn[] = [
     }
 ]
 
-export function PortSets(props: PortSetProps): JSX.Element {
+function computeMutations(oldPs: PortSet, newPs: PortSet) {
+    const toAdd = newPs.origins.filter(o => !oldPs.origins.includes(o));
+    const toDelete = oldPs.origins.filter(o => !newPs.origins.includes(o));
+    return { toAdd, toDelete };
+}
+
+export function PortSets(): JSX.Element {
     const [editorIsOpen, { setTrue: openEditor, setFalse: closeEditor }] = useBoolean(false);
-    const [activeRecord, setActiveRecord] = useState('');
-    const [itemList, setItemList] = useState([] as PortSet[]);
-    let [error, setError] = useState<string | undefined>(undefined);
-    let [itemsChanged, renderMe] = useState(0);
-    useEffect(() => {
-        let isMounted = true;
-        async function fetchData() {
-            props.dataSource.getPortSets()
-                .then(
-                    (items: PortSet[]) => {
-                        if (isMounted)
-                            setItemList(items.sort(sortBy('name')));
-                    }
-                ).catch((err) => {
-                    setError("Error retrieving data.")
-                });
-        };
-        fetchData();
-        return () => { isMounted = false; }
-    }, [props.dataSource, itemsChanged]);
+    const [activeRecord, setActiveRecord] = useState<PortSet|undefined>(undefined);
+    const { data, error, isLoading, mutate } = useSWR<PortSet[]>('/api/portsets', fetcher);
     return (
         <div className={"PortSets"}>
             <PortSetEditor
-                dataSource={props.dataSource}
                 isOpen={editorIsOpen}
                 onDismiss={closeEditor}
-                recordId={activeRecord}
-                onSubmit={async (ps) => {
-                    await props.dataSource.updatePortSet(activeRecord, ps);
-                    renderMe((x) => x + 1);
-                    closeEditor();
+                record={activeRecord}
+                onSubmit={async (ps: PortSet) => {
+                    if (!activeRecord) {
+                        console.log("Error: no active record exists")
+                    } else if (activeRecord.id !== ps.id) {
+                        console.log("Error: active record id does not match submitted record id")
+                    } else {
+                        const { toAdd, toDelete } = computeMutations(activeRecord, ps);
+                        const actions = [
+                            { action: 'add', ports: toAdd },
+                            { action: 'delete', ports: toDelete}
+                        ].filter(a => a.ports.length > 0);
+                        var result: FunctionResult;
+                        await mutate(
+                            async () => {
+                                result = await fetcher<FunctionResult>(`/api/portsets/${ps.id}`, {
+                                    method: 'PATCH',
+                                    body: JSON.stringify(actions)
+                                });
+                                if (result.error) {
+                                    throw new Error(result.error);
+                                }
+                                // Return the updated list of port sets
+                                return data?.map((r) => r.id === ps.id ? ps : r); 
+                            });
+                    }
+                    closeEditor();    
                 }} />
             <ItemList
                 ariaLabelForGrid={"List of port sets"}
                 getRowAriaLabel={(r: PortSet) => r.name}
                 columns={columns}
-                items={itemList}
-                error={error}
-                getKey={(r: PortSet) => r.id}
+                items={data || []}
+                enableShimmer={isLoading}
+                error={error?.toString()}
+                getKey={(r: PortSet) => r?.id}
                 onItemInvoked={(item: PortSet) => {
-                    setActiveRecord(item.id);
+                    setActiveRecord(item);
                     openEditor();
                 }}
             />

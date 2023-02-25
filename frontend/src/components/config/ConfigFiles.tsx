@@ -85,6 +85,7 @@ export function ConfigFiles(props: ConfigFilesProps): JSX.Element {
             onSubmit={async (meta: ConfigFileMetadata) => {
                 await mutate(
                     async () => {
+                        // FIXME check for errors
                         await
                             fetcher('/api/configurationfiles/metadata',
                                 {

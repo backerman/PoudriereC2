@@ -1,13 +1,15 @@
 export const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '';
 
-export const fetcher = (url: RequestInfo | URL, ...args: any[]) => fetch(`${baseUrl}${url}`, ...args)
-    .then(async (res) => {
-        return res;
-    })
-    .then((res) => {
-        if (res.ok) {
-            return res.json();
-        } else {
-            throw new Error(res.statusText);
-        }
-    });
+export type FunctionResult = {
+    result: string;
+    error?: string;
+}
+
+export async function fetcher<T = any> (url: RequestInfo | URL, ...args: any[]) {
+    const res = await fetch(`${baseUrl}${url}`, ...args);
+    if (res.ok) {
+        return res.json() as T;
+    } else {
+        throw new Error(res.statusText);
+    }
+}
