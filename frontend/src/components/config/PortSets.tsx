@@ -63,7 +63,7 @@ export function PortSets(): JSX.Element {
                         var result: FunctionResult;
                         await mutate(
                             async () => {
-                                result = await fetcher<FunctionResult>(`/api/portsets/${ps.id}`, {
+                                result = await fetcher<FunctionResult>(`/api/portsets/${ps.id}/members`, {
                                     method: 'PATCH',
                                     body: JSON.stringify(actions)
                                 });
@@ -83,7 +83,7 @@ export function PortSets(): JSX.Element {
                 items={data || []}
                 enableShimmer={isLoading}
                 error={error?.toString()}
-                getKey={(r: PortSet) => r?.id}
+                getKey={(r: PortSet) => { return r?.id; }}
                 onItemInvoked={(item: PortSet) => {
                     setActiveRecord(item);
                     openEditor();

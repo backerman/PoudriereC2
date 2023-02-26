@@ -93,7 +93,8 @@ module ConfigTypes =
     
     type PortSet =
         { Id: Guid
-          Name: string }
+          Name: string
+          Origins: string list}
 
     // Command to add or delete ports from a port set
     type PortSetUpdate =

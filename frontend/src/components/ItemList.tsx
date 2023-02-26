@@ -1,11 +1,11 @@
-import { ConstrainMode, DetailsListLayoutMode, IDetailsListProps, IDetailsRowProps, MessageBar, MessageBarType, ShimmeredDetailsList } from "@fluentui/react";
+import { ConstrainMode, DetailsListLayoutMode, IDetailsListProps, IDetailsRowProps, MessageBar, MessageBarType, Selection, SelectionMode, ShimmeredDetailsList } from "@fluentui/react";
 import React, { useState } from "react";
 import styles from './ItemList.module.css';
 
 export interface ItemListProperties extends IDetailsListProps {
     error?: string
-    children?: React.ReactNode;
-    enableShimmer?: boolean;
+    children?: React.ReactNode
+    enableShimmer?: boolean
 }
 
 function renderRowDefault(props?: IDetailsRowProps, defaultRender?: (props?: IDetailsRowProps)
@@ -47,10 +47,13 @@ export function ItemList(props: ItemListProperties): JSX.Element {
         items,
         compact,
         error,
+        getKey,
         layoutMode = DetailsListLayoutMode.justified,
         onRenderRow = renderRowDefault,
         enableShimmer,
+        selectionMode = SelectionMode.multiple,
         ...others } = props;
+
     return (
         <div className={"ItemList"}>
             {error && !errorBarClosed && errorBar}
@@ -58,10 +61,13 @@ export function ItemList(props: ItemListProperties): JSX.Element {
                 {...others}
                 enableShimmer={enableShimmer || false}
                 items={items}
+                getKey={getKey}
+                setKey={"set"}
                 layoutMode={layoutMode}
                 compact={compact ?? false}
                 onRenderRow={onRenderRow}
                 constrainMode={ConstrainMode.unconstrained}
+                ariaLabelForSelectionColumn="Toggle selection"
             />
         </div>
     );

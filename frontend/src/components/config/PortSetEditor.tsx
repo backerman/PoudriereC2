@@ -1,8 +1,9 @@
-import { IconButton, Stack, TextField } from "@fluentui/react";
-import { useReducer, useRef, useState } from "react";
+import { CommandBar, ICommandBarItemProps, IconButton, Selection, SelectionMode, Stack, TextField } from "@fluentui/react";
+import { useEffect, useReducer, useRef, useState } from "react";
 import { Editor } from "../Editor";
 import { ItemList } from "../ItemList";
 import { PortSet } from "src/models/portsets";
+import { useForceUpdate } from '@fluentui/react-hooks';
 
 export interface PortSetEditorProps {
     isOpen: boolean
@@ -38,7 +39,7 @@ export function PortSetEditor(props: PortSetEditorProps): JSX.Element {
     }
 
     let [origins, setOrigins] =
-        useReducer(updateOrigins, [])
+        useReducer(updateOrigins, []);
     let [portSetName, setPortSetName] = useState('');
     let [error, setError] = useState<any>(null);
     let originalValue = useRef<PortSet>({ id: '', name: '', origins: [] });
@@ -46,11 +47,48 @@ export function PortSetEditor(props: PortSetEditorProps): JSX.Element {
     // The text field for adding an origin.
     const [originName, updateOriginName] = useState('');
 
+    // Whether the delete button is enabled; it should be enabled
+    // iff at least one item is selected.
+    const [deleteButtonDisabled, setDeleteButtonDisabled] = useState(true);
+
+    const forceUpdate = useForceUpdate();
+    const [selection] = useState(new Selection({
+        onSelectionChanged: () => {
+            setDeleteButtonDisabled(selection.getSelectedCount() === 0);
+            // forceUpdate();
+        }
+    }));
+
+    const portsetCommandBarItems : ICommandBarItemProps[] = [
+        {
+            key: 'delete',
+            text: 'Delete',
+            ariaDescription: 'Delete selected origins',
+            disabled: deleteButtonDisabled,
+            iconProps: { iconName: 'Delete' },
+            onClick: () => {
+                const toDelete = selection.getSelection() as string[];
+                toDelete.forEach((origin) => {
+                    setOrigins({ action: 'delete', value: origin });
+                })
+                selection.setAllSelected(false);
+            }
+        }
+    ];
+
+    useEffect(() => {
+        if (props.record) {
+            originalValue.current = props.record;
+            setPortSetName(props.record.name);
+            setOrigins(props.record.origins);
+        }
+    }, [props.record]);
+
     return (
         <Editor
             isOpen={props.isOpen}
             isBlocking={false}
-            headerText={"Edit port set"}
+            headerText={`Edit port set ${portSetName}`}
             onDismiss={() => {
                 // When cancel button selected, revert changes.
                 setPortSetName(originalValue.current.name);
@@ -73,7 +111,7 @@ export function PortSetEditor(props: PortSetEditorProps): JSX.Element {
                         placeholder={"Enter a package origin to add."}
                         value={originName}
                         onChange={(_, newVal) => updateOriginName(newVal || '')}
-                        onKeyPress={(ev) => {
+                        onKeyDown={(ev) => {
                             if (ev.key === 'Enter') {
                                 setOrigins({ action: 'add', value: originName });
                                 updateOriginName('');
@@ -87,6 +125,9 @@ export function PortSetEditor(props: PortSetEditorProps): JSX.Element {
                         setOrigins({ action: 'add', value: originName })
                     }} />
             </Stack>
+            <CommandBar
+                items={portsetCommandBarItems}
+            />
             <ItemList
                 compact={true}
                 columns={[{
@@ -95,9 +136,12 @@ export function PortSetEditor(props: PortSetEditorProps): JSX.Element {
                     minWidth: 100,
                     onRender: (item) => <span>{item}</span>
                 }]}
+                getKey={(r: string) => r}
                 getRowAriaLabel={(r: string) => r}
-                items={props.record?.origins || []}
-                error={error}>
-            </ItemList>
+                items={origins}
+                error={error}
+                selection={selection}
+                selectionMode={SelectionMode.multiple}
+                selectionPreservedOnEmptyClick={true} />
         </Editor>)
 };

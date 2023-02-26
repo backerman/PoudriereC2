@@ -17,12 +17,12 @@ type PortSetsRepository(db: DB.dataContext) =
             let! portSets =
                 query {
                     for portsetEntity in db.Poudrierec2.Portsets do
-                    join psm in (!!) db.Poudrierec2.PortsetMembers on (portsetEntity.Id = psm.Portset)
                     where ((%filterQuery) portsetEntity)
                     sortBy portsetEntity.Id
                     select
                         { Id = portsetEntity.Id
-                          Name = portsetEntity.Name }
+                          Name = portsetEntity.Name
+                          Origins = [] }
                 }
                 |> Seq.executeQueryAsync
 
@@ -38,7 +38,7 @@ type PortSetsRepository(db: DB.dataContext) =
                     sortBy port.Portname
                     select port.Portname
                 }
-                |> Seq.executeQueryAsync
+                |> List.executeQueryAsync
 
             return ports
         }

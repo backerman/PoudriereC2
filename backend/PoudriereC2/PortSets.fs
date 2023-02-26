@@ -15,8 +15,16 @@ type PortSetsApi (ps: PortSetsRepository) =
          req: HttpRequestData, execContext: FunctionContext, portset: Guid option) =
         async {
             let! portsets = ps.GetPortSets(portset)
+            let! portsetsWithMembers =
+                portsets
+                |> Seq.map (fun (portset: PortSet) ->
+                    async {
+                        let! members = ps.GetPortSetMembers portset.Id
+                        return { portset with Origins = members }
+                    })
+                |> Async.Parallel
             let response = req.CreateResponse(HttpStatusCode.OK)
-            return response.writeJsonResponse portsets
+            return response.writeJsonResponse portsetsWithMembers
         } |> Async.StartAsTask
 
     [<Function("GetPortSetMembers")>]
