@@ -557,7 +557,7 @@ ON DELETE NO ACTION ON UPDATE NO ACTION;
 -- ALTER TABLE poudrierec2.portset_members DROP CONSTRAINT IF EXISTS portset_member_fk CASCADE;
 ALTER TABLE poudrierec2.portset_members ADD CONSTRAINT portset_member_fk FOREIGN KEY (portset)
 REFERENCES poudrierec2.portsets (id) MATCH FULL
-ON DELETE RESTRICT ON UPDATE NO ACTION;
+ON DELETE CASCADE ON UPDATE NO ACTION;
 -- ddl-end --
 
 -- object: schedules_jobconfig_fk | type: CONSTRAINT --

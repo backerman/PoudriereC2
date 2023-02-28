@@ -91,8 +91,11 @@ module ConfigTypes =
         { Name: string
           Method: PortsTreeMethod }
     
+    /// A set of ports to be built.
+    /// Id may only be None when creating a new port set, where it will be
+    /// ignored.
     type PortSet =
-        { Id: Guid
+        { Id: Guid option
           Name: string
           Origins: string list}
 

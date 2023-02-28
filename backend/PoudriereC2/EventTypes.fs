@@ -88,6 +88,7 @@ module Types =
     type FunctionResult =
         | OK
         | Error of Error: string
+        | Created of Guid: Guid
 
     type LowerCaseNamingPolicy() =
         inherit JsonNamingPolicy()
@@ -95,30 +96,31 @@ module Types =
             n.ToLowerInvariant()
 
     let serializationOptions discriminator =
-        let options = JsonSerializerOptions()
+        let options =
+            JsonFSharpOptions.Default()
+                .WithSkippableOptionFields(true)
+                .WithUnionTagName(discriminator)
+                .WithUnionTagNamingPolicy(JsonNamingPolicy.CamelCase)
+                .WithUnionEncoding(
+                    JsonUnionEncoding.InternalTag
+                    ||| JsonUnionEncoding.NamedFields
+                    ||| JsonUnionEncoding.UnwrapRecordCases
+                    ||| JsonUnionEncoding.UnwrapOption
+                )
+                .WithAllowOverride(true)
+                .WithOverrides(dict [
+                    (typeof<ConfigFileType>, JsonFSharpOptions(
+                        unionEncoding = JsonUnionEncoding.UnwrapFieldlessTags,
+                        unionTagNamingPolicy = LowerCaseNamingPolicy()))
+                    (typeof<PortSetUpdate>, JsonFSharpOptions(
+                        unionTagName = "action",
+                        unionTagNamingPolicy = LowerCaseNamingPolicy()))
+                    (typeof<FunctionResult>, JsonFSharpOptions(
+                        unionTagName = "result",
+                        unionTagNamingPolicy = LowerCaseNamingPolicy()))
+                ])
+                .ToJsonSerializerOptions()
         options.PropertyNamingPolicy <- JsonNamingPolicy.CamelCase
-        JsonFSharpConverter(
-            unionTagName = discriminator,
-            unionTagNamingPolicy = JsonNamingPolicy.CamelCase,
-            unionEncoding = (
-                JsonUnionEncoding.InternalTag
-                ||| JsonUnionEncoding.NamedFields
-                ||| JsonUnionEncoding.UnwrapRecordCases
-                ||| JsonUnionEncoding.UnwrapOption
-            ),
-            allowOverride = true,
-            overrides = dict [
-                (typeof<ConfigFileType>, JsonFSharpOptions(
-                    unionEncoding = JsonUnionEncoding.UnwrapFieldlessTags,
-                    unionTagNamingPolicy = LowerCaseNamingPolicy()))
-                (typeof<PortSetUpdate>, JsonFSharpOptions(
-                    unionTagName = "action",
-                    unionTagNamingPolicy = LowerCaseNamingPolicy()))
-                (typeof<FunctionResult>, JsonFSharpOptions(
-                    unionTagName = "result",
-                    unionTagNamingPolicy = LowerCaseNamingPolicy()))
-            ]
-        ) |> options.Converters.Add
         options
     
     /// The JSON serialization options to use for types in this module.
