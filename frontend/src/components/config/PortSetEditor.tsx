@@ -8,6 +8,7 @@ import { useForceUpdate } from '@fluentui/react-hooks';
 export interface PortSetEditorProps {
     isOpen: boolean
     record: PortSet | undefined
+    createNewRecord: boolean
     onSubmit: (formData: PortSet) => void
     onDismiss: () => void
 }
@@ -51,7 +52,6 @@ export function PortSetEditor(props: PortSetEditorProps): JSX.Element {
     // iff at least one item is selected.
     const [deleteButtonDisabled, setDeleteButtonDisabled] = useState(true);
 
-    const forceUpdate = useForceUpdate();
     const [selection] = useState(new Selection({
         onSelectionChanged: () => {
             setDeleteButtonDisabled(selection.getSelectedCount() === 0);
@@ -88,7 +88,7 @@ export function PortSetEditor(props: PortSetEditorProps): JSX.Element {
         <Editor
             isOpen={props.isOpen}
             isBlocking={false}
-            headerText={`Edit port set ${portSetName}`}
+            headerText={`${props.createNewRecord ? 'Create' : 'Edit'} port set ${portSetName}`}
             onDismiss={() => {
                 // When cancel button selected, revert changes.
                 setPortSetName(originalValue.current.name);

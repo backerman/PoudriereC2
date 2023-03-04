@@ -3,6 +3,7 @@ export const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '';
 export type FunctionResult = {
     result: string;
     error?: string;
+    guid?: string;
 }
 
 export async function fetcher<T = any> (url: RequestInfo | URL, ...args: any[]) {

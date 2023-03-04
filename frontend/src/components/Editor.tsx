@@ -1,41 +1,43 @@
-import { DefaultButton, Panel, PrimaryButton, Stack } from "@fluentui/react";
+import { DefaultButton, IPanelProps, Panel, PanelType, PrimaryButton, Stack } from "@fluentui/react";
 import React from "react";
 
-export interface EditorProps {
-    isOpen: boolean;
-    isBlocking: boolean;
-    headerText: string;
+export interface EditorProps extends IPanelProps {
+    /// Callback to be called when the user clicks the Save button.
     onSubmit: () => void;
+    /// Callback to be called when the user clicks the Cancel button or the panel is
+    /// otherwise dismissed.
     onDismiss: () => void;
-    children?: React.ReactNode;
 }
 
 const buttonStyles = { root: { marginRight: 8 } };
 
 export function Editor(props: EditorProps): JSX.Element {
+    const { onDismiss,
+        onSubmit,
+        type = PanelType.medium,
+        ...rest } = props;
+
     const onRenderFooterContent = () => {
         return (
             <div>
-                <PrimaryButton onClick={props.onSubmit} styles={buttonStyles}>
+                <PrimaryButton onClick={onSubmit} styles={buttonStyles}>
                     Save
                 </PrimaryButton>
-                <DefaultButton onClick={props.onDismiss}>Cancel</DefaultButton>
+                <DefaultButton onClick={onDismiss}>Cancel</DefaultButton>
             </div>
         )
     };
 
     return (
         <Panel
-            isOpen={props.isOpen}
-            isBlocking={props.isBlocking}
-            headerText={props.headerText}
             closeButtonAriaLabel={"Close"}
             onRenderFooterContent={onRenderFooterContent}
             isFooterAtBottom={true}
-            onDismiss={props.onDismiss}>
+            onDismiss={onDismiss}
+            type={type}
+            {...rest}>
             <Stack verticalAlign="start">
                 {props.children}
             </Stack>
         </Panel>)
-
 }

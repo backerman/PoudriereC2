@@ -42,7 +42,13 @@ export const Populated: StoryObj<typeof PortSets> = {
                         ctx.delay(),
                         ctx.json(sampleData)
                     )
-                })
+                }),
+                rest.post('/api/portsets', (req, res, ctx) => {
+                    return res(
+                        ctx.delay(),
+                        ctx.json({ "result": "created", "guid": "bfd0b89b-9f1c-485b-afee-1d3c1c9dac0b" })
+                    )
+                }),
             ]
         }
     }
