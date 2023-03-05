@@ -88,7 +88,7 @@ type PortSetsRepository(db: DB.dataContext) =
             if result <> NoError then
                 db.ClearUpdates()
                 |> ignore
-            return result, portSet.Id
+            return (result, portSet.Id)
         }
 
     member _.DeletePortSet (portSet: Guid) =
