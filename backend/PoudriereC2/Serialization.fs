@@ -26,7 +26,7 @@ let tryDeserialize<'T> (req: HttpRequestData) (log: ILogger) =
     }
 
 type HttpResponseData with
-    member this.writeJsonResponse (body: obj) =
+    member this.writeJsonResponse<'T> (body: 'T) =
         match this.StatusCode with
         | HttpStatusCode.NoContent ->
             // Can't write to a 204 per specification.

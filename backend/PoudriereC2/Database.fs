@@ -50,7 +50,13 @@ type DatabaseError =
                     | _ -> Unknown e
         }
 
-    /// Handle a DatabaseError, returning a FunctionResult.
+    /// <summary>Handle a DatabaseError, returning a FunctionResult.</summary>
+    /// <param name="log">The logger to use.</param>
+    /// <param name="failureMessage">The (not user-visible) message to log on failure;
+    /// may be a format string in message template format.</param>
+    /// <param name="failureMessageArgs">The arguments to the format string, if any.</param>
+    /// <returns>A record containing the HTTP status code and a FunctionResult
+    /// to send to the user.</returns>
     member dbError.Handle
         (log: ILogger<obj>,
          failureMessage: string,
@@ -63,7 +69,7 @@ type DatabaseError =
                 match exn.ColumnName with
                 | null -> "A referenced row does not exist."
                 | x -> $"The value of ${x} refers to a nonexistent row."
-            log.LogError(exn, $"${failureMessage}", failureMessageArgs)
+            log.LogError(exn, failureMessage, failureMessageArgs)
             {| httpCode = HttpStatusCode.BadRequest; result = Error userError |}
         | UniqueViolation exn ->
             let userError =

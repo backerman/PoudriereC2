@@ -63,30 +63,11 @@ type PortSetsApi (ps: PortSetsRepository) =
                 | NoError ->
                     response.StatusCode <- HttpStatusCode.OK
                     response.writeJsonResponse OK |> ignore
-                | ForeignKeyViolation ex ->
-                    log.LogError
-                        ("Failed upsert of port set {PortSet}: {ViolatedConstraint} violated",
-                         portset, ex.ConstraintName)
-                    response.StatusCode <- HttpStatusCode.UnprocessableEntity
-                    response.writeJsonResponse
-                        (Error "Referential integrity violation")
-                    |> ignore
-                | UniqueViolation ex ->
-                    // There shouldn't be any way for this to happen since
-                    // ON CONFLICT is set to DO NOTHING.
-                    response.StatusCode <- HttpStatusCode.UnprocessableEntity
-                    log.LogError
-                        ("Failed modification of port set {PortSet}: {ViolatedConstraint} violated",
-                         portset, ex.ConstraintName)
-                    response.writeJsonResponse
-                        (Error "Referential integrity violation")
-                    |> ignore
-                | Unknown ex -> 
-                    log.LogError
-                        (ex, "Failed modification of port set {PortSet}", portset)
-                    response.StatusCode <- HttpStatusCode.InternalServerError
-                    response.writeJsonResponse
-                        (Error "Internal server error")
+                | someError ->
+                    let errResponse =
+                        someError.Handle(log, "Failed to update port set {PortSet}", portset)
+                    response.StatusCode <- errResponse.httpCode
+                    response.writeJsonResponse errResponse.result
                     |> ignore
             return response
         } |> Async.StartAsTask
@@ -104,9 +85,9 @@ type PortSetsApi (ps: PortSetsRepository) =
                 response.writeJsonResponse (Error "Invalid or nonexistent payload")
                 |> ignore
             | Some pst ->
-                let! result =
+                let! createResult =
                     ps.CreatePortSet pst.Name
-                match result with
+                match createResult with
                 | (NoError, newGuid) ->
                     let! psmResults = ps.UpdatePortSetMembers newGuid [Add pst.Origins]
                     match psmResults with
@@ -115,52 +96,21 @@ type PortSetsApi (ps: PortSetsRepository) =
                         Created newGuid
                         |> response.writeJsonResponse
                         |> ignore
-                    | ForeignKeyViolation ex ->
-                        log.LogError
-                            ("Failed upsert of port set {PortSet}: {ViolatedConstraint} violated",
-                             newGuid, ex.ConstraintName)
-                        response.StatusCode <- HttpStatusCode.UnprocessableEntity
-                        response.writeJsonResponse
-                            (Error "Referential integrity violation")
+                    | someError ->
+                        let errResponse =
+                            someError.Handle(
+                                log,
+                                "Failed to add members to port set {PortSet} ({PortSetGuid})",
+                                pst.Name,
+                                newGuid)
+                        response.StatusCode <- errResponse.httpCode
+                        response.writeJsonResponse errResponse.result
                         |> ignore
-                    | UniqueViolation ex ->
-                        response.StatusCode <- HttpStatusCode.UnprocessableEntity
-                        log.LogError
-                            ("Failed creation of port set {PortSet}: {ViolatedConstraint} violated",
-                             newGuid, ex.ConstraintName)
-                        response.writeJsonResponse
-                            (Error "Duplicate port origins listed")
-                        |> ignore
-                    | Unknown ex ->
-                        log.LogError
-                            (ex, "Failed creation of port set {PortSet}", newGuid)
-                        response.StatusCode <- HttpStatusCode.InternalServerError
-                        response.writeJsonResponse
-                            (Error "Internal server error")
-                        |> ignore
-                | (ForeignKeyViolation ex, _)->
-                    log.LogError
-                        ("Failed upsert of port set {PortSet}: {ViolatedConstraint} violated",
-                         pst.Id, ex.ConstraintName)
-                    response.StatusCode <- HttpStatusCode.UnprocessableEntity
-                    response.writeJsonResponse
-                        (Error "Referential integrity violation")
-                    |> ignore
-                | (UniqueViolation ex, _) ->
-                    // There shouldn't be any way for this to happen. At all.
-                    response.StatusCode <- HttpStatusCode.UnprocessableEntity
-                    log.LogError
-                        ("Failed creation of port set {PortSet}: {ViolatedConstraint} violated",
-                         pst.Id, ex.ConstraintName)
-                    response.writeJsonResponse
-                        (Error "Referential integrity violation")
-                    |> ignore
-                | (Unknown ex, _) -> 
-                    log.LogError
-                        (ex, "Failed creation of port set {PortSet}", pst.Name)
-                    response.StatusCode <- HttpStatusCode.InternalServerError
-                    response.writeJsonResponse
-                        (Error "Internal server error")
+                | (someError, _) ->
+                    let errResponse =
+                        someError.Handle(log, "Failed creation of port set {PortSet}", pst.Name)
+                    response.StatusCode <- errResponse.httpCode
+                    response.writeJsonResponse errResponse.result
                     |> ignore
             return response
         } |> Async.StartAsTask
@@ -177,29 +127,11 @@ type PortSetsApi (ps: PortSetsRepository) =
             | NoError ->
                 response.StatusCode <- HttpStatusCode.OK
                 response.writeJsonResponse OK |> ignore
-            | ForeignKeyViolation ex ->
-                log.LogError
-                    ("Failed deletion of port set {PortSet}: {ViolatedConstraint} violated",
-                     portset, ex.ConstraintName)
-                response.StatusCode <- HttpStatusCode.UnprocessableEntity
-                response.writeJsonResponse
-                    (Error "Referential integrity violation")
-                |> ignore
-            | UniqueViolation ex ->
-                // There shouldn't be any way for this to happen. At all.
-                response.StatusCode <- HttpStatusCode.UnprocessableEntity
-                log.LogError
-                    ("Failed deletion of port set {PortSet}: {ViolatedConstraint} violated",
-                     portset, ex.ConstraintName)
-                response.writeJsonResponse
-                    (Error "Referential integrity violation")
-                |> ignore
-            | Unknown ex -> 
-                log.LogError
-                    (ex, "Failed deletion of port set {PortSet}", portset)
-                response.StatusCode <- HttpStatusCode.InternalServerError
-                response.writeJsonResponse
-                    (Error "Internal server error")
+            | someError ->
+                let errResponse =
+                    someError.Handle(log, "Failed deletion of port set ID {PortSet}", portset)
+                response.StatusCode <- errResponse.httpCode
+                response.writeJsonResponse errResponse.result
                 |> ignore
             return response
         } |> Async.StartAsTask
