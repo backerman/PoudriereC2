@@ -98,7 +98,11 @@ type PortSetsApi (ps: PortSetsRepository) =
                         |> ignore
                     | someError ->
                         let errResponse =
-                            someError.Handle(log, "Failed to add members to port set {PortSet} ({PortSetGuid})", pst.Name, newGuid)
+                            someError.Handle(
+                                log,
+                                "Failed to add members to port set {PortSet} ({PortSetGuid})",
+                                pst.Name,
+                                newGuid)
                         response.StatusCode <- errResponse.httpCode
                         response.writeJsonResponse errResponse.result
                         |> ignore
