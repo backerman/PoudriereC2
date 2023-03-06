@@ -27,33 +27,13 @@ type PortsTreesApi (cfg: PortsRepository) =
                 match result with
                 | NoError ->
                     response.StatusCode <- HttpStatusCode.OK
-                    response.writeJsonResponse OK |> ignore
-                | ForeignKeyViolation ex ->
-                    log.LogError
-                        ("Failed upsert of ports tree {PortsTree}: {ViolatedConstraint} violated",
-                         meta.Name, ex.ConstraintName)
-                    response.StatusCode <- HttpStatusCode.UnprocessableEntity
-                    response.writeJsonResponse
-                        (Error "Referential integrity violation")
+                    response.writeJsonResponse OK
                     |> ignore
-                | UniqueViolation ex ->
-                    response.StatusCode <- HttpStatusCode.UnprocessableEntity
-                    let errorText =
-                        match ex.ConstraintName with
-                        | "portstrees_pk" -> "name"
-                        | _ -> ""
-                    log.LogError
-                        (ex, "Failed upsert of ports tree {ConfigFile}: {ViolatedConstraint} violated",
-                         meta.Name, ex.ConstraintName)
-                    response.writeJsonResponse
-                        (Error $"Ports tree {meta.Name}: {errorText} already exists")
-                    |> ignore
-                | Unknown ex ->
-                    log.LogError
-                        (ex, "Failed insert of ports tree {ConfigFile}", meta.Name)
-                    response.StatusCode <- HttpStatusCode.InternalServerError
-                    response.writeJsonResponse
-                        (Error "Internal server error")
+                | _ ->
+                    let errResponse =
+                        result.Handle(log, "Failed to add ports tree {PortsTree}", meta.Name)
+                    response.StatusCode <- errResponse.httpCode
+                    response.writeJsonResponse errResponse.result
                     |> ignore
             return response
         } |> Async.StartAsTask
@@ -80,34 +60,22 @@ type PortsTreesApi (cfg: PortsRepository) =
         let log = execContext.GetLogger()
         async {
             let! maybeConfig = tryDeserialize<PortsTree> req log
+            let response = req.CreateResponse(HttpStatusCode.OK)
             match maybeConfig with
             | None ->
-                req.CreateResponse
-                    (HttpStatusCode.BadRequest)
-                |> ignore
+                response.StatusCode <- HttpStatusCode.BadRequest
             | Some meta ->
                 let! result = cfg.UpdatePortsTree treeName meta
                 match result with
                 | NoError ->
-                    req.CreateResponse
-                        (HttpStatusCode.OK)
+                    response.StatusCode <- HttpStatusCode.OK
+                    response.writeJsonResponse OK
                     |> ignore
-                | ForeignKeyViolation ex ->
-                    log.LogError
-                        ("Failed upsert of ports tree {PortsTree}: {ViolatedConstraint} violated",
-                         meta.Name, ex.ConstraintName)
-                    req.CreateResponse
-                        (HttpStatusCode.UnprocessableEntity)
+                | _ ->
+                    let errResponse =
+                        result.Handle(log, "Failed to modify ports tree {PortsTree}", treeName)
+                    response.StatusCode <- errResponse.httpCode
+                    response.writeJsonResponse errResponse.result
                     |> ignore
-                | UniqueViolation ex ->
-                    req.CreateResponse
-                        (HttpStatusCode.UnprocessableEntity)
-                    |> ignore
-                | Unknown ex ->
-                    log.LogError
-                        (ex, "Failed insert of ports tree {ConfigFile}", meta.Name)
-                    req.CreateResponse
-                        (HttpStatusCode.InternalServerError)
-                    |> ignore
-            return req.CreateResponse (HttpStatusCode.OK) |> ignore
+            return response
         } |> Async.StartAsTask

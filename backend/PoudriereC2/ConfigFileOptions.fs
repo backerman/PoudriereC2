@@ -46,27 +46,11 @@ type ConfigFileOptionsApi (cfg: ConfigRepository) =
                     | NoError ->
                         response.StatusCode <- HttpStatusCode.OK
                         response.writeJsonResponse OK |> ignore
-                    | ForeignKeyViolation _ ->
-                        log.LogError
-                            ("Failed upsert of config {ConfigFile}: config does not exist", configFile)
-                        response.StatusCode <- HttpStatusCode.UnprocessableEntity
-                        response.writeJsonResponse
-                            (Error "Nonexistent configuration file")
-                        |> ignore
-                    | UniqueViolation _ -> 
-                        // can't happen but.
-                        log.LogError
-                            ("Failed upsert of config {ConfigFile}: unexpected uniqueness violation", configFile)
-                        response.StatusCode <- HttpStatusCode.InternalServerError
-                        response.writeJsonResponse
-                            (Error "Bad request")
-                        |> ignore
-                    | Unknown ex ->
-                        log.LogError
-                            (ex, "Failed upsert of config {ConfigFile}: {errorMsg}", configFile)
-                        response.StatusCode <- HttpStatusCode.InternalServerError
-                        response.writeJsonResponse
-                            (Error "Bad request")
+                    | someError ->
+                        let errResponse =
+                            someError.Handle(log, "Unable to add options to config file {ConfigFile}", configFile)
+                        response.StatusCode <- errResponse.httpCode
+                        response.writeJsonResponse (errResponse.result)
                         |> ignore
                 return response
             } |> Async.StartAsTask

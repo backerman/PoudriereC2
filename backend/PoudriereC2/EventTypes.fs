@@ -108,16 +108,16 @@ module Types =
                     ||| JsonUnionEncoding.UnwrapOption
                 )
                 .WithAllowOverride(true)
-                .WithOverrides(dict [
-                    (typeof<ConfigFileType>, JsonFSharpOptions(
-                        unionEncoding = JsonUnionEncoding.UnwrapFieldlessTags,
-                        unionTagNamingPolicy = LowerCaseNamingPolicy()))
-                    (typeof<PortSetUpdate>, JsonFSharpOptions(
-                        unionTagName = "action",
-                        unionTagNamingPolicy = LowerCaseNamingPolicy()))
-                    (typeof<FunctionResult>, JsonFSharpOptions(
-                        unionTagName = "result",
-                        unionTagNamingPolicy = LowerCaseNamingPolicy()))
+                .WithOverrides(fun options -> dict [
+                    (typeof<ConfigFileType>, options
+                        .WithUnionEncoding(JsonUnionEncoding.UnwrapFieldlessTags)
+                        .WithUnionTagNamingPolicy(LowerCaseNamingPolicy()))
+                    (typeof<PortSetUpdate>, options
+                        .WithUnionTagName("action")
+                        .WithUnionTagNamingPolicy(LowerCaseNamingPolicy()))
+                    (typeof<FunctionResult>, options
+                        .WithUnionTagName("result")
+                        .WithUnionTagNamingPolicy(LowerCaseNamingPolicy()))
                 ])
                 .ToJsonSerializerOptions()
         options.PropertyNamingPolicy <- JsonNamingPolicy.CamelCase

@@ -32,34 +32,12 @@ type ConfigFileApi (cfg: ConfigRepository) =
                     | NoError ->
                         response.StatusCode <- HttpStatusCode.OK
                         response.writeJsonResponse OK |> ignore
-                    | ForeignKeyViolation ex ->
-                        log.LogError
-                            ("Failed upsert of config {ConfigFile}: {ViolatedConstraint} violated",
-                             meta.Id, ex.ConstraintName)
-                        response.StatusCode <- HttpStatusCode.UnprocessableEntity
-                        response.writeJsonResponse
-                            (Error
-                            $"Referential integrity violation: value of {ex.ColumnName} does not exist")
-                        |> ignore
-                    | UniqueViolation ex ->
-                        response.StatusCode <- HttpStatusCode.UnprocessableEntity
-                        let errorText =
-                            match ex.ConstraintName with
-                            | "configfiles_index_undeleted_titles" -> "title"
-                            | "configfiles_pk" -> "GUID"
-                            | _ -> ""
-                        log.LogError
-                            ("Failed upsert of config {ConfigFile}: {ViolatedConstraint} violated",
-                             meta.Id, ex.ConstraintName)
-                        response.writeJsonResponse
-                            (Error $"Configuration {errorText} already exists")
-                        |> ignore
-                    | Unknown ex ->
-                        log.LogError
-                            (ex, "Failed insert of config {ConfigFile}", meta.Id)
-                        response.StatusCode <- HttpStatusCode.InternalServerError
-                        response.writeJsonResponse
-                            (Error "Internal server error")
+                    | someError ->
+                        let errResponse = 
+                            someError.Handle
+                                (log, "Failed upsert of config {ConfigFile}: {Error}", meta.Name, someError)
+                        response.StatusCode <- errResponse.httpCode
+                        response.writeJsonResponse errResponse.result
                         |> ignore
                 return response
             } |> Async.StartAsTask
