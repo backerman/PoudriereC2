@@ -23,7 +23,7 @@
     <PackageReference Include="Microsoft.FSharpLu.Azure" Version="0.11.7" />
     <PackageReference Include="Npgsql" Version="7.0.2" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.0" GeneratePathProperty="true" />
-    <PackageReference Include="SQLProvider" Version="1.3.6" />
+    <PackageReference Include="SQLProvider" Version="1.3.7" />
   </ItemGroup>
   <Target Name="CopyLoggingAbstractionsToKnownPath" BeforeTargets="BeforeBuild">
     <!-- Workaround for SQLProvider bug - need to explicitly specify path of this DLL. -->
