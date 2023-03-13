@@ -10,5 +10,15 @@
     "eslint.workingDirectories": [
         "frontend"
     ],
-    "sarif-viewer.connectToGithubCodeScanning": "on"
+    "sarif-viewer.connectToGithubCodeScanning": "on",
+    "cSpell.words": [
+        "fluentui",
+        "msal",
+        "portset",
+        "portsets",
+        "Poudriere",
+        "poudriereconf",
+        "pses",
+        "uifabric"
+    ]
 }

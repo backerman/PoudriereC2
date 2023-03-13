@@ -1,5 +1,4 @@
 import { PortSets } from './PortSets';
-import { PortSet } from 'src/models/portsets';
 import { sampleData } from 'src/models/portsets.sample';
 import { initializeIcons } from '@fluentui/react/lib/Icons';
 import { StoryObj } from '@storybook/react';

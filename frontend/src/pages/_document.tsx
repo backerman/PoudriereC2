@@ -1,5 +1,4 @@
 import { InjectionMode, Stylesheet, resetIds } from '@fluentui/react';
-import { NextPage } from 'next';
 import Document, { Html, Head, Main, NextScript, DocumentContext, DocumentInitialProps } from 'next/document'
 
 const stylesheet = Stylesheet.getInstance();

@@ -1,6 +1,16 @@
 // Load fake authentication info from local storage
 
-import { AuthenticationResult, AuthenticationScheme, AzureCloudInstance, BrowserConfiguration, ExternalTokenResponse, INavigationClient, INetworkModule, IPublicClientApplication, Logger, LogLevel, ProtocolMode } from '@azure/msal-browser';
+import {
+    AuthenticationResult,
+    AzureCloudInstance,
+    BrowserConfiguration,
+    INavigationClient,
+    INetworkModule,
+    IPublicClientApplication,
+    Logger,
+    LogLevel,
+    ProtocolMode
+} from '@azure/msal-browser';
 import { ITokenCache } from '@azure/msal-browser/dist/cache/ITokenCache';
 
 const fakeAuthenticationResult: AuthenticationResult = {
@@ -63,7 +73,7 @@ const fakeBrowserConfiguration: BrowserConfiguration = {
         allowRedirectInIframe: false,
         iframeHashTimeout: 1000,
         asyncPopups: false,
-        cryptoOptions: { },
+        cryptoOptions: {},
         loadFrameTimeout: 6000,
         loggerOptions: {},
         nativeBrokerHandshakeTimeout: 1000,

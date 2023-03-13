@@ -1,4 +1,4 @@
-import { getTheme, IStackItemStyles, IStackStyles, IStackTokens, ITextStyles, Stack, Text } from "@fluentui/react";
+import { IStackStyles, IStackTokens, Stack } from "@fluentui/react";
 import { ReactElement, ReactNode } from "react"
 import { NavMenu } from "./NavMenu"
 import { TopBar } from "./TopBar";

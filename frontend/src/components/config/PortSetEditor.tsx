@@ -3,7 +3,6 @@ import { useEffect, useReducer, useRef, useState } from "react";
 import { Editor } from "../Editor";
 import { ItemList } from "../ItemList";
 import { PortSet } from "src/models/portsets";
-import { useForceUpdate } from '@fluentui/react-hooks';
 
 export interface PortSetEditorProps {
     isOpen: boolean

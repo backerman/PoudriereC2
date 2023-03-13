@@ -70,7 +70,7 @@ export function PortSets(): JSX.Element {
         subText: 'Please specify the name of the port set to be created.'
     }
 
-    const deleteConfimProps: IDialogContentProps = {
+    const deleteConfirmProps: IDialogContentProps = {
         type: DialogType.normal,
         title: 'Delete port sets',
         subText: 'Are you sure you want to delete the selected port sets?'
@@ -181,7 +181,7 @@ export function PortSets(): JSX.Element {
             <Dialog
                 hidden={deleteDialogHidden}
                 modalProps={draggableProps}
-                dialogContentProps={deleteConfimProps}
+                dialogContentProps={deleteConfirmProps}
                 onDismiss={hideDeleteDialog} >
                 <DialogFooter>
                     <PrimaryButton onClick={

@@ -1,5 +1,5 @@
 import { IColumn } from "@fluentui/react";
-import { ComponentMeta, ComponentStory } from "@storybook/react";
+import { Meta, ComponentStory } from "@storybook/react";
 import { initializeIcons } from '@uifabric/icons';
 import 'temporal-polyfill/global';
 import { ItemList } from "./ItemList";
@@ -93,7 +93,7 @@ const sampleItems: ISampleItem[] = [
 export default {
     title: "ItemList",
     component: ItemList,
-} as ComponentMeta<typeof ItemList>;
+} as Meta<typeof ItemList>;
 
 const Template: ComponentStory<typeof ItemList> =
     (args) =>

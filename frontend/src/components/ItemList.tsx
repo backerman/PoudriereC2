@@ -1,4 +1,13 @@
-import { ConstrainMode, DetailsListLayoutMode, IDetailsListProps, IDetailsRowProps, MessageBar, MessageBarType, Selection, SelectionMode, ShimmeredDetailsList } from "@fluentui/react";
+import {
+    ConstrainMode,
+    DetailsListLayoutMode,
+    IDetailsListProps,
+    IDetailsRowProps,
+    MessageBar,
+    MessageBarType,
+    SelectionMode,
+    ShimmeredDetailsList
+} from "@fluentui/react";
 import React, { useState } from "react";
 import styles from './ItemList.module.css';
 
