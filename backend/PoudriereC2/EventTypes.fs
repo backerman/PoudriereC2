@@ -94,6 +94,19 @@ type LowerCaseNamingPolicy() =
         n.ToLowerInvariant()
 
 let serializationOptions discriminator =
+    let serializationOverrides (options: JsonFSharpOptions) = dict [
+                (typeof<ConfigFileType>, options
+                    .WithUnionEncoding(JsonUnionEncoding.UnwrapFieldlessTags)
+                    .WithUnionTagNamingPolicy(LowerCaseNamingPolicy()))
+                (typeof<PortSetUpdate>, options
+                    .WithUnionTagName("action")
+                    .WithUnionTagNamingPolicy(LowerCaseNamingPolicy()))
+                (typeof<FunctionResult>, options
+                    .WithUnionTagName("result")
+                    .WithUnionTagNamingPolicy(LowerCaseNamingPolicy()))
+                (typeof<PortsTreeMethod>, options
+                    .WithUnionUnwrapFieldlessTags())
+            ]
     let options =
         JsonFSharpOptions.Default()
             .WithSkippableOptionFields(true)
@@ -106,19 +119,7 @@ let serializationOptions discriminator =
                 ||| JsonUnionEncoding.UnwrapOption
             )
             .WithAllowOverride(true)
-            .WithOverrides(fun options -> dict [
-                (typeof<ConfigFileType>, options
-                    .WithUnionEncoding(JsonUnionEncoding.UnwrapFieldlessTags)
-                    .WithUnionTagNamingPolicy(LowerCaseNamingPolicy()))
-                (typeof<PortSetUpdate>, options
-                    .WithUnionTagName("action")
-                    .WithUnionTagNamingPolicy(LowerCaseNamingPolicy()))
-                (typeof<FunctionResult>, options
-                    .WithUnionTagName("result")
-                    .WithUnionTagNamingPolicy(LowerCaseNamingPolicy()))
-                (typeof<PortsTreeMethod>, options
-                    .WithUnionUnwrapFieldlessTags())
-            ])
+            .WithOverrides(serializationOverrides)
             .ToJsonSerializerOptions()
     options.PropertyNamingPolicy <- JsonNamingPolicy.CamelCase
     options
