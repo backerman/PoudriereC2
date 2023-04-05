@@ -56,40 +56,23 @@ module ConfigTypes =
           PortSet: Guid
           Jail: string
           ConfigFiles: Guid list }
-    
+
     type PortsTreeMethod =
         | Null
-        | Git of Url: string
-        | Svn of Url: string
+        | Git
+        | Svn
 
-        /// Check if this value's URL is valid for the given method.
-        member this.isValid =
-            match this with
-            | Null -> true
-            | Git url ->
-                let parsedUri = Uri url
-                Seq.contains parsedUri.Scheme
-                    // These schemes are based on what is allowed in `ports.sh`.
-                    ["http"; "https"; "file"; "ssh"; "git"]
-            | Svn url ->
-                let parsedUri = Uri url
-                Seq.contains parsedUri.Scheme
-                    ["http"; "https"; "file"; "svn+ssh"; "svn"]
-        
-        static member FromString (method: string, ?url: string) =
-            // FIXME should validate agreement of method and URI.
-            if method.StartsWith "git" then
-                if url.IsNone then Null
-                else Git url.Value
-            elif method.StartsWith "svn" then
-                if url.IsNone then Null
-                else Svn url.Value
-            else
-                Null
+        override this.ToString () =
+          Data.UnionToString(this)
 
+    /// A repository of port definitions that can be built.
+    /// Id may only be None when creating a new ports tree, where it will be
+    /// ignored.
     type PortsTree =
-        { Name: string
-          Method: PortsTreeMethod }
+        { Id: Guid option
+          Name: string
+          Method: PortsTreeMethod
+          Url: string option }
     
     /// A set of ports to be built.
     /// Id may only be None when creating a new port set, where it will be
@@ -99,7 +82,7 @@ module ConfigTypes =
           Name: string
           Origins: string list}
 
-    // Command to add or delete ports from a port set
+    /// Command to add or delete ports from a port set
     type PortSetUpdate =
         | Add of Ports: string list
         | Delete of Ports: string list

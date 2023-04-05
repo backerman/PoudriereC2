@@ -32,12 +32,17 @@ const navLinkGroups: INavLinkGroup[] = [
                     {
                         name: 'Files',
                         url: '/config/files',
-                        key: 'key1',
+                        key: 'files',
                     },
                     {
                         name: 'Portsets',
                         url: '/config/portsets',
-                        key: 'key2',
+                        key: 'portsets',
+                    },
+                    {
+                        name: 'Ports trees',
+                        url: '/config/portstrees',
+                        key: 'portstrees',
                     },
                 ],
                 isExpanded: false,
