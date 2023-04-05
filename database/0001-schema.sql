@@ -250,7 +250,7 @@ ADD CONSTRAINT pt_methods_onlyonedefault
 EXCLUDE (isdefault WITH =) WHERE (isdefault);
 -- ddl-end --
 
-INSERT INTO poudrierec2.portstree_methods (name, isdefault) VALUES (E'none', DEFAULT);
+INSERT INTO poudrierec2.portstree_methods (name, isdefault) VALUES (E'null', DEFAULT);
 -- ddl-end --
 INSERT INTO poudrierec2.portstree_methods (name, isdefault) VALUES (E'git', DEFAULT);
 -- ddl-end --

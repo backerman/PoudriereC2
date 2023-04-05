@@ -4,6 +4,7 @@ open Facefault.PoudriereC2
 open Facefault.PoudriereC2.Data
 open Facefault.PoudriereC2.Database
 open FSharp.Data.Sql
+open System
 
 type PortsRepository(db: DB.dataContext) =
 
@@ -27,50 +28,59 @@ type PortsRepository(db: DB.dataContext) =
                 trees
                 |> Seq.map
                     (fun pt ->
-                        { Name = pt.Name
-                          Method = PortsTreeMethod.FromString
-                            (pt.Method, ?url=pt.Url) })
+                        { Id = Some pt.Id
+                          Name = pt.Name
+                          Method =
+                            // FIXME Just drop the + and everything after it;
+                            // poudriere doesn't actually need it.
+                            pt.Method.Split([|'+'|]).[0]
+                            |> FromString<PortsTreeMethod>
+                          Url = pt.Url })
         }
 
-    member _.AddPortsTrees (trees: PortsTree list) =
+    member _.AddPortsTree (tree: PortsTree) =
         async {
-            trees
-            |> List.iter
-                (fun t -> 
-                    let row = db.Poudrierec2.Portstrees.Create()
-                    row.Name <- t.Name
-                    match t.Method with
-                    | Null ->
-                        row.Method <- t.ToString()
-                    | Git uri
-                    | Svn uri  ->
-                        row.Method <- UnionToString t.Method
-                        row.Url <- Some uri
-                    row.OnConflict <- Common.OnConflict.Throw)
+            let row = db.Poudrierec2.Portstrees.Create()
+            row.Id <- Guid.NewGuid()
+            row.Name <- tree.Name
+            row.Method <- UnionToString tree.Method
+            row.Url <- tree.Url
+            row.OnConflict <- Common.OnConflict.Throw
+            let! result = DatabaseError.FromQuery (db.SubmitUpdatesAsync())
+            if result <> NoError then
+                db.ClearUpdates() |> ignore
+            return (result, row.Id)
+        }
+
+    member _.UpdatePortsTree (treeId: Guid) (tree: PortsTree) =
+        async {
+            let! row =
+                query {
+                    for pt in db.Poudrierec2.Portstrees do
+                    where (pt.Id = treeId)
+                    select pt
+                } |> Seq.exactlyOneAsync
+            row.Name <- tree.Name
+            row.Method <- tree.Method.ToString()
+            row.Url <- tree.Url
+            row.OnConflict <- Common.OnConflict.Update
             let! result = DatabaseError.FromQuery (db.SubmitUpdatesAsync())
             if result <> NoError then
                 db.ClearUpdates() |> ignore
             return result
         }
 
-        member _.UpdatePortsTree (treeName: string) (tree: PortsTree) =
-            async {
-                let! row =
-                    query {
-                        for pt in db.Poudrierec2.Portstrees do
-                        where (pt.Name = treeName)
-                        select pt
-                    } |> Seq.exactlyOneAsync
-                row.Name <- tree.Name
-                row.Method <- tree.Method.ToString()
-                row.Url <-
-                    match tree.Method with
-                    | Git uri -> Some uri
-                    | Svn uri -> Some uri
-                    | _ -> None
-                row.OnConflict <- Common.OnConflict.Update
-                let! result = DatabaseError.FromQuery (db.SubmitUpdatesAsync())
-                if result <> NoError then
-                    db.ClearUpdates() |> ignore
-                return result
-            }
+    member _.DeletePortsTree (treeId: Guid) =
+        async {
+            let! row =
+                query {
+                    for pt in db.Poudrierec2.Portstrees do
+                    where (pt.Id = treeId)
+                    select pt
+                } |> Seq.exactlyOneAsync
+            row.Delete()
+            let! result = DatabaseError.FromQuery (db.SubmitUpdatesAsync())
+            if result <> NoError then
+                db.ClearUpdates() |> ignore
+            return result
+        }

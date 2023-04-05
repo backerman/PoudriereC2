@@ -12,10 +12,12 @@
     ],
     "sarif-viewer.connectToGithubCodeScanning": "on",
     "cSpell.words": [
+        "configurationfiles",
         "fluentui",
         "msal",
         "portset",
         "portsets",
+        "portstrees",
         "Poudriere",
         "poudriereconf",
         "pses",

@@ -5,6 +5,17 @@ open FsUnit
 open Facefault.PoudriereC2
 open System
 open System.Text.Json
+open System.IO
+
+let canonicalizeJson (json: string) =
+    use stream = new MemoryStream()
+    use writer = new Utf8JsonWriter(stream)
+    JsonDocument
+        .Parse(json)
+        .WriteTo(writer)
+    writer.Flush()
+    stream.Close()
+    stream.ToArray()
 
 [<TestFixture>]
 type JsonTests() =
@@ -94,7 +105,7 @@ type JsonTests() =
         let noGuidPortSetJson =
             """
             {"name":"test","origins":["www/apache24","security/tailscale"]}
-            """
+            """.Trim()
         let expectedNoGuid =
             { Id = None
               Name = "test"
@@ -111,6 +122,45 @@ type JsonTests() =
               Origins = [ "www/apache24"; "security/tailscale" ] }
         JsonSerializer.Deserialize<PortSet>(withGuidPortSetJson, eventSerializationOptions)
         |> should equal expectedWithGuid
+
+    [<Test>]
+    member _.TestNullPortsTreeSerialization() =
+        let sampleTreeJson =
+            """
+            {"name": "foo bar baz", "method": "null"}
+            """
+            |> canonicalizeJson
+        let expectedTree =
+            { Id = None
+              Name = "foo bar baz"
+              Method = Null
+              Url = None }
+        JsonSerializer.Deserialize<PortsTree>(sampleTreeJson, eventSerializationOptions)
+        |> should equal expectedTree
+        JsonSerializer.Serialize(expectedTree, eventSerializationOptions)
+        |> canonicalizeJson
+        |> should equal sampleTreeJson
+
+    [<Test>]
+    member _.TestGitPortsTreeSerialization() =
+        let sampleTreeJson =
+            """
+            {"id": "572abd41-a8eb-41f5-9a54-9329513dbba4",
+             "name": "foo bar baz!",
+             "method": "git",
+             "url": "https://github.com/foo/bar.git"}
+            """
+            |> canonicalizeJson
+        let expectedTree =
+            { Id = Some (Guid("572abd41-a8eb-41f5-9a54-9329513dbba4"))
+              Name = "foo bar baz!"
+              Method = Git
+              Url = Some "https://github.com/foo/bar.git" }
+        JsonSerializer.Deserialize<PortsTree>(sampleTreeJson, eventSerializationOptions)
+        |> should equal expectedTree
+        JsonSerializer.Serialize(expectedTree, eventSerializationOptions)
+        |> canonicalizeJson
+        |> should equal sampleTreeJson
 
     [<SetUp>]
     member _.setup() =
