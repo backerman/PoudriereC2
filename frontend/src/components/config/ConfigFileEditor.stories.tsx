@@ -20,9 +20,8 @@ export default {
                 </PrimaryButton>
                 <ConfigFileEditor
                 isOpen={args.isOpen}
-                record={sampleData.find((item) => item.id == args.recordId) || sampleData[0]}
-                onDismiss={() => updateArgs({isOpen: false})}
-                recordId={args.recordId} />
+                record={sampleData.find((item) => item.id == args.record.id) || sampleData[0]}
+                onDismiss={() => updateArgs({isOpen: false})}  />
             </div>
         )
     },
@@ -42,6 +41,6 @@ export default {
 
 export const Editor : StoryObj<typeof ConfigFileEditor> = {
     args: {
-        recordId: sampleData[1].id
+        record: sampleData[1]
     },
 }

@@ -1,7 +1,7 @@
 // Configuration types
 
 type ConfigFileMetadata = {
-    id: string,
+    id?: string,
     deleted: boolean,
     name: string,
     portSet?: string,

@@ -1,11 +1,12 @@
-import { useCallback, useState } from 'react';
-import { IColumn } from '@fluentui/react';
+import { useCallback, useRef, useState } from 'react';
+import { IColumn, ITextField, Selection } from '@fluentui/react';
 import { ConfigFileMetadata } from 'src/models/configs';
 import { ConfigFileEditor } from './ConfigFileEditor';
 import { useBoolean } from '@fluentui/react-hooks';
 import { ItemList } from 'src/components/ItemList';
 import useSWR from 'swr';
 import { fetcher } from 'src/utils/fetcher';
+import { ConfigCommandBar } from './ConfigCommandBar';
 
 type ConfigFilesProps = {
     showDeleted?: boolean;
@@ -74,13 +75,38 @@ export function ConfigFiles(props: ConfigFilesProps): JSX.Element {
         return !item.deleted;
     }, [props.showDeleted]);
     const [editorIsOpen, { setTrue: openEditor, setFalse: closeEditor }] = useBoolean(false);
-    const [activeRecord, setActiveRecord] = useState('');
+    const [activeRecord, setActiveRecord] = useState({} as ConfigFileMetadata);
     const { data, error, isLoading, mutate } = useSWR<ConfigFileMetadata[]>('/api/configurationfiles/metadata', fetcher);
+    const [addDialogHidden, { setTrue: hideAddDialog, setFalse: showAddDialog }] = useBoolean(true);
+    const [deleteDialogHidden, { setTrue: hideDeleteDialog, setFalse: showDeleteDialog }] = useBoolean(true);
+    // Whether the delete button is enabled; it should be enabled
+    // iff at least one item is selected.
+    const [deleteButtonDisabled, setDeleteButtonDisabled] = useState(true);
+    const [creatingNewRecord, { setTrue: setCreatingNewRecord, setFalse: clearCreatingNewRecord }] = useBoolean(false);
+    const addNameRef = useRef<ITextField>(null);
+    const [selection] = useState(new Selection({
+        getKey: (cf) => (cf as ConfigFileMetadata).id || '',
+        onSelectionChanged: () => {
+            setDeleteButtonDisabled(selection.getSelectedCount() === 0);
+        }
+    }));
+
+    // Putting them here to add them with spread operator
+    const addDeleteParams = {
+        addNameRef,
+        addDialogHidden,
+        hideAddDialog,
+        showAddDialog,
+        deleteDialogHidden,
+        hideDeleteDialog,
+        showDeleteDialog,
+        deleteButtonDisabled
+    }
+
     return (<div className={"ConfigFiles"}>
         <ConfigFileEditor
-            record={data?.find((r) => r.id === activeRecord) || {} as ConfigFileMetadata}
+            record={activeRecord || {} as ConfigFileMetadata}
             isOpen={editorIsOpen}
-            recordId={activeRecord}
             onDismiss={closeEditor}
             onSubmit={async (meta: ConfigFileMetadata) => {
                 await mutate(
@@ -96,6 +122,14 @@ export function ConfigFiles(props: ConfigFilesProps): JSX.Element {
                     });
                 closeEditor();
             }} />
+        <ConfigCommandBar
+            {...addDeleteParams}
+            singularItemName='configuration file'
+            pluralItemName='configuration files'
+            addConfirmButtonText='Configure'
+            onAddConfirmClick={async () => {}}
+            onDeleteConfirmClick={async () => {}}
+            />
         <ItemList
             enableShimmer={isLoading}
             ariaLabelForGrid={"List of configuration files"}
@@ -103,9 +137,12 @@ export function ConfigFiles(props: ConfigFilesProps): JSX.Element {
             error={error?.toString()}
             items={(data || []).filter(itemsFilter)}
             columns={columns}
-            getKey={data ? (f: ConfigFileMetadata) => f.id : undefined}
+            getKey={data ? (f: ConfigFileMetadata) => {
+                const key = f.id || 'undefined';
+                return key;
+            } : undefined}
             onItemInvoked={(item: ConfigFileMetadata) => {
-                setActiveRecord(item.id);
+                setActiveRecord(item);
                 openEditor();
             }}
         />

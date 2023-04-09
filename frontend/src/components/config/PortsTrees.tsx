@@ -1,10 +1,11 @@
-import { useRef, useState } from 'react';
-import { ActionButton, CommandBar, ContextualMenu, DefaultButton, Dialog, DialogFooter, DialogType, IColumn, ICommandBarItemProps, IDialogContentProps, IModalProps, ITextField, PrimaryButton, Selection, TextField } from '@fluentui/react';
+import { PortsTree } from '@/models/portstrees';
+import { FunctionResult, fetcher } from '@/utils/fetcher';
+import { IColumn, ITextField, Selection } from '@fluentui/react';
 import { useBoolean } from '@fluentui/react-hooks';
+import { useRef, useState } from 'react';
 import { ItemList } from 'src/components/ItemList';
 import useSWR from 'swr';
-import { FunctionResult, fetcher } from '@/utils/fetcher';
-import { PortsTree } from '@/models/portstrees';
+import { ConfigCommandBar } from './ConfigCommandBar';
 import { PortsTreeEditor } from './PortsTreeEditor';
 
 const columns: IColumn[] = [
@@ -43,14 +44,6 @@ const columns: IColumn[] = [
     }
 ]
 
-const draggableProps: IModalProps = {
-    dragOptions: {
-        moveMenuItemText: 'Move',
-        closeMenuItemText: 'Close',
-        menu: ContextualMenu
-    }
-}
-
 export function PortsTrees(): JSX.Element {
     const [editorIsOpen, { setTrue: openEditor, setFalse: closeEditor }] = useBoolean(false);
     const [activeRecord, setActiveRecord] = useState<PortsTree | undefined>(undefined);
@@ -70,34 +63,17 @@ export function PortsTrees(): JSX.Element {
         }
     }));
 
-    const addContentProps: IDialogContentProps = {
-        type: DialogType.normal,
-        title: 'Create port set',
-        subText: 'Please specify the name of the ports tree to be created.'
+    // Putting them here to add them with spread operator
+    const addDeleteParams = {
+        addNameRef,
+        addDialogHidden,
+        hideAddDialog,
+        showAddDialog,
+        deleteDialogHidden,
+        hideDeleteDialog,
+        showDeleteDialog,
+        deleteButtonDisabled
     }
-
-    const deleteConfirmProps: IDialogContentProps = {
-        type: DialogType.normal,
-        title: 'Delete port sets',
-        subText: 'Are you sure you want to delete the selected ports tree?'
-    }
-
-    const commandBarItems: ICommandBarItemProps[] = [
-        {
-            key: 'add',
-            text: 'Add',
-            iconProps: { iconName: 'Add' },
-            onClick: () => showAddDialog()
-        },
-        {
-            key: 'delete',
-            text: 'Delete',
-            iconProps: { iconName: 'Delete' },
-            ariaDescription: 'Delete selected ports tree',
-            disabled: deleteButtonDisabled,
-            onClick: () => showDeleteDialog()
-        }
-    ]
 
     return (<div className={"PortsTrees"}>
         <PortsTreeEditor
@@ -144,59 +120,39 @@ export function PortsTrees(): JSX.Element {
                 closeEditor();
             }}
             onDismiss={closeEditor} />
-        <CommandBar
-            items={commandBarItems} />
-        <Dialog
-            hidden={addDialogHidden}
-            modalProps={draggableProps}
-            dialogContentProps={addContentProps}
-            onDismiss={() => {
+        <ConfigCommandBar
+            {...addDeleteParams}
+            addConfirmButtonText='Configure ports tree'
+            singularItemName='ports tree'
+            pluralItemName='ports trees'
+            onAddConfirmClick={() => {
+                setActiveRecord({
+                    id: undefined,
+                    name: addNameRef.current?.value || '',
+                    method: 'null',
+                    url: undefined
+                });
+                setCreatingNewRecord();
+                openEditor();
                 hideAddDialog();
-                clearCreatingNewRecord();
-            }}>
-            <TextField label={"Name"} componentRef={addNameRef} />
-            <DialogFooter>
-                <DefaultButton onClick={() => {
-                    setActiveRecord({
-                        id: undefined,
-                        name: addNameRef.current?.value || '',
-                        method: 'null',
-                        url: undefined
-                    });
-                    setCreatingNewRecord();
-                    openEditor();
-                    hideAddDialog();
-                }} text="Configure ports tree" />
-                <ActionButton onClick={hideAddDialog} text="Cancel" />
-            </DialogFooter>
-        </Dialog>
-        <Dialog
-            hidden={deleteDialogHidden}
-            modalProps={draggableProps}
-            dialogContentProps={deleteConfirmProps}
-            onDismiss={hideDeleteDialog} >
-            <DialogFooter>
-                <PrimaryButton onClick={
+            }}
+            onDeleteConfirmClick={async () => {
+                await mutate(
                     async () => {
-                        await mutate(
-                            async () => {
-                                const pses = selection.getSelection() as PortsTree[];
-                                hideDeleteDialog();
-                                for (const ps of pses) {
-                                    const result = await fetcher<FunctionResult>(`/api/portstrees/${ps.id}`, {
-                                        method: 'DELETE'
-                                    });
-                                    if (result.error) {
-                                        throw new Error(result.error);
-                                    }
-                                };
-                                return data?.filter((r) => !pses.includes(r));
+                        const pses = selection.getSelection() as PortsTree[];
+                        hideDeleteDialog();
+                        for (const ps of pses) {
+                            const result = await fetcher<FunctionResult>(`/api/portstrees/${ps.id}`, {
+                                method: 'DELETE'
                             });
-                    }
-                } text="Delete" />
-                <DefaultButton onClick={hideDeleteDialog} text="Cancel" />
-            </DialogFooter>
-        </Dialog>
+                            if (result.error) {
+                                throw new Error(result.error);
+                            }
+                        };
+                        return data?.filter((r) => !pses.includes(r));
+                    });
+            }}
+            />
         <ItemList
             enableShimmer={isLoading}
             ariaLabelForGrid={"List of ports trees"}
@@ -208,7 +164,7 @@ export function PortsTrees(): JSX.Element {
             getKey={data ? (f: PortsTree) => {
                 const key = f.id || 'undefined';
                 return key;
-            } : undefined }
+            } : undefined}
             onItemInvoked={(item: PortsTree) => {
                 setActiveRecord(item);
                 openEditor();

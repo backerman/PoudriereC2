@@ -7,7 +7,6 @@ export type ConfigFileEditorProps =
     {
         isOpen: boolean
         record: ConfigFileMetadata
-        recordId: string
         onSubmit?: (formData: ConfigFileMetadata) => void
         onDismiss: () => void
     }
@@ -49,11 +48,11 @@ export function ConfigFileEditor(props: ConfigFileEditorProps): JSX.Element {
         setMostRecentPropsRecord(props.record);
     }
 
-    const onTextChange = useCallback((fieldName: keyof ConfigFileMetadata) => {
+    const onTextChange = (fieldName: keyof ConfigFileMetadata) => {
         return (event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string) => {
-            setState(updateState(configFileData, { field: fieldName, value: (newValue || '') }));
+            setState({ field: fieldName, value: (newValue || '') });
         }
-    }, [configFileData]);
+    };
 
     return (
         <Editor
