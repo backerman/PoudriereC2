@@ -1,12 +1,12 @@
-import { ActionButton, CommandBar, ContextualMenu, DefaultButton, Dialog, DialogFooter, DialogType, IColumn, ICommandBarItemProps, IDialogContentProps, IModalProps, ITextField, PrimaryButton, Selection, TextField } from "@fluentui/react";
-import { useRef, useState } from "react";
+import { FunctionResult, fetcher } from "@/utils/fetcher";
+import { IColumn, ITextField, Selection } from "@fluentui/react";
 import { useBoolean } from '@fluentui/react-hooks';
+import { useRef, useState } from "react";
 import { PortSet } from "src/models/portsets";
-import { ItemList } from "../ItemList";
-import { sortBy } from "src/utils/utils";
-import { PortSetEditor } from "./PortSetEditor";
-import { fetcher, FunctionResult } from "@/utils/fetcher";
 import useSWR from 'swr';
+import { ItemList } from "../ItemList";
+import { ConfigCommandBar } from "./ConfigCommandBar";
+import { PortSetEditor } from "./PortSetEditor";
 
 const columns: IColumn[] = [
     {
@@ -64,41 +64,14 @@ export function PortSets(): JSX.Element {
         }
     }));
 
-    const addContentProps: IDialogContentProps = {
-        type: DialogType.normal,
-        title: 'Create port set',
-        subText: 'Please specify the name of the port set to be created.'
-    }
-
-    const deleteConfirmProps: IDialogContentProps = {
-        type: DialogType.normal,
-        title: 'Delete port sets',
-        subText: 'Are you sure you want to delete the selected port sets?'
-    }
-
-    const commandBarItems: ICommandBarItemProps[] = [
-        {
-            key: 'add',
-            text: 'Add',
-            iconProps: { iconName: 'Add' },
-            onClick: () => showAddDialog()
-        },
-        {
-            key: 'delete',
-            text: 'Delete',
-            iconProps: { iconName: 'Delete' },
-            ariaDescription: 'Delete selected port sets',
-            disabled: deleteButtonDisabled,
-            onClick: () => showDeleteDialog()
-        }
-    ]
-
-    const draggableProps : IModalProps = {
-        dragOptions: {
-            moveMenuItemText: 'Move',
-            closeMenuItemText: 'Close',
-            menu: ContextualMenu
-        }
+    // Putting them here to add them with spread operator
+    const addDeleteParams = {
+        addDialogHidden,
+        hideAddDialog,
+        showAddDialog,
+        deleteDialogHidden,
+        hideDeleteDialog,
+        showDeleteDialog
     }
 
     return (
@@ -106,7 +79,10 @@ export function PortSets(): JSX.Element {
             <PortSetEditor
                 createNewRecord={creatingNewRecord}
                 isOpen={editorIsOpen}
-                onDismiss={closeEditor}
+                onDismiss={() => {
+                    clearCreatingNewRecord();
+                    closeEditor();
+                }}
                 record={activeRecord}
                 onSubmit={async (ps: PortSet) => {
                     if (!activeRecord) {
@@ -134,7 +110,7 @@ export function PortSets(): JSX.Element {
                                 ...ps,
                                 id: result.guid
                             });
-                        }, { revalidate: false})
+                        }, { revalidate: false })
                     } else {
                         const { toAdd, toDelete } = computeMutations(activeRecord, ps);
                         const actions = [
@@ -155,56 +131,42 @@ export function PortSets(): JSX.Element {
                                 return data?.map((r) => r.id === ps.id ? ps : r);
                             });
                     }
+                    clearCreatingNewRecord();
                     closeEditor();
                 }} />
-            <CommandBar
-                items={commandBarItems} />
-            <Dialog
-                hidden={addDialogHidden}
-                modalProps={draggableProps}
-                dialogContentProps={addContentProps}
-                onDismiss={hideAddDialog}>
-                <TextField label={"Name"} componentRef={addNameRef}/>
-                <DialogFooter>
-                    <DefaultButton onClick={() => {
-                        setActiveRecord({
-                            ...emptyPortSet,
-                            name: addNameRef.current?.value || ''
-                        });
-                        setCreatingNewRecord();
-                        openEditor();
-                        hideAddDialog();
-                    }} text="Select ports"/>
-                    <ActionButton onClick={hideAddDialog} text="Cancel" />
-                </DialogFooter>
-            </Dialog>
-            <Dialog
-                hidden={deleteDialogHidden}
-                modalProps={draggableProps}
-                dialogContentProps={deleteConfirmProps}
-                onDismiss={hideDeleteDialog} >
-                <DialogFooter>
-                    <PrimaryButton onClick={
-                        async () => {
-                            await mutate(
-                                async () => {
-                                    const pses = selection.getSelection() as PortSet[];
-                                    hideDeleteDialog();
-                                    for (const ps of pses) {
-                                        const result = await fetcher<FunctionResult>(`/api/portsets/${ps.id}`, {
-                                            method: 'DELETE'
-                                        });
-                                        if (result.error) {
-                                            throw new Error(result.error);
-                                        }
-                                    };
-                                    return data?.filter((r) => !pses.includes(r));
-                                });
-                        }
-                    } text="Delete" />
-                    <DefaultButton onClick={hideDeleteDialog} text="Cancel" />
-                </DialogFooter>
-            </Dialog>
+            <ConfigCommandBar
+                {...addDeleteParams}
+                addConfirmButtonText={"Select ports"}
+                addNameRef={addNameRef}
+                deleteButtonDisabled={deleteButtonDisabled}
+                pluralItemName={"port sets"}
+                singularItemName={"port set"}
+                onAddConfirmClick={() => {
+                    setActiveRecord({
+                        ...emptyPortSet,
+                        name: addNameRef.current?.value || ''
+                    });
+                    setCreatingNewRecord();
+                    openEditor();
+                    hideAddDialog();
+                }}
+                onDeleteConfirmClick={
+                    async () => {
+                        await mutate(
+                            async () => {
+                                const pses = selection.getSelection() as PortSet[];
+                                hideDeleteDialog();
+                                for (const ps of pses) {
+                                    const result = await fetcher<FunctionResult>(`/api/portsets/${ps.id}`, {
+                                        method: 'DELETE'
+                                    });
+                                    if (result.error) {
+                                        throw new Error(result.error);
+                                    }
+                                };
+                                return data?.filter((r) => !pses.includes(r));
+                            });
+                    }} />
             <ItemList
                 ariaLabelForGrid={"List of port sets"}
                 getRowAriaLabel={(r: PortSet) => r.name}
