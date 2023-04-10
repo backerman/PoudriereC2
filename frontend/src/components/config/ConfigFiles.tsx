@@ -5,7 +5,7 @@ import { ConfigFileEditor } from './ConfigFileEditor';
 import { useBoolean } from '@fluentui/react-hooks';
 import { ItemList } from 'src/components/ItemList';
 import useSWR from 'swr';
-import { fetcher } from 'src/utils/fetcher';
+import { FunctionResult, fetcher } from 'src/utils/fetcher';
 import { ConfigCommandBar } from './ConfigCommandBar';
 
 type ConfigFilesProps = {
@@ -105,31 +105,83 @@ export function ConfigFiles(props: ConfigFilesProps): JSX.Element {
 
     return (<div className={"ConfigFiles"}>
         <ConfigFileEditor
+            creatingNewRecord={creatingNewRecord}
             record={activeRecord || {} as ConfigFileMetadata}
             isOpen={editorIsOpen}
-            onDismiss={closeEditor}
-            onSubmit={async (meta: ConfigFileMetadata) => {
-                await mutate(
-                    async () => {
-                        // FIXME check for errors
-                        await
-                            fetcher('/api/configurationfiles/metadata',
-                                {
-                                    method: 'PUT',
-                                    body: JSON.stringify(meta)
-                                });
-                        return data?.map((r) => r.id === meta.id ? meta : r);
-                    });
+            onDismiss={() => {
                 closeEditor();
+                clearCreatingNewRecord();
+            }}
+            onSubmit={async (meta: ConfigFileMetadata) => {
+                if (!activeRecord) {
+                    console.log("Error: no active record exists")
+                } else if (creatingNewRecord) {
+                    await mutate(
+                        async () => {
+                            const result =
+                                await fetcher<FunctionResult>('/api/configurationfiles/metadata/',
+                                    {
+                                        method: 'POST',
+                                        body: JSON.stringify(meta)
+                                    });
+                            if (result.error) {
+                                throw new Error(result.error);
+                            }
+                            if (!result.guid) {
+                                throw new Error("No GUID returned from server");
+                            }
+                            return data?.concat({
+                                ...meta,
+                                id: result.guid
+                            })
+                        }
+                    )
+                } else {
+                    await mutate(
+                        async () => {
+                            await
+                                fetcher('/api/configurationfiles/metadata/' + meta.id,
+                                    {
+                                        method: 'PUT',
+                                        body: JSON.stringify(meta)
+                                    });
+                            return data?.map((r) => r.id === meta.id ? meta : r);
+                        }
+                    )
+                }
+                closeEditor();
+                clearCreatingNewRecord();
             }} />
         <ConfigCommandBar
             {...addDeleteParams}
             singularItemName='configuration file'
             pluralItemName='configuration files'
             addConfirmButtonText='Configure'
-            onAddConfirmClick={async () => {}}
-            onDeleteConfirmClick={async () => {}}
-            />
+            onAddConfirmClick={async () => {
+                setActiveRecord({
+                    name: addNameRef.current?.value || '',
+                    deleted: false,
+                    fileType: 'poudriereconf'
+                });
+                setCreatingNewRecord();
+                hideAddDialog();
+                openEditor();
+            }}
+            onDeleteConfirmClick={async () => {
+                await mutate(async () => {
+                    const cfs = selection.getSelection() as ConfigFileMetadata[];
+                    hideDeleteDialog();
+                    for (const cf of cfs) {
+                        const result = await fetcher('/api/configurationfiles/metadata/' + cf.id,
+                            { method: 'DELETE' });
+                        if (result.error) {
+                            throw new Error(result.error);
+                        }
+                    }
+                    return data?.filter((r) => !cfs.includes(r));
+                })
+            }}
+        />
         <ItemList
             enableShimmer={isLoading}
             ariaLabelForGrid={"List of configuration files"}
@@ -137,6 +189,7 @@ export function ConfigFiles(props: ConfigFilesProps): JSX.Element {
             error={error?.toString()}
             items={(data || []).filter(itemsFilter)}
             columns={columns}
+            selection={selection}
             getKey={data ? (f: ConfigFileMetadata) => {
                 const key = f.id || 'undefined';
                 return key;

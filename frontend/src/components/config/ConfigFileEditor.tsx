@@ -6,6 +6,7 @@ import { ConfigFileMetadata } from "src/models/configs";
 export type ConfigFileEditorProps =
     {
         isOpen: boolean
+        creatingNewRecord: boolean
         record: ConfigFileMetadata
         onSubmit?: (formData: ConfigFileMetadata) => void
         onDismiss: () => void
@@ -60,11 +61,20 @@ export function ConfigFileEditor(props: ConfigFileEditorProps): JSX.Element {
             isBlocking={false}
             headerText={"Edit configuration"}
             onDismiss={props.onDismiss}
-            onSubmit={() => { props.onSubmit && props.onSubmit(configFileData) }}>
+            onSubmit={() => {
+                if (props.onSubmit) {
+                    if (configFileData.fileType === 'poudriereconf') {
+                        // May not have a portset or ports tree.
+                        setState({ field: 'portSet', value: undefined });
+                        setState({ field: 'portsTree', value: undefined });
+                    }
+                    props.onSubmit(configFileData);
+                }
+                }}>
             <TextField
                 label="GUID"
                 value={configFileData.id || ''}
-                contentEditable={false}
+                disabled={true}
                 onChange={onTextChange("id")} />
             <TextField
                 label="Name"
@@ -82,10 +92,12 @@ export function ConfigFileEditor(props: ConfigFileEditorProps): JSX.Element {
                 onChange={onTextChange("jail")} />
             <TextField
                 label="Port set"
+                disabled={configFileData.fileType == 'poudriereconf'}
                 value={configFileData.portSet || ''}
                 onChange={onTextChange("portSet")} />
             <TextField
                 label="Ports tree"
+                disabled={configFileData.fileType == 'poudriereconf'}
                 value={configFileData.portsTree || ''}
                 onChange={onTextChange("portsTree")} />
         </Editor>)

@@ -31,7 +31,7 @@ module ConfigTypes =
         override x.ToString () = Data.UnionToString(x)
 
     type ConfigFileMetadata =
-        { Id: Guid
+        { Id: Guid option
           Deleted: bool
           Name: string
           PortSet: Guid option

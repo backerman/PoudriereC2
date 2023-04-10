@@ -12,9 +12,9 @@ open System.Runtime.InteropServices
 
 type ConfigFileApi (cfg: ConfigRepository) =
 
-    [<Function("NewOrUpdateConfigFile")>]
-    member _.newOrUpdateConfigFile
-        ([<HttpTrigger(AuthorizationLevel.Anonymous, "put", Route="configurationfiles/metadata")>]
+    [<Function("NewConfigFile")>]
+    member _.newConfigFile
+        ([<HttpTrigger(AuthorizationLevel.Anonymous, "post", Route="configurationfiles/metadata")>]
          req: HttpRequestData, execContext: FunctionContext) =
             async {
                 let log = execContext.GetLogger()
@@ -27,7 +27,40 @@ type ConfigFileApi (cfg: ConfigRepository) =
                         (Error "Invalid or nonexistent payload")
                     |> ignore
                 | Some meta ->
-                    let! result = cfg.NewOrUpdateConfigFile meta
+                    let! result = cfg.NewConfigFile meta
+                    match result with
+                    | (NoError, aGuid) ->
+                        response.StatusCode <- HttpStatusCode.OK
+                        Created aGuid
+                        |> response.writeJsonResponse
+                        |> ignore
+                    | (someError, _) ->
+                        let errResponse =
+                            someError.Handle
+                                (log, "Failed creation of config {ConfigFile}: {Error}", meta.Name, someError)
+                        response.StatusCode <- errResponse.httpCode
+                        response.writeJsonResponse errResponse.result
+                        |> ignore
+                return response
+            } |> Async.StartAsTask
+
+    [<Function("UpdateConfigFile")>]
+    member _.updateConfigFile
+        ([<HttpTrigger(AuthorizationLevel.Anonymous, "put", Route="configurationfiles/metadata/{configFile:guid}")>]
+         req: HttpRequestData, execContext: FunctionContext, configFile: Guid) =
+            async {
+                let log = execContext.GetLogger()
+                let response = req.CreateResponse(HttpStatusCode.OK)
+                let! maybeConfig = tryDeserialize<ConfigFileMetadata> req log
+                match maybeConfig with
+                | None ->
+                    response.StatusCode <- HttpStatusCode.BadRequest
+                    response.writeJsonResponse
+                        (Error "Invalid or nonexistent payload")
+                    |> ignore
+                | Some meta ->
+                    let! result =
+                        cfg.UpdateConfigFile { meta with Id = Some configFile}
                     match result with
                     | NoError ->
                         response.StatusCode <- HttpStatusCode.OK
@@ -35,7 +68,7 @@ type ConfigFileApi (cfg: ConfigRepository) =
                     | someError ->
                         let errResponse = 
                             someError.Handle
-                                (log, "Failed upsert of config {ConfigFile}: {Error}", meta.Name, someError)
+                                (log, "Failed update of config {ConfigFile}: {Error}", meta.Name, someError)
                         response.StatusCode <- errResponse.httpCode
                         response.writeJsonResponse errResponse.result
                         |> ignore
@@ -55,6 +88,28 @@ type ConfigFileApi (cfg: ConfigRepository) =
                 let! files = cfg.GetConfigFiles(?configFile = configFileOpt)
                 let response = req.CreateResponse(HttpStatusCode.OK)
                 return response.writeJsonResponse files
+            } |> Async.StartAsTask
+
+    [<Function("DeleteConfigFile")>]
+    member _.deleteConfigFile
+        ([<HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route="configurationfiles/metadata/{configFile:guid}")>]
+         req: HttpRequestData, execContext: FunctionContext, configFile: Guid) =
+            async {
+                let log = execContext.GetLogger()
+                let response = req.CreateResponse(HttpStatusCode.OK)
+                let! result = cfg.DeleteConfigFile configFile
+                match result with
+                | NoError ->
+                    response.StatusCode <- HttpStatusCode.OK
+                    response.writeJsonResponse OK |> ignore
+                | someError ->
+                    let errResponse =
+                        someError.Handle
+                            (log, "Failed deletion of config {ConfigFile}: {Error}", configFile, someError)
+                    response.StatusCode <- errResponse.httpCode
+                    response.writeJsonResponse errResponse.result
+                    |> ignore
+                return response
             } |> Async.StartAsTask
 
     [<Function("GenerateConfigFile")>]

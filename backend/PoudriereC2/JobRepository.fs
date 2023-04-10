@@ -53,7 +53,7 @@ type JobRepository (db: DB.dataContext) =
                 configFilesEntities
                 |> List.map
                     (fun (cf) ->
-                        { Id = cf.Id
+                        { Id = Some cf.Id
                           Name = cf.Name
                           Jail = cf.Jail
                           PortsTree = cf.Portstree

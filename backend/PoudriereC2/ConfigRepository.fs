@@ -34,7 +34,7 @@ type ConfigRepository (db: DB.dataContext) =
                     where ((%filterQuery) file)
                     sortBy file.Id
                     select
-                        { Id = file.Id
+                        { Id = Some file.Id
                           Deleted = file.Deleted
                           Name = file.Name
                           PortSet = file.Portset
@@ -44,19 +44,63 @@ type ConfigRepository (db: DB.dataContext) =
                 } |> Seq.executeQueryAsync
             return configFiles
         }
-    
-    member _.NewOrUpdateConfigFile (metadata: ConfigFileMetadata) : Async<DatabaseError> =
+
+    member _.NewConfigFile (metadata: ConfigFileMetadata) =
         async {
+            let guid = Guid.NewGuid()
             let row = db.Poudrierec2.Configfiles.Create()
             row.Name <- metadata.Name
             row.Deleted <- false
-            row.Id <- metadata.Id
+            row.Id <- guid
             row.Jail <- metadata.Jail
             row.Portset <- metadata.PortSet
             row.Portstree <- metadata.PortsTree
             row.Configtype <- UnionToString metadata.FileType
 
             row.OnConflict <- Common.OnConflict.Update
+            let! result = DatabaseError.FromQuery (db.SubmitUpdatesAsync())
+            if result <> NoError then
+                db.ClearUpdates() |> ignore
+            return (result, row.Id)
+        }
+
+    member _.UpdateConfigFile (metadata: ConfigFileMetadata) : Async<DatabaseError> =
+        async {
+            let rowGuid =
+                match metadata.Id with
+                | Some id -> id
+                | None ->
+                    raise (ArgumentException("Config file metadata must have an ID"))
+            let! row =
+                query {
+                    for file in db.Poudrierec2.Configfiles do
+                    where (file.Id = rowGuid)
+                    select file
+                } |> Seq.exactlyOneAsync
+            row.Name <- metadata.Name
+            row.Deleted <- metadata.Deleted
+            row.Jail <- metadata.Jail
+            row.Portset <- metadata.PortSet
+            row.Portstree <- metadata.PortsTree
+            row.Configtype <- UnionToString metadata.FileType
+
+            row.OnConflict <- Common.OnConflict.Throw
+            let! result = DatabaseError.FromQuery (db.SubmitUpdatesAsync())
+            if result <> NoError then
+                db.ClearUpdates() |> ignore
+            return result
+        }
+
+    member _.DeleteConfigFile (configFile: Guid) : Async<DatabaseError> =
+        async {
+            let! row =
+                query {
+                    for file in db.Poudrierec2.Configfiles do
+                    where (file.Id = configFile)
+                    select file
+                } |> Seq.exactlyOneAsync
+            row.Deleted <- true
+            row.OnConflict <- Common.OnConflict.Throw
             let! result = DatabaseError.FromQuery (db.SubmitUpdatesAsync())
             if result <> NoError then
                 db.ClearUpdates() |> ignore
