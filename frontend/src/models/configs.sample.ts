@@ -13,7 +13,9 @@ export const sampleData: ConfigFileMetadata[] = [
       name: 'this is a test',
       fileType: 'poudriereconf',
       jail: 'jail1',
-      portSet: 'set1',
-      portsTree: 'tree42'
+      portSet: '3bb71b44-869a-493c-aa82-aaf9f337fc50',
+      portSetName: 'Yog-Sothoth',
+      portsTree: 'db2a4a2f-7191-48bd-933e-d206e68c0837',
+      portsTreeName: 'Nullvad'
     }
   ]

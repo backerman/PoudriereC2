@@ -44,6 +44,8 @@ const columns: IColumn[] = [
         isResizable: true,
         targetWidthProportion: 0.2,
         isCollapsible: true,
+        onRender: (item: ConfigFileMetadata) =>
+            item.portSetName
     },
     {
         key: 'portsTree',
@@ -53,7 +55,9 @@ const columns: IColumn[] = [
         maxWidth: 250,
         isResizable: true,
         targetWidthProportion: 0.2,
-        isCollapsible: true
+        isCollapsible: true,
+        onRender: (item: ConfigFileMetadata) =>
+            item.portsTreeName
     },
     {
         key: 'jail',

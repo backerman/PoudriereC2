@@ -35,7 +35,9 @@ module ConfigTypes =
           Deleted: bool
           Name: string
           PortSet: Guid option
+          PortSetName: string option
           PortsTree: Guid option
+          PortsTreeName: string option
           Jail: string option
           FileType: ConfigFileType }
 

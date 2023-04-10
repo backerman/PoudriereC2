@@ -57,7 +57,9 @@ type JobRepository (db: DB.dataContext) =
                           Name = cf.Name
                           Jail = cf.Jail
                           PortsTree = cf.Portstree
+                          PortsTreeName = None
                           PortSet = cf.Portset
+                          PortSetName = None
                           Deleted = cf.Deleted
                           FileType = FromString<ConfigFileType>(cf.Configtype) })
 

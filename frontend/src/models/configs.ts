@@ -5,7 +5,9 @@ type ConfigFileMetadata = {
     deleted: boolean,
     name: string,
     portSet?: string,
+    portSetName?: string,
     portsTree?: string,
+    portsTreeName?: string,
     jail?: string,
     fileType: string
 }

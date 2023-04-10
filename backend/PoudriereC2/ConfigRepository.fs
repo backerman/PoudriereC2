@@ -32,13 +32,23 @@ type ConfigRepository (db: DB.dataContext) =
                 query {
                     for file in db.Poudrierec2.Configfiles do
                     where ((%filterQuery) file)
+                    join portSet in (!!) db.Poudrierec2.Portsets on (file.Portset = Some portSet.Id)
+                    join portsTree in (!!) db.Poudrierec2.Portstrees on (file.Portstree = Some portsTree.Id)
                     sortBy file.Id
                     select
                         { Id = Some file.Id
                           Deleted = file.Deleted
                           Name = file.Name
                           PortSet = file.Portset
+                          PortSetName =
+                            match portSet with
+                            | null -> None
+                            | _ -> Some portSet.Name
                           PortsTree = file.Portstree
+                          PortsTreeName =
+                            match portsTree with
+                            | null -> None
+                            | _ -> Some portsTree.Name
                           Jail = file.Jail
                           FileType = FromString<ConfigFileType> file.Configtype }
                 } |> Seq.executeQueryAsync
