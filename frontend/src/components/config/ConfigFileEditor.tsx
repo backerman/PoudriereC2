@@ -1,7 +1,10 @@
-import { Dropdown, IDropdownOption, TextField } from "@fluentui/react";
+import { Dropdown, IComboBox, IComboBoxOption, IDropdownOption, TextField } from "@fluentui/react";
 import { useCallback, useReducer, useState } from "react";
 import { Editor } from "@/components/Editor";
 import { ConfigFileMetadata } from "src/models/configs";
+import { ComboBoxWithFetcher } from "./ComboBoxWithFetcher";
+import { PortSet } from "@/models/portsets";
+import { PortsTree } from "@/models/portstrees";
 
 export type ConfigFileEditorProps =
     {
@@ -50,10 +53,22 @@ export function ConfigFileEditor(props: ConfigFileEditorProps): JSX.Element {
     }
 
     const onTextChange = (fieldName: keyof ConfigFileMetadata) => {
-        return (event: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string) => {
+        return (event: React.FormEvent<any>, newValue?: string) => {
             setState({ field: fieldName, value: (newValue || '') });
         }
     };
+
+    const onComboBoxChange = (fieldName: keyof ConfigFileMetadata) => {
+        return (event: React.FormEvent<IComboBox>, option?: IComboBoxOption) => {
+            let newVal: string | undefined;
+            if (option === undefined || option.key === undefined || option.key === '') {
+                newVal = undefined;
+            } else {
+                newVal = String(option.key);
+            }
+            setState({ field: fieldName, value: newVal });
+        }
+    }
 
     return (
         <Editor
@@ -70,7 +85,7 @@ export function ConfigFileEditor(props: ConfigFileEditorProps): JSX.Element {
                     }
                     props.onSubmit(configFileData);
                 }
-                }}>
+            }}>
             <TextField
                 label="GUID"
                 value={configFileData.id || ''}
@@ -90,15 +105,31 @@ export function ConfigFileEditor(props: ConfigFileEditorProps): JSX.Element {
                 label="Jail"
                 value={configFileData.jail || ''}
                 onChange={onTextChange("jail")} />
-            <TextField
+            <ComboBoxWithFetcher<PortSet>
+                dataUrl="/api/portsets"
                 label="Port set"
                 disabled={configFileData.fileType == 'poudriereconf'}
-                value={configFileData.portSet || ''}
-                onChange={onTextChange("portSet")} />
-            <TextField
+                onChange={onComboBoxChange('portSet')}
+                selectedKey={configFileData.portSet || null}
+                onInputValueChange={(val: string) => {
+                    if (val === '') {
+                        // Text box blanked; clear port set selection.
+                        setState({ field: "portSet", value: undefined });
+                    }
+                }}
+            />
+            <ComboBoxWithFetcher<PortsTree>
+                dataUrl="/api/portstrees"
                 label="Ports tree"
                 disabled={configFileData.fileType == 'poudriereconf'}
-                value={configFileData.portsTree || ''}
-                onChange={onTextChange("portsTree")} />
+                onChange={onComboBoxChange('portsTree')}
+                selectedKey={configFileData.portsTree || null}
+                onInputValueChange={(val: string) => {
+                    if (val === '') {
+                        // Text box blanked; clear port set selection.
+                        setState({ field: "portsTree", value: undefined });
+                    }
+                }}
+            />
         </Editor>)
 };
