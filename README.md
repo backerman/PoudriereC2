@@ -95,6 +95,6 @@ to start the server.
 
 [afct]: https://learn.microsoft.com/en-us/azure/azure-functions/functions-run-local#install-the-azure-functions-core-tools
 
-In a different session, run `npm start` to start a webserver hosting the client.
+In a different session, run `yarn dev` to start a webserver hosting the client.
 
 
