@@ -31,10 +31,10 @@ const AuthInProgress = () => {
 // Make a theme to fix font sizes.
 const detailsRowStyles : Partial<IDetailsRowStyles> = {
   cell: {
-    fontSize: FontSizes.size16
+    fontSize: FontSizes.size14
   },
   isRowHeader: {
-    fontSize: FontSizes.size16
+    fontSize: FontSizes.size14
   }
 }
 const myTheme = createTheme({
