@@ -38,15 +38,6 @@ function renderRowDefault(props?: IDetailsRowProps, defaultRender?: (props?: IDe
     }
 }
 
-function renderField(
-    props?: IDetailsColumnFieldProps,
-    defaultRender?: (props?: IDetailsColumnFieldProps) => JSX.Element | null): JSX.Element | null {
-    if (defaultRender === undefined) {
-        return null;
-    }
-    return (<div style={{fontSize: FontSizes.size16}}>{defaultRender(props)}</div>);
-}
-
 export function ItemList(props: ItemListProperties): JSX.Element {
     const [errorBarClosed, setErrorBarClosed] = useState(false);
 
@@ -86,7 +77,6 @@ export function ItemList(props: ItemListProperties): JSX.Element {
                 layoutMode={layoutMode}
                 compact={compact ?? false}
                 onRenderRow={onRenderRow}
-                onRenderField={renderField}
                 constrainMode={ConstrainMode.unconstrained}
                 ariaLabelForSelectionColumn="Toggle selection"
             />

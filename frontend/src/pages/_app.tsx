@@ -1,7 +1,7 @@
 // import '@/styles/globals.css'
 import { Configuration, InteractionType, PublicClientApplication } from '@azure/msal-browser';
 import { MsalAuthenticationResult, MsalAuthenticationTemplate, MsalProvider } from '@azure/msal-react';
-import { initializeIcons, ThemeProvider } from '@fluentui/react';
+import { createTheme, FontSizes, IDetailsRowStyles, initializeIcons, ThemeProvider } from '@fluentui/react';
 import type { AppProps } from 'next/app';
 import Layout from '../components/Layout';
 
@@ -28,10 +28,27 @@ const AuthInProgress = () => {
   </div>);
 };
 
+// Make a theme to fix font sizes.
+const detailsRowStyles : Partial<IDetailsRowStyles> = {
+  cell: {
+    fontSize: FontSizes.size16
+  },
+  isRowHeader: {
+    fontSize: FontSizes.size16
+  }
+}
+const myTheme = createTheme({
+  components: {
+    DetailsRow: {
+      styles: detailsRowStyles
+    }
+  }
+});
+
 export default function App({ Component, pageProps }: AppProps) {
   return (
     <MsalProvider instance={msalInstance}>
-      <ThemeProvider>
+      <ThemeProvider theme={myTheme}>
         <Layout>
           <MsalAuthenticationTemplate
             interactionType={InteractionType.Popup}
@@ -43,5 +60,4 @@ export default function App({ Component, pageProps }: AppProps) {
       </ThemeProvider>
     </MsalProvider>
   );
-
 }

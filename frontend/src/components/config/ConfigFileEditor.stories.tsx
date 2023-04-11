@@ -19,6 +19,7 @@ export default {
                     Open editor
                 </PrimaryButton>
                 <ConfigFileEditor
+                creatingNewRecord={false}
                 isOpen={args.isOpen}
                 record={sampleData.find((item) => item.id == args.record.id) || sampleData[0]}
                 onDismiss={() => updateArgs({isOpen: false})}  />

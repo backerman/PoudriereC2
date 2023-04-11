@@ -9,6 +9,7 @@ it('renders editor successfully', async () => {
     await act(async () => {
         render(<ConfigFileEditor
             isOpen={true}
+            creatingNewRecord={false}
             record={sampleData[0]}
             onDismiss={() => { return }}
             onSubmit={() => { return }} />);
