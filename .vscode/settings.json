@@ -13,8 +13,10 @@
     "sarif-viewer.connectToGithubCodeScanning": "on",
     "cSpell.words": [
         "Ackerman",
+        "allbsd",
         "configurationfiles",
         "fluentui",
+        "freebsdci",
         "makeconf",
         "msal",
         "portset",

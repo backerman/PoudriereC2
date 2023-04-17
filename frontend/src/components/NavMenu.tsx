@@ -35,6 +35,11 @@ const navLinkGroups: INavLinkGroup[] = [
                         key: 'files',
                     },
                     {
+                        name: 'Jails',
+                        url: '/config/jails',
+                        key: 'jails',
+                    },
+                    {
                         name: 'Portsets',
                         url: '/config/portsets',
                         key: 'portsets',
@@ -51,13 +56,13 @@ const navLinkGroups: INavLinkGroup[] = [
             },
             {
                 name: 'Job history',
-                url: 'http://example.com',
+                url: '#',
                 key: 'key3',
                 icon: 'History',
             },
             {
                 name: 'Pages',
-                url: 'http://msn.com',
+                url: '#',
                 key: 'key4',
                 target: '_blank',
             }
