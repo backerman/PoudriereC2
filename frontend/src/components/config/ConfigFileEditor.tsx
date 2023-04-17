@@ -5,6 +5,7 @@ import { ConfigFileMetadata } from "src/models/configs";
 import { ComboBoxWithFetcher } from "./ComboBoxWithFetcher";
 import { PortSet } from "@/models/portsets";
 import { PortsTree } from "@/models/portstrees";
+import { Jail } from "@/models/jails";
 
 export type ConfigFileEditorProps =
     {
@@ -101,10 +102,19 @@ export function ConfigFileEditor(props: ConfigFileEditorProps): JSX.Element {
                 selectedKey={configFileData.fileType || ''}
                 options={fileTypeChoices}
                 onChange={(_, val) => setState({ field: "fileType", value: val?.key.toString() })} />
-            <TextField
+            <ComboBoxWithFetcher<Jail>
+                dataUrl="/api/jails"
+                disabled={configFileData.fileType == 'poudriereconf'}
                 label="Jail"
-                value={configFileData.jail || ''}
-                onChange={onTextChange("jail")} />
+                selectedKey={configFileData.jail || ''}
+                onChange={onComboBoxChange('jail')}
+                onInputValueChange={(val: string) => {
+                    if (val === '') {
+                        // Text box blanked; clear jail selection.
+                        setState({ field: "jail", value: undefined });
+                    }
+                }}
+            />
             <ComboBoxWithFetcher<PortSet>
                 dataUrl="/api/portsets"
                 label="Port set"

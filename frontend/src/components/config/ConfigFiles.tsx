@@ -67,7 +67,9 @@ const columns: IColumn[] = [
         maxWidth: 250,
         isResizable: true,
         targetWidthProportion: 1,
-        isCollapsible: true
+        isCollapsible: true,
+        onRender: (item: ConfigFileMetadata) =>
+            item.jailName
     }
 ]
 

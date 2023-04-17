@@ -9,6 +9,7 @@ type ConfigFileMetadata = {
     portsTree?: string,
     portsTreeName?: string,
     jail?: string,
+    jailName?: string,
     fileType: string
 }
 
