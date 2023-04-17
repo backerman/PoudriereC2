@@ -162,6 +162,31 @@ type JsonTests() =
         |> canonicalizeJson
         |> should equal sampleTreeJson
 
+    [<Test>]
+    member _.TestJailSerialization() =
+        let sampleJailJson =
+            """
+            {"id": "c8d14c28-dff3-4a3a-9cd0-42a47224d8aa",
+             "name": "次の死にたい奴、前に出ろ！",
+             "version": "13.2-RELEASE",
+             "method": "http",
+             "url": "https://git.freebsd.org/src.git"
+            }
+            """
+            |> canonicalizeJson
+        let expectedJail =
+            { Id = Some (Guid("c8d14c28-dff3-4a3a-9cd0-42a47224d8aa"))
+              Name = "次の死にたい奴、前に出ろ！"
+              Version = "13.2-RELEASE"
+              Method = Some Http
+              Architecture = None
+              Url = Some "https://git.freebsd.org/src.git" }
+        JsonSerializer.Deserialize<Jail>(sampleJailJson, eventSerializationOptions)
+        |> should equal expectedJail
+        JsonSerializer.Serialize(expectedJail, eventSerializationOptions)
+        |> canonicalizeJson
+        |> should equal sampleJailJson
+
     [<SetUp>]
     member _.setup() =
         FSharpCustomMessageFormatter() |> ignore

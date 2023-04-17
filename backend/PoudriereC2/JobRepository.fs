@@ -56,6 +56,7 @@ type JobRepository (db: DB.dataContext) =
                         { Id = Some cf.Id
                           Name = cf.Name
                           Jail = cf.Jail
+                          JailName = None // FIXME?
                           PortsTree = cf.Portstree
                           PortsTreeName = None
                           PortSet = cf.Portset

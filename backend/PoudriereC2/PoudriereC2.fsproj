@@ -12,6 +12,7 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Update="FSharp.Core" Version="7.0.200" />
     <PackageReference Include="Azure.Identity" Version="1.8.2" />
+    <PackageReference Include="Dapper.FSharp" Version="4.4.0" />
     <PackageReference Include="FSharp.Control.FusionTasks" Version="2.6.0" />
     <PackageReference Include="FSharp.Data.LiteralProviders" Version="1.0.3" />
     <PackageReference Include="FSharp.SystemTextJson" Version="1.1.23" />
@@ -40,6 +41,7 @@
     </Copy>
   </Target>
   <ItemGroup>
+    <Compile Include="DotEnv.fs" />
     <Compile Include="Data.fs" />
     <Compile Include="ConfigTypes.fs" />
     <Compile Include="EventTypes.fs" />
@@ -52,6 +54,8 @@
     <Compile Include="ConfigRepository.fs" />
     <Compile Include="ConfigFiles.fs" />
     <Compile Include="ConfigFileOptions.fs" />
+    <Compile Include="JailRepository.fs" />
+    <Compile Include="Jails.fs" />
     <Compile Include="JobRepository.fs" />
     <Compile Include="ScheduleRepository.fs" />
     <Compile Include="Schedule.fs" />

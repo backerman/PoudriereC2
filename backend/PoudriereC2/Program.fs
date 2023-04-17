@@ -7,9 +7,11 @@ open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Configuration
 open FSharp.Data.Sql
 open System
+open System.Data
+open Npgsql
+open Dapper
 
 let configuration =
-    // FIXME don't need this
     ConfigurationBuilder()
         .SetBasePath(Environment.CurrentDirectory)
         .AddJsonFile("appsettings.json", true)
@@ -33,15 +35,21 @@ let main argv =
             .ConfigureServices(
                 fun s ->
                     s.AddSingleton<DB.dataContext> (DB.GetDataContext(connStr)) |> ignore
+                    s.AddSingleton<NpgsqlConnection>(getDatabaseConnection()) |> ignore
                     s.AddSingleton<ConfigRepository> () |> ignore
                     s.AddSingleton<PortsRepository> () |> ignore
                     s.AddSingleton<JobRepository> () |> ignore
                     s.AddSingleton<PortSetsRepository> () |> ignore
+                    s.AddSingleton<JailRepository> () |> ignore
             )
             .Build()
     if configuration.["AZURE_FUNCTIONS_ENVIRONMENT"] = "Development" then
         Common.QueryEvents.SqlQueryEvent
         |> Event.add
             (fun sql -> printfn $"Executing SQL: {sql}")
+
+    // Set up Dapper type mappers.
+    SqlMapper.AddTypeHandler (JailMethodTypeHandler())
+    SqlMapper.AddTypeHandler (JailMethodOptionTypeHandler())
     host.Run()
     0

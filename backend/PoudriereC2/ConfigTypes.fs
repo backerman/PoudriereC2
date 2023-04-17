@@ -3,6 +3,9 @@ open System
 
 [<AutoOpen>]
 module ConfigTypes =
+    open Dapper
+    open Data
+    open Dapper.FSharp.OptionTypes
 
     /// Run a specific job with a specific crontab schedule.
     type JobSchedule =
@@ -38,7 +41,8 @@ module ConfigTypes =
           PortSetName: string option
           PortsTree: Guid option
           PortsTreeName: string option
-          Jail: string option
+          Jail: Guid option
+          JailName: string option
           FileType: ConfigFileType }
 
     type MakeConfOptions =
@@ -88,3 +92,50 @@ module ConfigTypes =
     type PortSetUpdate =
         | Add of Ports: string list
         | Delete of Ports: string list
+
+    type JailMethod =
+      | Allbsd
+      | Ftp
+      | FtpArchive
+      | Http
+      | Freebsdci
+      | Url
+
+    /// A jail to build ports in.
+    [<CLIMutable>]
+    type Jail =
+      {
+        Id: Guid option
+        Name: string
+        Version: string
+        Architecture: string option
+        Method: JailMethod option
+        Url: string option
+      }
+
+    type AutoTypeHandler<'T>() =
+      inherit SqlMapper.TypeHandler<'T>()
+
+      override _.SetValue(param, value) =
+        param.Value <- UnionToString value
+
+      override _.Parse(value) =
+        value
+        |> string
+        |> FromString<'T>
+
+    type AutoTypeHandlerOption<'T>() =
+      inherit SqlMapper.TypeHandler<Option<'T>>()
+
+      override _.SetValue(param, value) =
+        match value with
+        | None -> param.Value <- DBNull.Value
+        | Some v -> param.Value <- UnionToString v
+
+      override _.Parse(value) =
+        match value with
+        | null -> None
+        | _ -> Some (value |> string |> FromString<'T>)
+
+    type JailMethodTypeHandler = AutoTypeHandler<JailMethod>
+    type JailMethodOptionTypeHandler = AutoTypeHandlerOption<JailMethod>

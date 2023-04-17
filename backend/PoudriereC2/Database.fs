@@ -7,6 +7,7 @@ open System
 open Microsoft.Extensions.Logging
 open System.Net
 open Azure.Core
+open Dapper
 
 [<Literal>]
 let ConnectionString =
@@ -25,6 +26,14 @@ type DB = SqlDataProvider<
             UseOptionTypes=Common.NullableColumnType.OPTION,
             Owner=Owner,
             ResolutionPath=ResPath>
+
+// Dapper stuff
+let inline (=>) a b = a, box b
+let getDatabaseConnection () =
+    let conn = new NpgsqlConnection(ConnectionString)
+    conn.Open()
+    FSharp.PostgreSQL.OptionTypes.register() |> ignore
+    conn
 
 type DatabaseError =
     | NoError

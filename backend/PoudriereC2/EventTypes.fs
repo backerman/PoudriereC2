@@ -106,6 +106,8 @@ let serializationOptions discriminator =
                     .WithUnionTagNamingPolicy(LowerCaseNamingPolicy()))
                 (typeof<PortsTreeMethod>, options
                     .WithUnionUnwrapFieldlessTags())
+                (typeof<JailMethod>, options
+                    .WithUnionUnwrapFieldlessTags())
             ]
     let options =
         JsonFSharpOptions.Default()
