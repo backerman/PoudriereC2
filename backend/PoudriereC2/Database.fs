@@ -28,7 +28,7 @@ type DB = SqlDataProvider<
             ResolutionPath=ResPath>
 
 // Dapper stuff
-let inline (=>) a b = a, box b
+let inline (=>) a b = (a, box b)
 let getDatabaseConnection () =
     let conn = new NpgsqlConnection(ConnectionString)
     conn.Open()
