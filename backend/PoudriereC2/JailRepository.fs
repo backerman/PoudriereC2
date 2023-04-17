@@ -33,8 +33,9 @@ type JailRepository (conn: NpgsqlConnection) =
         async {
             let query =
                 "DELETE FROM poudrierec2.jails WHERE id = @id"
+            let queryParams = ["id", jailId] |> dict
             let! result =
-                conn.ExecuteAsync(query, dict ["id", jailId])
+                conn.ExecuteAsync(query, queryParams)
                 |> DatabaseError.FromQuery
             return result
         }
