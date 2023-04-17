@@ -4,7 +4,7 @@ module DotEnv =
     open System
     open System.IO
 
-    let private parseLine(line : string) =
+    let private parseLine (line: string) =
         Console.WriteLine (sprintf "Parsing: %s" line)
         match line.Split('=', StringSplitOptions.RemoveEmptyEntries) with
         | args when args.Length = 2 ->
@@ -13,7 +13,7 @@ module DotEnv =
                 args.[1])
         | _ -> ()
 
-    let private load() =
+    let private load () =
         lazy (
             Console.WriteLine "Trying to load .env file..."
             let dir = Directory.GetCurrentDirectory()

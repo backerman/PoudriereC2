@@ -94,12 +94,12 @@ module ConfigTypes =
         | Delete of Ports: string list
 
     type JailMethod =
-      | Allbsd
-      | Ftp
-      | FtpArchive
-      | Http
-      | Freebsdci
-      | Url
+        | Allbsd
+        | Ftp
+        | FtpArchive
+        | Http
+        | Freebsdci
+        | Url
 
     /// A jail to build ports in.
     [<CLIMutable>]
@@ -125,7 +125,7 @@ module ConfigTypes =
         |> FromString<'T>
 
     type AutoTypeHandlerOption<'T>() =
-      inherit SqlMapper.TypeHandler<Option<'T>>()
+      inherit SqlMapper.TypeHandler<'T option>()
 
       override _.SetValue(param, value) =
         match value with
