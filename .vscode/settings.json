@@ -12,6 +12,7 @@
     ],
     "sarif-viewer.connectToGithubCodeScanning": "on",
     "cSpell.words": [
+        "Ackerman",
         "configurationfiles",
         "fluentui",
         "makeconf",
