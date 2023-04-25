@@ -19,6 +19,7 @@ export PGPASSWORD=$(az account get-access-token --resource-type oss-rdbms --quer
 ```
 
 ### Redeploying the function
+
 If the function is deleted and redeployed, its AAD managed service identity
 will have a different GUID, and PostgreSQL authentication will fail. To fix
 this issue, query AAD for the new GUID:
@@ -90,11 +91,20 @@ service principal will now appear in the application's "Users and Groups" blade.
 
 ## Local development
 
-Install [Azure Functions Core Tools][afct]. Then run `func start` in `backend/Poudrierec2`
+Install [Azure Functions Core Tools][afct]. Then set `PostgresConnection` with
+the development database connection string and run `func start` in `backend/Poudrierec2`
 to start the server.
+
+In a different session, run `yarn dev` to start a webserver hosting the client
+after configuring the following variables:
+
+| Name | Value |
+| ---- | ----- |
+| NEXT_PUBLIC_AAD_CLIENT_ID | The client ID of the frontend's AAD application |
+| NEXT_PUBLIC_AAD_TENANT_ID | The ID of the tenant containing the frontend application |
+| NEXT_PUBLIC_API_BASE_URL | The URL of the development API server; normally `http://localhost:7071/` |
 
 [afct]: https://learn.microsoft.com/en-us/azure/azure-functions/functions-run-local#install-the-azure-functions-core-tools
 
-In a different session, run `yarn dev` to start a webserver hosting the client.
 
 
