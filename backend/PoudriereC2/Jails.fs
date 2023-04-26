@@ -140,6 +140,7 @@ type JailApi(jr: JailRepository, fb: FreeBSDInfo) =
     [<Function("GetAvailableReleases")>]
     member _.getAvailableReleases
         (
+            // fsharplint:disable-next-line TypedItemSpacing
             [<HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "freebsd/arch/{arch}/releases")>] req:
                 HttpRequestData,
             execContext: FunctionContext,

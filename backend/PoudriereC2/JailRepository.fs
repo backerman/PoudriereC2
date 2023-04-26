@@ -44,7 +44,8 @@ type JailRepository (conn: NpgsqlConnection) =
         async {
             let query =
                 """UPDATE poudrierec2.jails
-                   SET name = @name, version = @version, architecture = @architecture, method = @method, url = @url, path = @path
+                   SET name = @name, version = @version, architecture = @architecture, method = @method,
+                       url = @url, path = @path
                    WHERE id = @id"""
             let! result =
                 conn.ExecuteAsync(query, {j with Id = Some jailId})

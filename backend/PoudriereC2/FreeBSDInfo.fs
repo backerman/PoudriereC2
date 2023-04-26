@@ -53,7 +53,7 @@ type FreeBSDInfo() =
                 let cacheContents: CacheEntry = cache.[url] :?> CacheEntry
 
                 match cacheContents with
-                | (e: CacheEntry) when e <> null -> e.entries
+                | (e: CacheEntry) when not (isNull e) -> e.entries
                 | _ ->
                     let returnedValue =
                         "td.link > a[href]"
@@ -67,7 +67,7 @@ type FreeBSDInfo() =
                         |> List.filter (fun x -> x.IsSome)
                         |> List.map (fun x -> x.Value)
 
-                    cache.Set(url, new CacheEntry(returnedValue), DateTimeOffset.Now.AddMinutes(5.0))
+                    cache.Set(url, CacheEntry(returnedValue), DateTimeOffset.Now.AddMinutes(5.0))
                     returnedValue
 
             return releases
@@ -77,12 +77,14 @@ type FreeBSDInfo() =
         async {
             let! architectures =
                 [ "snapshots/"; "releases/" ]
-                |> List.map (fun releaseType ->
-                    let builder = UriBuilder(downloadPrefix)
-                    builder.Path <- releaseType
-                    List.iter (fun x -> builder.Path <- builder.Path + x + "/") levels
-                    builder.ToString())
-                |> List.map this.getArchitectureListing
+                |> List.map (
+                    (fun releaseType ->
+                        let builder = UriBuilder(downloadPrefix)
+                        builder.Path <- releaseType
+                        List.iter (fun x -> builder.Path <- builder.Path + x + "/") levels
+                        builder.ToString())
+                    >> this.getArchitectureListing
+                )
                 |> Async.Parallel
 
             // If we're on TARGET_ARCH, prefix it with the TARGET and a period.
@@ -103,7 +105,7 @@ type FreeBSDInfo() =
         async {
             let cacheEntry = cache.[downloadPrefix] :?> CacheEntry
 
-            if cacheEntry <> null then
+            if not (isNull cacheEntry) then
                 log.LogDebug("Using cached architectures")
                 return cacheEntry.entries
             else
@@ -117,17 +119,17 @@ type FreeBSDInfo() =
 
                 let variants = variantsArray |> List.concat |> List.sort |> List.distinct
 
-                cache.Set(downloadPrefix, new CacheEntry(variants), DateTimeOffset.Now.AddMinutes(5.0))
+                cache.Set(downloadPrefix, CacheEntry(variants), DateTimeOffset.Now.AddMinutes(5.0))
                 return variants
         }
 
     member this.getFreeBSDReleases(arch: string) =
         async {
             let archPath = arch.Replace(".", "/")
+
             let! releases =
                 [ "snapshots"; "releases" ]
-                |> List.map (fun x -> downloadPrefix + x + "/" + archPath + "/")
-                |> List.map this.getReleaseListing
+                |> List.map ((fun x -> downloadPrefix + x + "/" + archPath + "/") >> this.getReleaseListing)
                 |> Async.Parallel
 
             return releases |> List.concat |> List.sort |> List.distinct
