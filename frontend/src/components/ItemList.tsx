@@ -40,7 +40,7 @@ function renderRowDefault(props?: IDetailsRowProps, defaultRender?: (props?: IDe
 
 export function ItemList(props: ItemListProperties): JSX.Element {
     const [errorBarClosed, setErrorBarClosed] = useState(false);
-
+    // FIXME: A second error will not be shown if the first is closed.
     function closeErrorBar() {
         setErrorBarClosed(true);
     }

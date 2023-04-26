@@ -2,11 +2,18 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Debug .NET Azure Functions",
+            "type": "coreclr",
+            "request": "attach",
+            "justMyCode": true,
+        },
+        {
             "name": "Attach to .NET Functions",
             "type": "coreclr",
             "request": "attach",
             "processId": "${command:azureFunctions.pickProcess}",
-            "justMyCode": false
+            "justMyCode": true,
+            }
         },
         {
             "type": "node",

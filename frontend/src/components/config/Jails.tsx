@@ -1,10 +1,12 @@
 import { Jail } from "@/models/jails";
-import { fetcher } from "@/utils/fetcher";
+import { FunctionResult, fetcher } from "@/utils/fetcher";
 import { IColumn, ITextField, Selection } from "@fluentui/react";
 import { useBoolean } from '@fluentui/react-hooks';
 import { useRef, useState } from "react";
 import useSWR from 'swr';
 import { ItemList } from "../ItemList";
+import { JailEditor } from "./JailEditor";
+import { revalidateEvents } from "swr/_internal";
 
 const columns: IColumn[] = [
     {
@@ -14,7 +16,7 @@ const columns: IColumn[] = [
         isSorted: true,
         isSortedDescending: false,
         minWidth: 100,
-        maxWidth: 1500,
+        maxWidth: 500,
         isResizable: true,
         targetWidthProportion: 0.5,
         isCollapsible: false,
@@ -65,8 +67,8 @@ const columns: IColumn[] = [
 export function Jails(): JSX.Element {
     const [editorIsOpen, { setTrue: openEditor, setFalse: closeEditor }] = useBoolean(false);
     const [activeRecord, setActiveRecord] = useState({} as Jail);
-    const { data, error, isLoading, mutate } = useSWR<Jail[]>('/api/jails', fetcher);
-
+    const { data, error, isLoading, mutate } = useSWR<Jail[], string>('/api/jails', fetcher);
+    const [editorError, errorThrown] = useState<string | undefined>(undefined);
     const [addDialogHidden, { setTrue: hideAddDialog, setFalse: showAddDialog }] = useBoolean(true);
     const [deleteDialogHidden, { setTrue: hideDeleteDialog, setFalse: showDeleteDialog }] = useBoolean(true);
     // Whether the delete button is enabled; it should be enabled
@@ -95,11 +97,40 @@ export function Jails(): JSX.Element {
 
     return (
         <div className={"Jails"}>
+            <JailEditor
+                isOpen={editorIsOpen}
+                record={activeRecord || {} as Jail}
+                onDismiss={() => {
+                    closeEditor();
+                    clearCreatingNewRecord();
+                }}
+                onSubmit={async (jail: Jail) => {
+                    if (!activeRecord) {
+                        errorThrown("No active record exists")
+                    } else if (creatingNewRecord) {
+                        // TODO
+                    } else {
+                        await mutate(
+                            async () => {
+                                await
+                                    fetcher<FunctionResult>('/api/jails/' + jail.id,
+                                        {
+                                            method: 'PUT',
+                                            body: JSON.stringify(jail)
+                                        });
+                                return data?.map((r) => r.id === jail.id ? jail : r);
+                            }, { revalidate: false }
+                        ).catch((e) => errorThrown(e?.toString()));
+                    }
+                    closeEditor();
+                    clearCreatingNewRecord();
+                }}
+            />
             <ItemList
                 enableShimmer={isLoading}
                 ariaLabelForGrid={"List of configuration files"}
                 getRowAriaLabel={(r: Jail) => r.name}
-                error={error?.toString()}
+                error={error?.toString() ?? editorError}
                 items={data || []}
                 columns={columns}
                 selection={selection}

@@ -169,11 +169,13 @@ ALTER TABLE poudrierec2.jobconfigs_configfiles OWNER TO postgres;
 CREATE TABLE poudrierec2.jails (
 	id uuid NOT NULL,
 	name text NOT NULL,
-	version text NOT NULL,
+	version text,
 	architecture text,
 	method text,
 	url text,
-	CONSTRAINT jails_pk PRIMARY KEY (id)
+	path text,
+	CONSTRAINT jails_pk PRIMARY KEY (id),
+	CONSTRAINT jails_url_or_path CHECK ((url IS NULL) or (path IS NULL))
 );
 COMMENT ON TABLE poudrierec2.jails IS E'Jail definitions.';
 COMMENT ON COLUMN poudrierec2.jails.version IS E'The OS version to install in the jail.';
