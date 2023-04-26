@@ -14,6 +14,9 @@
     "cSpell.words": [
         "Ackerman",
         "allbsd",
+        "configfile",
+        "configfiles",
+        "configoptions",
         "configurationfiles",
         "fluentui",
         "freebsdci",
@@ -23,6 +26,7 @@
         "portsets",
         "portstrees",
         "Poudriere",
+        "poudrierec",
         "poudriereconf",
         "pses",
         "srcconf",

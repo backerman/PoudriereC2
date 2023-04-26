@@ -41,6 +41,7 @@ let main argv =
                     s.AddSingleton<JobRepository> () |> ignore
                     s.AddSingleton<PortSetsRepository> () |> ignore
                     s.AddSingleton<JailRepository> () |> ignore
+                    s.AddSingleton<FreeBSDInfo> () |> ignore
             )
             .Build()
     if configuration.["AZURE_FUNCTIONS_ENVIRONMENT"] = "Development" then

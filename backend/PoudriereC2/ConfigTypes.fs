@@ -1,12 +1,12 @@
 namespace Facefault.PoudriereC2
+
 open System
+open System.Text.Json.Serialization
+open Dapper
+open Data
 
 [<AutoOpen>]
 module ConfigTypes =
-    open Dapper
-    open Data
-    open Dapper.FSharp.OptionTypes
-
     /// Run a specific job with a specific crontab schedule.
     type JobSchedule =
         { JobId: Guid
@@ -95,10 +95,15 @@ module ConfigTypes =
 
     type JailMethod =
         | Allbsd
+        | [<JsonName("freebsd-ci")>] FreebsdCI
         | Ftp
-        | FtpArchive
+        | [<JsonName("ftp-archive")>] FtpArchive
+        | Git
         | Http
-        | Freebsdci
+        | Null
+        | Src
+        | Svn
+        | Tar
         | Url
 
     /// A jail to build ports in.
@@ -107,10 +112,11 @@ module ConfigTypes =
       {
         Id: Guid option
         Name: string
-        Version: string
+        Version: string option
         Architecture: string option
         Method: JailMethod option
         Url: string option
+        Path: string option
       }
 
     type AutoTypeHandler<'T>() =

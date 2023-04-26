@@ -6,8 +6,8 @@ export type FunctionResult = {
     guid?: string;
 }
 
-export async function fetcher<T = any> (url: RequestInfo | URL, ...args: any[]) {
-    const res = await fetch(`${baseUrl}${url}`, ...args);
+export async function fetcher<T = any> (url: RequestInfo | URL, args?: RequestInit | undefined) {
+    const res = await fetch(`${baseUrl}${url}`, args);
     if (res.ok) {
         return res.json() as T;
     } else {

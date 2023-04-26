@@ -66,6 +66,21 @@
 			"isTestCommand": true
 		},
 		{
+			"label": "debug tests",
+			"command": "dotnet",
+			"args": [
+				"test"
+			],
+			"type": "process",
+			"isTestCommand": true,
+			"problemMatcher": "$msCompile",
+			"options": {
+				"env": {
+					"VSTEST_HOST_DEBUG": "1"
+				}
+			}
+		},
+		{
 			"type": "func",
 			"dependsOn": "build",
 			"options": {
