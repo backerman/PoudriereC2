@@ -13,21 +13,38 @@ import {
     PrimaryButton,
     TextField
 } from "@fluentui/react";
-import { useBoolean } from '@fluentui/react-hooks';
+import { ItemList } from '../ItemList';
 
+/** Properties for a {@link ConfigCommandBar}.
+*/
 export interface ConfigCommandBarProps {
+    /** Text to use as the label for the add dialog box's confirm button */
     addConfirmButtonText: string;
+    /** Whether the add dialog box should currently be hidden */
     addDialogHidden: boolean;
+    /** A reference to the text field in the add dialog box, for obtaining the
+     * newly created item's name
+     */
     addNameRef: React.RefObject<ITextField>;
+    /** Whether the delete button should currently be disabled */
     deleteButtonDisabled: boolean;
+    /** Whether the delete dialog box should currently be hidden */
     deleteDialogHidden: boolean;
+    /** Function to call when the add dialog box should be hidden */
     hideAddDialog: () => void;
+    /** Function to call when the delete dialog box should be hidden */
     hideDeleteDialog: () => void;
+    /** Function to call when the add dialog box's confirm button is clicked */
     onAddConfirmClick: () => void;
+    /** Function to call when the delete dialog box's confirm button is clicked */
     onDeleteConfirmClick: () => void;
+    /** The type of item displayed in the {@link ItemList} (plural form) */
     pluralItemName: string;
+    /** Function to call when the add dialog box should be shown */
     showAddDialog: () => void;
+    /** Function to call when the delete dialog box should be shown */
     showDeleteDialog: () => void;
+    /** The type of item displayed in the {@link ItemList} (singular form) */
     singularItemName: string;
 }
 
@@ -39,6 +56,7 @@ const draggableProps: IModalProps = {
     }
 }
 
+/** Command bar for an {@link ItemList}; contains add and delete buttons. */
 export function ConfigCommandBar(props: ConfigCommandBarProps): JSX.Element {
     const {
         addConfirmButtonText,
@@ -61,7 +79,7 @@ export function ConfigCommandBar(props: ConfigCommandBarProps): JSX.Element {
             key: 'add',
             text: 'Add',
             iconProps: { iconName: 'Add' },
-            onClick: () => showAddDialog()
+            onClick: showAddDialog
         },
         {
             key: 'delete',
@@ -69,7 +87,7 @@ export function ConfigCommandBar(props: ConfigCommandBarProps): JSX.Element {
             iconProps: { iconName: 'Delete' },
             ariaDescription: `Delete selected ${pluralItemName}`,
             disabled: deleteButtonDisabled,
-            onClick: () => showDeleteDialog()
+            onClick: showDeleteDialog
         }
     ]
 
@@ -94,9 +112,9 @@ export function ConfigCommandBar(props: ConfigCommandBarProps): JSX.Element {
                 modalProps={draggableProps}
                 dialogContentProps={addContentProps}
                 onDismiss={hideAddDialog}>
-                <TextField label={"Name"} componentRef={addNameRef}/>
+                <TextField label={"Name"} componentRef={addNameRef} />
                 <DialogFooter>
-                    <DefaultButton onClick={onAddConfirmClick} text={addConfirmButtonText}/>
+                    <DefaultButton onClick={onAddConfirmClick} text={addConfirmButtonText} />
                     <ActionButton onClick={hideAddDialog} text="Cancel" />
                 </DialogFooter>
             </Dialog>
