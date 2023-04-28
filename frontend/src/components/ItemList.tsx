@@ -1,8 +1,8 @@
 import {
     ConstrainMode,
     DetailsListLayoutMode,
-    IDetailsListProps,
     IDetailsRowProps,
+    IShimmeredDetailsListProps,
     MessageBar,
     MessageBarType,
     SelectionMode,
@@ -11,10 +11,10 @@ import {
 import React, { useState } from "react";
 import styles from './ItemList.module.css';
 
-export interface ItemListProperties extends IDetailsListProps {
+/** Properties for {@link ItemList}. */
+export interface ItemListProperties extends IShimmeredDetailsListProps {
+    /** An error message to be displayed */
     error?: string
-    children?: React.ReactNode
-    enableShimmer?: boolean
 }
 
 function renderRowDefault(props?: IDetailsRowProps, defaultRender?: (props?: IDetailsRowProps)
@@ -36,6 +36,7 @@ function renderRowDefault(props?: IDetailsRowProps, defaultRender?: (props?: IDe
     }
 }
 
+/** A {@link ShimmeredDetailsList} with consistent styles and an error bar. */
 export function ItemList(props: ItemListProperties): JSX.Element {
     const [errorBarClosed, setErrorBarClosed] = useState(false);
     // FIXME: A second error will not be shown if the first is closed.
