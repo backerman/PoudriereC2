@@ -1,4 +1,12 @@
-import { CommandBar, ICommandBarItemProps, IconButton, Selection, SelectionMode, Stack, TextField } from "@fluentui/react";
+import {
+    CommandBar,
+    ICommandBarItemProps,
+    IconButton,
+    Selection,
+    SelectionMode,
+    Stack,
+    TextField
+} from "@fluentui/react";
 import { useEffect, useReducer, useRef, useState } from "react";
 import { Editor } from "../Editor";
 import { ItemList } from "../ItemList";
@@ -58,7 +66,7 @@ export function PortSetEditor(props: PortSetEditorProps): JSX.Element {
         }
     }));
 
-    const portsetCommandBarItems : ICommandBarItemProps[] = [
+    const portsetCommandBarItems: ICommandBarItemProps[] = [
         {
             key: 'delete',
             text: 'Delete',

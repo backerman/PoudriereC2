@@ -1,5 +1,5 @@
 import { Dropdown, IComboBox, IComboBoxOption, IDropdownOption, TextField } from "@fluentui/react";
-import { useCallback, useReducer, useState } from "react";
+import { useReducer, useState } from "react";
 import { Editor } from "@/components/Editor";
 import { ConfigFileMetadata } from "src/models/configs";
 import { ComboBoxWithFetcher } from "./ComboBoxWithFetcher";
@@ -75,7 +75,7 @@ export function ConfigFileEditor(props: ConfigFileEditorProps): JSX.Element {
         <Editor
             isOpen={props.isOpen}
             isBlocking={false}
-            headerText={"Edit configuration"}
+            headerText={`${props.creatingNewRecord ? "Create" : "Edit"} configuration file ${props.record.name || ""}`}
             onDismiss={props.onDismiss}
             onSubmit={() => {
                 if (props.onSubmit) {
@@ -90,8 +90,7 @@ export function ConfigFileEditor(props: ConfigFileEditorProps): JSX.Element {
             <TextField
                 label="GUID"
                 value={configFileData.id || ''}
-                disabled={true}
-                onChange={onTextChange("id")} />
+                readOnly={true} />
             <TextField
                 label="Name"
                 value={configFileData.name || ''}

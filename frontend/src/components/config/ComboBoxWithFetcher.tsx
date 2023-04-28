@@ -13,9 +13,9 @@ export interface ComboBoxWithFetcherProps extends Omit<IComboBoxProps, "options"
     noResultsMessage?: string;
 }
 
-export function ComboBoxWithFetcher<T extends ComboBoxWithFetcherItem | string>(props: ComboBoxWithFetcherProps) : JSX.Element {
-    const {dataUrl, noResultsMessage} = props;
-    const { data, error, isLoading, mutate } = useSWR<T[]>(dataUrl, fetcher);
+export function ComboBoxWithFetcher<T extends ComboBoxWithFetcherItem | string>(props: ComboBoxWithFetcherProps): JSX.Element {
+    const { dataUrl, noResultsMessage } = props;
+    const { data, error, isLoading } = useSWR<T[]>(dataUrl, fetcher);
     const placeholder = useCallback(() => {
         if (isLoading) {
             return "Loading...";
@@ -25,7 +25,7 @@ export function ComboBoxWithFetcher<T extends ComboBoxWithFetcherItem | string>(
             return "Select an option";
         }
     }, [data, isLoading, noResultsMessage]);
-    const comboOptions : IComboBoxOption[] =
+    const comboOptions: IComboBoxOption[] =
         data?.map((item) => {
             if (typeof item === 'string') {
                 return {
@@ -44,12 +44,12 @@ export function ComboBoxWithFetcher<T extends ComboBoxWithFetcherItem | string>(
             }
         }) || [];
     return (
-    <ComboBox
-        {...props}
-        options={comboOptions}
-        placeholder={placeholder()}
-        autoComplete="on"
-        useComboBoxAsMenuWidth={true}
-        allowFreeInput={true}
-    />)
+        <ComboBox
+            {...props}
+            options={comboOptions}
+            placeholder={placeholder()}
+            autoComplete="on"
+            useComboBoxAsMenuWidth={true}
+            allowFreeInput={true}
+        />)
 }

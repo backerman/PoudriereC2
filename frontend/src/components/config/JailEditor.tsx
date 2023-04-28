@@ -77,7 +77,7 @@ export function JailEditor(props: JailEditorProps): JSX.Element {
             isOpen={isOpen}
             isBlocking={false}
             onDismiss={onDismiss}
-            headerText={"Edit jail"}
+            headerText={`${props.creatingNewRecord ? 'Create' : 'Edit'} jail ${props.record.name}`}
             onSubmit={() => {
                 if (onSubmit) {
                     switch (methodRef.current?.requiresParameter) {

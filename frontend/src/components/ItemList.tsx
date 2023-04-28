@@ -1,8 +1,6 @@
 import {
     ConstrainMode,
     DetailsListLayoutMode,
-    FontSizes,
-    IDetailsColumnFieldProps,
     IDetailsListProps,
     IDetailsRowProps,
     MessageBar,
