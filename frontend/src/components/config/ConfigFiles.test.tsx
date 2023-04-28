@@ -58,7 +58,7 @@ it('has a working editor', async () => {
     expect((fetch as FetchMock).mock.calls.length).toEqual(1);
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
 
-    await user.dblClick(screen.getByText("this is a test"));
+    await act(async () => user.dblClick(screen.getByText("this is a test")));
     const editor = screen.getByRole("dialog");
     expect(editor).toBeInTheDocument();
 
@@ -76,10 +76,14 @@ it('has a working editor', async () => {
     await waitFor(() => {
         expect(nameField).toHaveValue("this is a test");
     });
-    await user.clear(nameField);
-    await user.type(nameField, "frodo baggins");
+    await act(async () => {
+        await user.clear(nameField);
+        await user.type(nameField, "frodo baggins");    
+    });
     expect(nameField).toHaveValue("frodo baggins");
-    await user.click(screen.getByText("Save"));
+    await act(async () => {
+        await user.click(screen.getByText("Save"));
+    });
     expect(editor).not.toBeVisible();
 
     // Verify update propagated to list.

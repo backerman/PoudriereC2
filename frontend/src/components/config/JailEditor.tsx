@@ -45,11 +45,13 @@ export function JailEditor(props: JailEditorProps): JSX.Element {
 
     let [mostRecentPropsRecord, setMostRecentPropsRecord] = useState(record);
     let [jailData, setState] = useReducer(updateState, {} as Jail);
+    let methodRef = useRef<JailMethodInfo | undefined>(JailMethods.find((method) => method.name === jailData.method));
     // The state isn't reinitialized when the props change, so do that
     // manually.
     if (record != mostRecentPropsRecord) {
         setState(record);
         setMostRecentPropsRecord(record);
+        methodRef.current = JailMethods.find((method) => method.name === record.method)
     }
 
     const onTextChange = (fieldName: keyof Jail) => {
@@ -69,8 +71,6 @@ export function JailEditor(props: JailEditorProps): JSX.Element {
             setState({ field: fieldName, value: newVal });
         }
     }
-
-    let methodRef = useRef<JailMethodInfo | undefined>(JailMethods.find((method) => method.name === jailData.method));
 
     return (
         <Editor

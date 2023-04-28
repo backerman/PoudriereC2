@@ -75,12 +75,12 @@ it('calls the logout callback when the logout button is clicked', async () => {
     // set to none further up the DOM tree, and will throw an error.
     const user = userEvent.setup({ skipHover: true });
     expect(menu).toHaveAttribute("aria-expanded", "false");
-    await user.click(menu);
+    await act (async () => user.click(menu));
     expect(menu).toHaveAttribute("aria-expanded", "true");
     const logoutButton = screen.getByRole("menuitem", { name: "Sign out" });
     await waitFor(() => {
         expect(logoutButton).toBeInTheDocument();
     });
-    await user.click(logoutButton);
+    await act (async () => user.click(logoutButton));
     expect(logoutCallback).toHaveBeenCalled();
 });
