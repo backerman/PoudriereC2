@@ -5,10 +5,11 @@ import { Dropdown, IComboBox, IComboBoxOption, IDropdownOption, TextField } from
 import { ComboBoxWithFetcher } from "./ComboBoxWithFetcher";
 
 export interface JailEditorProps {
-    isOpen: boolean;
-    onSubmit?: (jail: Jail) => void;
-    onDismiss: () => void;
-    record: Jail;
+    isOpen: boolean
+    creatingNewRecord: boolean
+    onSubmit?: (jail: Jail) => void
+    onDismiss: () => void
+    record: Jail
 }
 
 function updateState<K extends keyof Jail>(state: Jail,
@@ -38,7 +39,8 @@ export function JailEditor(props: JailEditorProps): JSX.Element {
         isOpen,
         onDismiss,
         onSubmit,
-        record
+        record,
+        creatingNewRecord
     } = props;
 
     let [mostRecentPropsRecord, setMostRecentPropsRecord] = useState(record);
@@ -99,6 +101,7 @@ export function JailEditor(props: JailEditorProps): JSX.Element {
             <TextField
                 label="GUID"
                 value={jailData.id || ''}
+                disabled={creatingNewRecord}
                 readOnly={true}
             />
             <TextField
