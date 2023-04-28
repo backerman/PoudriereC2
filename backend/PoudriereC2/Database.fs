@@ -19,6 +19,7 @@ let Owner = "poudrierec2"
 [<Literal>]
 let ResPath = __SOURCE_DIRECTORY__ + "/obj"
 
+// fsharplint:disable-next-line
 type DB =
     SqlDataProvider<DatabaseVendor=Common.DatabaseProviderTypes.POSTGRESQL, ConnectionString=ConnectionString, UseOptionTypes=Common.NullableColumnType.OPTION, Owner=Owner, ResolutionPath=ResPath>
 
