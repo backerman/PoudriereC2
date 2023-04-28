@@ -17,10 +17,9 @@ jobs:
         Set-PSRepository PSGallery -InstallationPolicy Trusted
         Install-Module PSScriptAnalyzer -ErrorAction Stop
         dotnet tool install -g dotnet-fsharplint
-    - name: Restore dependencies
+    - name: Restore dependencies (.NET)
       run: |
         dotnet restore
-        (cd frontend && yarn)
     - name: Lint with PSScriptAnalyzer
       shell: pwsh
       run: |
@@ -34,6 +33,9 @@ jobs:
         }
     - name: Lint with FSharpLint
       run: dotnet fsharplint lint ./PoudriereC2.sln
+    - name: Restore dependencies (Node.js)
+      working-directory: ./frontend
+      run: yarn
     - name: Lint with ESLint
       working-directory: ./frontend
       run: yarn lint
