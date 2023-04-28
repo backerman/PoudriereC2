@@ -5,12 +5,13 @@ open Npgsql
 open System
 open Facefault.PoudriereC2.Database
 
-type JailRepository (conn: NpgsqlConnection) =
+type JailRepository (ds: NpgsqlDataSource) =
     member _.GetJails () =
         async {
             let query =
                 """SELECT * FROM poudrierec2.jails
                    ORDER BY name"""
+            use! conn = ds.OpenConnectionAsync()
             let! jails =
                 query
                 |> conn.QueryAsync<Jail>
@@ -23,6 +24,7 @@ type JailRepository (conn: NpgsqlConnection) =
                 """INSERT INTO poudrierec2.jails (id, name, version, architecture, method, url)
                    VALUES (@id, @name, @version, @architecture, @method, @url)"""
             let newGuid = Guid.NewGuid()
+            use! conn = ds.OpenConnectionAsync()
             let! result =
                 conn.ExecuteAsync(query, {j with Id = Some newGuid})
                 |> DatabaseError.FromQuery
@@ -33,7 +35,8 @@ type JailRepository (conn: NpgsqlConnection) =
         async {
             let query =
                 "DELETE FROM poudrierec2.jails WHERE id = @id"
-            let queryParams = [("id", jailId)] |> dict
+            let queryParams = [("id" => jailId)] |> dict
+            use! conn = ds.OpenConnectionAsync()
             let! result =
                 conn.ExecuteAsync(query, queryParams)
                 |> DatabaseError.FromQuery
@@ -47,6 +50,7 @@ type JailRepository (conn: NpgsqlConnection) =
                    SET name = @name, version = @version, architecture = @architecture, method = @method,
                        url = @url, path = @path
                    WHERE id = @id"""
+            use! conn = ds.OpenConnectionAsync()
             let! result =
                 conn.ExecuteAsync(query, {j with Id = Some jailId})
                 |> DatabaseError.FromQuery

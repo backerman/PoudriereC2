@@ -6,7 +6,7 @@ import { useRef, useState } from "react";
 import useSWR from 'swr';
 import { ItemList } from "../ItemList";
 import { JailEditor } from "./JailEditor";
-import { revalidateEvents } from "swr/_internal";
+import { ConfigCommandBar } from "./ConfigCommandBar";
 
 const columns: IColumn[] = [
     {
@@ -53,14 +53,17 @@ const columns: IColumn[] = [
         isCollapsible: true,
     },
     {
-        key: 'url',
-        name: 'URL',
-        fieldName: 'url',
+        key: 'url-path',
+        name: 'URL/path',
+        fieldName: 'url-path',
         minWidth: 200,
         maxWidth: 400,
         isResizable: true,
         targetWidthProportion: 0.5,
-        isCollapsible: true
+        isCollapsible: true,
+        // Render URL or path
+        onRender: (item: Jail) =>
+            item.url ?? item.path
     },
 ]
 
@@ -83,7 +86,7 @@ export function Jails(): JSX.Element {
         }
     }));
 
-    // Putting them here to add them with spread operator
+    // Putting them here to add them to ConfigCommandBar with spread operator
     const addDeleteParams = {
         addNameRef,
         addDialogHidden,
@@ -99,6 +102,7 @@ export function Jails(): JSX.Element {
         <div className={"Jails"}>
             <JailEditor
                 isOpen={editorIsOpen}
+                creatingNewRecord={creatingNewRecord}
                 record={activeRecord || {} as Jail}
                 onDismiss={() => {
                     closeEditor();
@@ -108,7 +112,24 @@ export function Jails(): JSX.Element {
                     if (!activeRecord) {
                         errorThrown("No active record exists")
                     } else if (creatingNewRecord) {
-                        // TODO
+                        await mutate(
+                            async () => {
+                                const result = await fetcher<FunctionResult>('/api/jails',
+                                    {
+                                        method: 'POST',
+                                        body: JSON.stringify(jail)
+                                    });
+                                if (result.error) {
+                                    throw new Error(result.error);
+                                }
+                                if (!result.guid) {
+                                    throw new Error("No GUID returned");
+                                }
+                                return data?.concat({
+                                    ...jail,
+                                    id: result.guid });
+                            }
+                        )
                     } else {
                         await mutate(
                             async () => {
@@ -125,6 +146,36 @@ export function Jails(): JSX.Element {
                     closeEditor();
                     clearCreatingNewRecord();
                 }}
+            />
+            <ConfigCommandBar
+                {...addDeleteParams}
+                singularItemName={"jail"}
+                pluralItemName={"jails"}
+                addConfirmButtonText={"Configure"}
+                onAddConfirmClick={async () => {
+                    setActiveRecord({
+                        name: addNameRef.current?.value || ''
+                    });
+                    setCreatingNewRecord();
+                    hideAddDialog();
+                    openEditor();
+                }}
+                onDeleteConfirmClick={
+                    async () => {
+                        await mutate(async () => {
+                            const sel = selection.getSelection() as Jail[];
+                            hideDeleteDialog();
+                            for (const j of sel) {
+                                const result = await fetcher<FunctionResult>('/api/jails/' + j.id,
+                                    { method: 'DELETE' });
+                                if (result.error) {
+                                    throw new Error(result.error);
+                                }
+                            }
+                            return data?.filter((r) => !sel.includes(r));
+                        }).catch((e: Error) => errorThrown(e.message));
+                    }
+                }
             />
             <ItemList
                 enableShimmer={isLoading}
