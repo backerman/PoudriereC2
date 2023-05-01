@@ -122,7 +122,7 @@ type ConfigFileApi (cfg: ConfigRepository) =
                 match pickReturnMediaType req with
                 | Some AnyType
                 | Some PlainText ->
-                    let! configMetadataSeq = cfg.GetConfigFiles configFile
+                    // let! configMetadataSeq = cfg.GetConfigFiles configFile
                     let! configOptions =
                         cfg.GetConfigFileOptions configFile
                     response.StatusCode <- HttpStatusCode.OK
@@ -131,6 +131,13 @@ type ConfigFileApi (cfg: ConfigRepository) =
                         (fun opt -> $"{opt.Name}={opt.Value.ShellQuote()}")
                     |> String.concat Environment.NewLine
                     |> response.writeTextResponse
+                    |> ignore
+                | Some Json ->
+                    let! configOptions =
+                        cfg.GetConfigFileOptions configFile
+                    response.StatusCode <- HttpStatusCode.OK
+                    configOptions
+                    |> response.writeJsonResponse
                     |> ignore
                 | _ ->
                     response.StatusCode <- HttpStatusCode.UnsupportedMediaType

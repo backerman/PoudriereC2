@@ -101,6 +101,9 @@ let serializationOptions discriminator =
                 (typeof<PortSetUpdate>, options
                     .WithUnionTagName("action")
                     .WithUnionTagNamingPolicy(LowerCaseNamingPolicy()))
+                (typeof<ConfigOptionUpdate>, options
+                    .WithUnionTagName("action")
+                    .WithUnionTagNamingPolicy(LowerCaseNamingPolicy()))
                 (typeof<FunctionResult>, options
                     .WithUnionTagName("result")
                     .WithUnionTagNamingPolicy(LowerCaseNamingPolicy()))

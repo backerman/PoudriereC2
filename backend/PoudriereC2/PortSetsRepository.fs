@@ -73,7 +73,7 @@ type PortSetsRepository(db: DB.dataContext) =
             return result
         }
 
-    member _.CreatePortSet (name: string) =
+    member _.CreatePortSet(name: string) =
         async {
             // The database code needs to be switched to something that alllows
             // explicit transaction control. As a hack, the portset is created
@@ -85,23 +85,25 @@ type PortSetsRepository(db: DB.dataContext) =
             portSet.Name <- name
             portSet.OnConflict <- Common.OnConflict.Throw
             let! result = DatabaseError.FromQuery(db.SubmitUpdatesAsync())
+
             if result <> NoError then
-                db.ClearUpdates()
-                |> ignore
+                db.ClearUpdates() |> ignore
+
             return (result, portSet.Id)
         }
 
-    member _.DeletePortSet (portSet: Guid) =
+    member _.DeletePortSet(portSet: Guid) =
         async {
             // portset_members is ON DELETE CASCADE, so we don't need to
             // explicitly delete the members.
             let! portSet =
                 query {
                     for ps in db.Poudrierec2.Portsets do
-                    where (ps.Id = portSet)
-                } |> Seq.executeQueryAsync
-            portSet
-            |> Seq.iter(fun row -> row.Delete())
+                        where (ps.Id = portSet)
+                }
+                |> Seq.executeQueryAsync
+
+            portSet |> Seq.iter (fun row -> row.Delete())
 
             let! result = DatabaseError.FromQuery(db.SubmitUpdatesAsync())
             return result

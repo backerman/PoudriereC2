@@ -38,6 +38,15 @@ type DatabaseError =
     | UniqueViolation of PostgresException
     | Unknown of Exception
 
+    static member FromException(e: Exception) =
+        match e.InnerException with
+        | :? PostgresException as ex ->
+            match ex.SqlState with
+            | PostgresErrorCodes.ForeignKeyViolation -> ForeignKeyViolation ex
+            | PostgresErrorCodes.UniqueViolation -> UniqueViolation ex
+            | _ -> Unknown e
+        | _ -> Unknown e
+
     static member FromQuery(q: Threading.Tasks.Task) =
         async {
             let! opResult = Async.AwaitTask q |> Async.Catch
@@ -46,13 +55,7 @@ type DatabaseError =
                 match opResult with
                 | Choice1Of2 _ -> NoError
                 | Choice2Of2 e ->
-                    match e.InnerException with
-                    | :? PostgresException as ex ->
-                        match ex.SqlState with
-                        | PostgresErrorCodes.ForeignKeyViolation -> ForeignKeyViolation ex
-                        | PostgresErrorCodes.UniqueViolation -> UniqueViolation ex
-                        | _ -> Unknown e
-                    | _ -> Unknown e
+                    DatabaseError.FromException e
         }
 
     /// <summary>Handle a DatabaseError, returning a FunctionResult.</summary>
