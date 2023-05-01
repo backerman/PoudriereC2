@@ -14,7 +14,7 @@
     <PackageReference Include="Azure.Identity" Version="1.8.2" />
     <PackageReference Include="Dapper.FSharp" Version="4.5.0" />
     <PackageReference Include="FSharp.Control.FusionTasks" Version="2.6.0" />
-    <PackageReference Include="FSharp.Data" Version="6.1.1-beta" />
+    <PackageReference Include="FSharp.Data" Version="6.2.0" />
     <PackageReference Include="FSharp.Data.LiteralProviders" Version="1.0.3" />
     <PackageReference Include="FSharp.SystemTextJson" Version="1.1.23" />
     <!-- out of process now -->
