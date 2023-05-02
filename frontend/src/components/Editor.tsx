@@ -4,9 +4,12 @@ import React from "react";
 export interface EditorProps extends IPanelProps {
     /// Callback to be called when the user clicks the Save button.
     onSubmit: () => void;
-    /// Callback to be called when the user clicks the Cancel button or the panel is
-    /// otherwise dismissed.
+    /// Callback to be called when the panel is dismissed without clicking the
+    // Cancel button, or when dismissed and onCancelButtonClicked is not provided.
     onDismiss: () => void;
+    /// Callback to be called when the user clicks the Cancel button. If not present,
+    /// onDismiss will be used.
+    onCancelButtonClicked?: () => void;
 }
 
 const buttonStyles = { root: { marginRight: 8 } };
@@ -14,6 +17,7 @@ const buttonStyles = { root: { marginRight: 8 } };
 export function Editor(props: EditorProps): JSX.Element {
     const { onDismiss,
         onSubmit,
+        onCancelButtonClicked,
         type = PanelType.medium,
         ...rest } = props;
 
@@ -23,7 +27,7 @@ export function Editor(props: EditorProps): JSX.Element {
                 <PrimaryButton onClick={onSubmit} styles={buttonStyles}>
                     Save
                 </PrimaryButton>
-                <DefaultButton onClick={onDismiss}>Cancel</DefaultButton>
+                <DefaultButton onClick={onCancelButtonClicked || onDismiss}>Cancel</DefaultButton>
             </div>
         )
     };

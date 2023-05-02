@@ -20,8 +20,8 @@ export interface ConfigOption {
 
 export type ConfigOptionUpdate = {
     action: 'add',
-    value: ConfigOption[]
+    options: ConfigOption[]
 } | {
     action: 'delete',
-    value: string[]
+    options: string[]
 }

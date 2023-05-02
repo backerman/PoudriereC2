@@ -1,5 +1,5 @@
 import { initializeIcons } from '@fluentui/react';
-import { act, getByLabelText, render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { sampleData } from 'src/models/configs.sample';
 import { sampleData as samplePortset } from 'src/models/portsets.sample';
@@ -108,7 +108,7 @@ it('has a working editor', async () => {
     expect(editor).toBeInTheDocument();
 
     // Change the text.
-    const nameField = getByLabelText(editor, "Name", { selector: 'div[role="dialog"] input' });
+    const nameField = screen.getByTestId( "config-file-name");
     await waitFor(() => {
         expect(nameField).toHaveValue("this is a test");
     });

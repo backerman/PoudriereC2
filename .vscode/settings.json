@@ -30,6 +30,7 @@
         "poudriereconf",
         "pses",
         "srcconf",
+        "testid",
         "uifabric"
     ]
 }

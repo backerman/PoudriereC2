@@ -1,4 +1,4 @@
-import { Dropdown, IComboBox, IComboBoxOption, IDropdownOption, PanelType, TextField } from "@fluentui/react";
+import { Dropdown, IComboBox, IComboBoxOption, IDropdownOption, PanelType, Separator, TextField } from "@fluentui/react";
 import { useEffect, useReducer, useState } from "react";
 import { Editor } from "@/components/Editor";
 import { ConfigFileMetadata, ConfigOption, ConfigOptionUpdate } from "src/models/configs";
@@ -123,6 +123,13 @@ export function ConfigFileEditor(props: ConfigFileEditorProps): JSX.Element {
             isBlocking={false}
             headerText={`${props.creatingNewRecord ? "Create" : "Edit"} configuration file ${props.record.name || ""}`}
             onDismiss={props.onDismiss}
+            onCancelButtonClicked={
+                () => {
+                    setMetadataState(props.record);
+                    setConfigOptionsState(props.configOptions || []);
+                    props.onDismiss();
+                }
+            }
             onSubmit={() => {
                 if (props.onSubmit) {
                     if (configFileMetadata.fileType === 'poudriereconf') {
@@ -133,9 +140,9 @@ export function ConfigFileEditor(props: ConfigFileEditorProps): JSX.Element {
                     props.onSubmit(configFileMetadata, configOptionsState.mutations.map((mutation) => {
                         // TODO better batching
                         if (mutation.action === 'add') {
-                            return { action: 'add', value: [mutation.option] };
+                            return { action: 'add', options: [mutation.option] };
                         } else {
-                            return { action: 'delete', value: [mutation.option] };
+                            return { action: 'delete', options: [mutation.option] };
                         }
                     }), configOptionsState.options.slice());
                 }
@@ -146,6 +153,7 @@ export function ConfigFileEditor(props: ConfigFileEditorProps): JSX.Element {
                 readOnly={true} />
             <TextField
                 label="Name"
+                data-testid="config-file-name"
                 value={configFileMetadata.name || ''}
                 onChange={onTextChange("name")} />
             <Dropdown
@@ -193,8 +201,12 @@ export function ConfigFileEditor(props: ConfigFileEditorProps): JSX.Element {
                     }
                 }}
             />
+            <Separator />
             <ConfigFileEditorItemsList
                 items={configOptionsState.options}
+                addClicked={(item) => {
+                    setConfigOptionsState({ action: 'add', option: item });
+                }}
                 deleteClicked={(item) => {
                     setConfigOptionsState({ action: 'delete', option: item.name });
                 }} />
