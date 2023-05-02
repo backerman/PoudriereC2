@@ -1,20 +1,21 @@
-import { Dropdown, IComboBox, IComboBoxOption, IDropdownOption, TextField } from "@fluentui/react";
-import { useReducer, useState } from "react";
+import { Dropdown, IComboBox, IComboBoxOption, IDropdownOption, PanelType, TextField } from "@fluentui/react";
+import { useEffect, useReducer, useState } from "react";
 import { Editor } from "@/components/Editor";
-import { ConfigFileMetadata } from "src/models/configs";
+import { ConfigFileMetadata, ConfigOption, ConfigOptionUpdate } from "src/models/configs";
 import { ComboBoxWithFetcher } from "./ComboBoxWithFetcher";
 import { PortSet } from "@/models/portsets";
 import { PortsTree } from "@/models/portstrees";
 import { Jail } from "@/models/jails";
+import { ConfigFileEditorItemsList } from "./ConfigFileEditor.ItemsList";
 
-export type ConfigFileEditorProps =
-    {
-        isOpen: boolean
-        creatingNewRecord: boolean
-        record: ConfigFileMetadata
-        onSubmit?: (formData: ConfigFileMetadata) => void
-        onDismiss: () => void
-    }
+export interface ConfigFileEditorProps {
+    isOpen: boolean
+    creatingNewRecord: boolean
+    record: ConfigFileMetadata
+    onSubmit?: (formData: ConfigFileMetadata, optionsMutations: ConfigOptionUpdate[], options: ConfigOption[]) => void
+    onDismiss: () => void
+    configOptions?: ConfigOption[]
+}
 
 const fileTypeChoices: IDropdownOption<string>[] = [
     { key: "poudriereconf", text: "poudriere.conf" },
@@ -22,40 +23,84 @@ const fileTypeChoices: IDropdownOption<string>[] = [
     { key: "srcconf", text: "src.conf" }
 ];
 
+function updateMetadataState<K extends keyof ConfigFileMetadata>(state: ConfigFileMetadata,
+    action: { field: K, value: ConfigFileMetadata[K] } | ConfigFileMetadata): ConfigFileMetadata {
+    let newState = { ...state };
+    if (!("field" in action)) {
+        // Must be ConfigFileMetadata.
+        newState = action;
+    } else {
+        switch (typeof action.value) {
+            case "boolean":
+            case "string":
+            case "undefined":
+                newState[action.field] = action.value;
+                break;
+            default:
+                throw Error("Unexpected type passed");
+        }
+    }
+    return newState;
+};
+
+type AddOption = {
+    action: 'add'
+    option: ConfigOption
+}
+
+type DeleteOption = {
+    action: 'delete'
+    option: string
+}
+
+type StateUpdate = AddOption | DeleteOption;
+
+type ConfigOptionsState = {
+    options: ConfigOption[];
+    mutations: StateUpdate[];
+}
+
+function updateOptionsState(state: ConfigOptionsState, action: StateUpdate | ConfigOption[]): ConfigOptionsState {
+    const newState: ConfigOptionsState = {
+        options: state.options.slice(),
+        mutations: state.mutations.slice()
+    }
+    if (!("action" in action)) {
+        // Must be an array of ConfigOptions.
+        newState.options = action;
+    } else {
+        switch (action.action) {
+            case 'add':
+                newState.options.push(action.option);
+                break;
+            case 'delete':
+                const idx = newState.options.findIndex((opt) => opt.name === action.option);
+                if (idx >= 0) {
+                    newState.options.splice(idx, 1);
+                }
+                break;
+        }
+        newState.mutations.push({ ...action });
+    }
+    return newState;
+}
+
 export function ConfigFileEditor(props: ConfigFileEditorProps): JSX.Element {
 
-    function updateState<K extends keyof ConfigFileMetadata>(state: ConfigFileMetadata,
-        action: { field: K, value: ConfigFileMetadata[K] } | ConfigFileMetadata): ConfigFileMetadata {
-        let newState = { ...state };
-        if (!("field" in action)) {
-            // Must be ConfigFileMetadata.
-            newState = action;
-        } else {
-            switch (typeof action.value) {
-                case "boolean":
-                case "string":
-                case "undefined":
-                    newState[action.field] = action.value;
-                    break;
-                default:
-                    throw Error("Unexpected type passed");
-            }
-        }
-        return newState;
-    }
-    let [mostRecentPropsRecord, setMostRecentPropsRecord] = useState(props.record);
-    let [configFileData, setState] =
-        useReducer(updateState, {} as ConfigFileMetadata);
-    // The state isn't reinitialized when the props change, so do that
-    // manually.
-    if (props.record != mostRecentPropsRecord) {
-        setState(props.record);
-        setMostRecentPropsRecord(props.record);
-    }
+    let [configFileMetadata, setMetadataState] =
+        useReducer(updateMetadataState, {} as ConfigFileMetadata);
+    let [configOptionsState, setConfigOptionsState] =
+        useReducer(updateOptionsState, { options: props.configOptions || [], mutations: [] });
+
+    // Reset state when props change.
+    useEffect(() => {
+        setMetadataState(props.record);
+        setConfigOptionsState(props.configOptions || []);
+    }, [props.record, props.configOptions])
 
     const onTextChange = (fieldName: keyof ConfigFileMetadata) => {
         return (event: React.FormEvent<any>, newValue?: string) => {
-            setState({ field: fieldName, value: (newValue || '') });
+            setMetadataState({ field: fieldName, value: (newValue || '') });
         }
     };
 
@@ -67,78 +112,91 @@ export function ConfigFileEditor(props: ConfigFileEditorProps): JSX.Element {
             } else {
                 newVal = String(option.key);
             }
-            setState({ field: fieldName, value: newVal });
+            setMetadataState({ field: fieldName, value: newVal });
         }
-    }
+    };
 
     return (
         <Editor
+            type={PanelType.large}
             isOpen={props.isOpen}
             isBlocking={false}
             headerText={`${props.creatingNewRecord ? "Create" : "Edit"} configuration file ${props.record.name || ""}`}
             onDismiss={props.onDismiss}
             onSubmit={() => {
                 if (props.onSubmit) {
-                    if (configFileData.fileType === 'poudriereconf') {
+                    if (configFileMetadata.fileType === 'poudriereconf') {
                         // May not have a portset or ports tree.
-                        setState({ field: 'portSet', value: undefined });
-                        setState({ field: 'portsTree', value: undefined });
+                        setMetadataState({ field: 'portSet', value: undefined });
+                        setMetadataState({ field: 'portsTree', value: undefined });
                     }
-                    props.onSubmit(configFileData);
+                    props.onSubmit(configFileMetadata, configOptionsState.mutations.map((mutation) => {
+                        // TODO better batching
+                        if (mutation.action === 'add') {
+                            return { action: 'add', value: [mutation.option] };
+                        } else {
+                            return { action: 'delete', value: [mutation.option] };
+                        }
+                    }), configOptionsState.options.slice());
                 }
             }}>
             <TextField
                 label="GUID"
-                value={configFileData.id || ''}
+                value={configFileMetadata.id || ''}
                 readOnly={true} />
             <TextField
                 label="Name"
-                value={configFileData.name || ''}
+                value={configFileMetadata.name || ''}
                 onChange={onTextChange("name")} />
             <Dropdown
                 label="File type"
                 placeholder="Select a file type"
-                selectedKey={configFileData.fileType || ''}
+                selectedKey={configFileMetadata.fileType || ''}
                 options={fileTypeChoices}
-                onChange={(_, val) => setState({ field: "fileType", value: val?.key.toString() })} />
+                onChange={(_, val) => setMetadataState({ field: "fileType", value: val?.key.toString() })} />
             <ComboBoxWithFetcher<Jail>
                 dataUrl="/api/jails"
-                disabled={configFileData.fileType == 'poudriereconf'}
+                disabled={configFileMetadata.fileType == 'poudriereconf'}
                 label="Jail"
-                selectedKey={configFileData.jail || ''}
+                selectedKey={configFileMetadata.jail || ''}
                 onChange={onComboBoxChange('jail')}
                 onInputValueChange={(val: string) => {
                     if (val === '') {
                         // Text box blanked; clear jail selection.
-                        setState({ field: "jail", value: undefined });
+                        setMetadataState({ field: "jail", value: undefined });
                     }
                 }}
             />
             <ComboBoxWithFetcher<PortSet>
                 dataUrl="/api/portsets"
                 label="Port set"
-                disabled={configFileData.fileType == 'poudriereconf'}
+                disabled={configFileMetadata.fileType == 'poudriereconf'}
                 onChange={onComboBoxChange('portSet')}
-                selectedKey={configFileData.portSet || null}
+                selectedKey={configFileMetadata.portSet || null}
                 onInputValueChange={(val: string) => {
                     if (val === '') {
                         // Text box blanked; clear port set selection.
-                        setState({ field: "portSet", value: undefined });
+                        setMetadataState({ field: "portSet", value: undefined });
                     }
                 }}
             />
             <ComboBoxWithFetcher<PortsTree>
                 dataUrl="/api/portstrees"
                 label="Ports tree"
-                disabled={configFileData.fileType == 'poudriereconf'}
+                disabled={configFileMetadata.fileType == 'poudriereconf'}
                 onChange={onComboBoxChange('portsTree')}
-                selectedKey={configFileData.portsTree || null}
+                selectedKey={configFileMetadata.portsTree || null}
                 onInputValueChange={(val: string) => {
                     if (val === '') {
                         // Text box blanked; clear port set selection.
-                        setState({ field: "portsTree", value: undefined });
+                        setMetadataState({ field: "portsTree", value: undefined });
                     }
                 }}
             />
+            <ConfigFileEditorItemsList
+                items={configOptionsState.options}
+                deleteClicked={(item) => {
+                    setConfigOptionsState({ action: 'delete', option: item.name });
+                }} />
         </Editor>)
 };

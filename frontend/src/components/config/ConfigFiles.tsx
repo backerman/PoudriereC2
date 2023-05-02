@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import { IColumn, ITextField, Selection } from '@fluentui/react';
-import { ConfigFileMetadata } from 'src/models/configs';
+import { ConfigFileMetadata, ConfigOption, ConfigOptionUpdate } from 'src/models/configs';
 import { ConfigFileEditor } from './ConfigFileEditor';
 import { useBoolean } from '@fluentui/react-hooks';
 import { ItemList } from 'src/components/ItemList';
@@ -83,6 +83,13 @@ export function ConfigFiles(props: ConfigFilesProps): JSX.Element {
     const [editorIsOpen, { setTrue: openEditor, setFalse: closeEditor }] = useBoolean(false);
     const [activeRecord, setActiveRecord] = useState({} as ConfigFileMetadata);
     const { data, error, isLoading, mutate } = useSWR<ConfigFileMetadata[]>('/api/configurationfiles/metadata', fetcher);
+    const { data: configOptions, mutate: mutateConfigOptions } = useSWR<ConfigOption[]>(() => {
+        if (!(activeRecord && activeRecord.id)) {
+            return null;
+        }
+        const url = `/api/configurationfiles/${activeRecord.id}`;
+        return url;
+    }, fetcher);
     const [addDialogHidden, { setTrue: hideAddDialog, setFalse: showAddDialog }] = useBoolean(true);
     const [deleteDialogHidden, { setTrue: hideDeleteDialog, setFalse: showDeleteDialog }] = useBoolean(true);
     // Whether the delete button is enabled; it should be enabled
@@ -113,12 +120,15 @@ export function ConfigFiles(props: ConfigFilesProps): JSX.Element {
         <ConfigFileEditor
             creatingNewRecord={creatingNewRecord}
             record={activeRecord || {} as ConfigFileMetadata}
+            configOptions={configOptions}
             isOpen={editorIsOpen}
             onDismiss={() => {
                 closeEditor();
                 clearCreatingNewRecord();
             }}
-            onSubmit={async (meta: ConfigFileMetadata) => {
+            onSubmit={async (meta: ConfigFileMetadata,
+                optionMutations: ConfigOptionUpdate[],
+                options: ConfigOption[]) => {
                 if (!activeRecord) {
                     console.log("Error: no active record exists")
                 } else if (creatingNewRecord) {
@@ -141,7 +151,21 @@ export function ConfigFiles(props: ConfigFilesProps): JSX.Element {
                                 id: result.guid
                             })
                         }
-                    )
+                    );
+                    await mutateConfigOptions(
+                        async () => {
+                            const result =
+                                await fetcher<FunctionResult>(`/api/configurationfiles/${activeRecord.id}/options`,
+                                    {
+                                        method: 'PUT',
+                                        body: JSON.stringify(options)
+                                    })
+                            if (result.error) {
+                                throw new Error(result.error);
+                            }
+                            return options;
+                        }
+                    );
                 } else {
                     await mutate(
                         async () => {
@@ -153,7 +177,21 @@ export function ConfigFiles(props: ConfigFilesProps): JSX.Element {
                                     });
                             return data?.map((r) => r.id === meta.id ? meta : r);
                         }
-                    )
+                    );
+                    await mutateConfigOptions(
+                        async () => {
+                            const result =
+                                await fetcher<FunctionResult>(`/api/configurationfiles/${activeRecord.id}/options`,
+                                    {
+                                        method: 'PATCH',
+                                        body: JSON.stringify(optionMutations)
+                                    })
+                            if (result.error) {
+                                throw new Error(result.error);
+                            }
+                            return options;
+                        }
+                    );
                 }
                 closeEditor();
                 clearCreatingNewRecord();

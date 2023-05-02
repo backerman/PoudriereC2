@@ -2,6 +2,8 @@ import { initializeIcons } from '@fluentui/react';
 import { act, getByLabelText, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { sampleData } from 'src/models/configs.sample';
+import { sampleData as samplePortset } from 'src/models/portsets.sample';
+import { sampleData as samplePortstree } from 'src/models/portstrees.sample';
 import { ConfigFiles } from './ConfigFiles';
 import { SWRConfig } from 'swr';
 import { FetchMock } from 'jest-fetch-mock/types';
@@ -12,6 +14,9 @@ initializeIcons();
 beforeEach(() => {
     fetchMock.resetMocks();
     fetchMock.doMock();
+    // Switch to using jest.SpyOn instead of jest-mock-fetch?
+    // In the meantime, ensure NEXT_PUBLIC_API_BASE_URL set for
+    // VSCode.
 });
 
 it('renders a file list successfully', async () => {
@@ -48,7 +53,48 @@ it('renders errors successfully', async () => {
 it('has a working editor', async () => {
     expect.hasAssertions(); // can't do at least n assertions.
     expect((fetch as FetchMock).mock.calls.length).toEqual(0);
-    fetchMock.mockOnce(JSON.stringify(sampleData));
+    let changeSubmitted = false;
+    fetchMock.doMock(async (req) => {
+        const parsedUrl = new URL(req.url);
+        switch (parsedUrl.pathname) {
+            case '/api/configurationfiles/metadata':
+                return JSON.stringify(sampleData.map((cf: ConfigFileMetadata) => {
+                    if (cf.name === "this is a test" && changeSubmitted) {
+                        return {
+                            ...cf,
+                            name: "frodo baggins",
+                        };
+                    }
+                    return cf;
+                }));
+                break;
+            case '/api/configurationfiles/metadata/c1fac43d-49de-4821-8ff5-8157cf8f5e29':
+                const cf = sampleData.find((cf) => cf.id === "c1fac43d-49de-4821-8ff5-8157cf8f5e29");
+                return JSON.stringify(changeSubmitted ? {
+                    ...cf,
+                    name: "frodo baggins",
+                } : cf);
+                break;
+            case '/api/configurationfiles/aa5cd502-eb08-4f42-b187-b81c3d849611/options':
+                return JSON.stringify([{ name: "test", value: "testing" }]);
+                break;
+            case '/api/configurationfiles/c1fac43d-49de-4821-8ff5-8157cf8f5e29/options':
+            case '/api/configurationfiles/c1fac43d-49de-4821-8ff5-8157cf8f5e29':
+                return JSON.stringify([{ name: "test", value: "testing" }]);
+                break;
+            case '/api/portsets':
+                return JSON.stringify(samplePortset);
+                break;
+            case '/api/portstrees':
+                return JSON.stringify(samplePortstree);
+            case '/api/jails':
+                return JSON.stringify([{ name: 'test', type: 'null', requiresParameter: 'none'}]);
+                break;
+            default:
+                console.log("Doing path", parsedUrl.pathname);
+                throw new Error(`Unexpected URL ${req.url}`);
+        }
+    });
     const user = userEvent.setup();
     await act(async () => {
         render(<SWRConfig value={{ provider: () => new Map() }}>
@@ -57,31 +103,22 @@ it('has a working editor', async () => {
     });
     expect((fetch as FetchMock).mock.calls.length).toEqual(1);
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-
     await act(async () => user.dblClick(screen.getByText("this is a test")));
     const editor = screen.getByRole("dialog");
     expect(editor).toBeInTheDocument();
 
     // Change the text.
-    fetchMock.mockOnce(JSON.stringify(sampleData.map((cf: ConfigFileMetadata) => {
-        if (cf.name === "this is a test") {
-            return {
-                ...cf,
-                name: "frodo baggins",
-            };
-        }
-        return cf;
-    })));
-    const nameField = getByLabelText(editor, "Name");
+    const nameField = getByLabelText(editor, "Name", { selector: 'div[role="dialog"] input' });
     await waitFor(() => {
         expect(nameField).toHaveValue("this is a test");
     });
     await act(async () => {
         await user.clear(nameField);
-        await user.type(nameField, "frodo baggins");    
+        await user.type(nameField, "frodo baggins");
     });
     expect(nameField).toHaveValue("frodo baggins");
     await act(async () => {
+        changeSubmitted = true; // FIXME need to properly return new data in mutate.
         await user.click(screen.getByText("Save"));
     });
     expect(editor).not.toBeVisible();

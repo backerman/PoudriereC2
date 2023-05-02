@@ -1,6 +1,6 @@
 // Configuration types
 
-type ConfigFileMetadata = {
+export interface ConfigFileMetadata {
     id?: string,
     deleted: boolean,
     name: string,
@@ -13,4 +13,15 @@ type ConfigFileMetadata = {
     fileType: string
 }
 
-export type { ConfigFileMetadata }
+export interface ConfigOption {
+    name: string,
+    value: string
+}
+
+export type ConfigOptionUpdate = {
+    action: 'add',
+    value: ConfigOption[]
+} | {
+    action: 'delete',
+    value: string[]
+}

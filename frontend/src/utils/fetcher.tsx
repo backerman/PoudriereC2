@@ -7,7 +7,12 @@ export type FunctionResult = {
 }
 
 export async function fetcher<T = any> (url: RequestInfo | URL, args?: RequestInit | undefined) {
-    const res = await fetch(`${baseUrl}${url}`, args);
+    const res = await fetch(`${baseUrl}${url}`, {
+        headers: {
+            'Accept': 'application/json'
+        },
+        ...args,
+    });
     if (res.ok) {
         return res.json() as T;
     } else {
