@@ -46,7 +46,7 @@ type ConfigFileApi (cfg: ConfigRepository) =
 
     [<Function("UpdateConfigFile")>]
     member _.updateConfigFile
-        ([<HttpTrigger(AuthorizationLevel.Anonymous, "put", Route="configurationfiles/metadata/{configFile:guid}")>]
+        ([<HttpTrigger(AuthorizationLevel.Anonymous, "put", Route="configurationfiles/{configFile:guid}")>]
          req: HttpRequestData, execContext: FunctionContext, configFile: Guid) =
             async {
                 let log = execContext.GetLogger()
@@ -77,22 +77,18 @@ type ConfigFileApi (cfg: ConfigRepository) =
 
     [<Function("GetConfigFilesMetadata")>]
     member _.getConfigFileMetadata
-        ([<HttpTrigger(AuthorizationLevel.Anonymous, "get", Route="configurationfiles/metadata/{configFile:guid?}")>]
-         req: HttpRequestData, execContext: FunctionContext, [<Optional>]configFile: string) =
+        ([<HttpTrigger(AuthorizationLevel.Anonymous, "get", Route="configurationfiles")>]
+         req: HttpRequestData, execContext: FunctionContext) =
             let log = execContext.GetLogger()
-            let configFileOpt =
-                match configFile with
-                | null -> None
-                | _ -> Some configFile
             async {
-                let! files = cfg.GetConfigFiles(?configFile = configFileOpt)
+                let! files = cfg.GetConfigFiles()
                 let response = req.CreateResponse(HttpStatusCode.OK)
                 return response.writeJsonResponse files
             } |> Async.StartAsTask
 
     [<Function("DeleteConfigFile")>]
     member _.deleteConfigFile
-        ([<HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route="configurationfiles/metadata/{configFile:guid}")>]
+        ([<HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route="configurationfiles/{configFile:guid}")>]
          req: HttpRequestData, execContext: FunctionContext, configFile: Guid) =
             async {
                 let log = execContext.GetLogger()
@@ -115,7 +111,7 @@ type ConfigFileApi (cfg: ConfigRepository) =
     [<Function("GenerateConfigFile")>]
     member _.generateConfigFile
         ([<HttpTrigger(AuthorizationLevel.Anonymous, "get", Route="configurationfiles/{configFile:guid}")>]
-        req: HttpRequestData) (execContext: FunctionContext) (configFile: string) =
+        req: HttpRequestData) (execContext: FunctionContext) (configFile: Guid) =
             async {
                 let log = execContext.GetLogger()
                 let response = req.CreateResponse()
@@ -124,20 +120,14 @@ type ConfigFileApi (cfg: ConfigRepository) =
                 | Some PlainText ->
                     // let! configMetadataSeq = cfg.GetConfigFiles configFile
                     let! configOptions =
-                        cfg.GetConfigFileOptions configFile
+                        configFile.ToString()
+                        |> cfg.GetConfigFileOptions
                     response.StatusCode <- HttpStatusCode.OK
                     configOptions
                     |> Seq.map
                         (fun opt -> $"{opt.Name}={opt.Value.ShellQuote()}")
                     |> String.concat Environment.NewLine
                     |> response.writeTextResponse
-                    |> ignore
-                | Some Json ->
-                    let! configOptions =
-                        cfg.GetConfigFileOptions configFile
-                    response.StatusCode <- HttpStatusCode.OK
-                    configOptions
-                    |> response.writeJsonResponse
                     |> ignore
                 | _ ->
                     response.StatusCode <- HttpStatusCode.UnsupportedMediaType

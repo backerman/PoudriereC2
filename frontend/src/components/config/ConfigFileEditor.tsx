@@ -68,6 +68,7 @@ function updateOptionsState(state: ConfigOptionsState, action: StateUpdate | Con
     if (!("action" in action)) {
         // Must be an array of ConfigOptions.
         newState.options = action;
+        newState.mutations = [];
     } else {
         switch (action.action) {
             case 'add':

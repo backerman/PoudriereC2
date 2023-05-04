@@ -56,8 +56,13 @@ it('has a working editor', async () => {
     let changeSubmitted = false;
     fetchMock.doMock(async (req) => {
         const parsedUrl = new URL(req.url);
+        if (req.method === 'PUT') {
+            return JSON.stringify({
+                result: 'OK'
+            })
+        }
         switch (parsedUrl.pathname) {
-            case '/api/configurationfiles/metadata':
+            case '/api/configurationfiles':
                 return JSON.stringify(sampleData.map((cf: ConfigFileMetadata) => {
                     if (cf.name === "this is a test" && changeSubmitted) {
                         return {
@@ -68,18 +73,10 @@ it('has a working editor', async () => {
                     return cf;
                 }));
                 break;
-            case '/api/configurationfiles/metadata/c1fac43d-49de-4821-8ff5-8157cf8f5e29':
-                const cf = sampleData.find((cf) => cf.id === "c1fac43d-49de-4821-8ff5-8157cf8f5e29");
-                return JSON.stringify(changeSubmitted ? {
-                    ...cf,
-                    name: "frodo baggins",
-                } : cf);
-                break;
             case '/api/configurationfiles/aa5cd502-eb08-4f42-b187-b81c3d849611/options':
                 return JSON.stringify([{ name: "test", value: "testing" }]);
                 break;
             case '/api/configurationfiles/c1fac43d-49de-4821-8ff5-8157cf8f5e29/options':
-            case '/api/configurationfiles/c1fac43d-49de-4821-8ff5-8157cf8f5e29':
                 return JSON.stringify([{ name: "test", value: "testing" }]);
                 break;
             case '/api/portsets':
@@ -88,7 +85,7 @@ it('has a working editor', async () => {
             case '/api/portstrees':
                 return JSON.stringify(samplePortstree);
             case '/api/jails':
-                return JSON.stringify([{ name: 'test', type: 'null', requiresParameter: 'none'}]);
+                return JSON.stringify([{ name: 'test', type: 'null', requiresParameter: 'none' }]);
                 break;
             default:
                 console.log("Doing path", parsedUrl.pathname);
@@ -108,7 +105,7 @@ it('has a working editor', async () => {
     expect(editor).toBeInTheDocument();
 
     // Change the text.
-    const nameField = screen.getByTestId( "config-file-name");
+    const nameField = screen.getByTestId("config-file-name");
     await waitFor(() => {
         expect(nameField).toHaveValue("this is a test");
     });

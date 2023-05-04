@@ -82,12 +82,12 @@ export function ConfigFiles(props: ConfigFilesProps): JSX.Element {
     }, [props.showDeleted]);
     const [editorIsOpen, { setTrue: openEditor, setFalse: closeEditor }] = useBoolean(false);
     const [activeRecord, setActiveRecord] = useState({} as ConfigFileMetadata);
-    const { data, error, isLoading, mutate } = useSWR<ConfigFileMetadata[]>('/api/configurationfiles/metadata', fetcher);
+    const { data, error, isLoading, mutate } = useSWR<ConfigFileMetadata[]>('/api/configurationfiles', fetcher);
     const { data: configOptions, mutate: mutateConfigOptions } = useSWR<ConfigOption[]>(() => {
         if (!(activeRecord && activeRecord.id)) {
             return null;
         }
-        const url = `/api/configurationfiles/${activeRecord.id}`;
+        const url = `/api/configurationfiles/${activeRecord.id}/options`;
         return url;
     }, fetcher);
     const [addDialogHidden, { setTrue: hideAddDialog, setFalse: showAddDialog }] = useBoolean(true);
@@ -135,7 +135,7 @@ export function ConfigFiles(props: ConfigFilesProps): JSX.Element {
                     await mutate(
                         async () => {
                             const result =
-                                await fetcher<FunctionResult>('/api/configurationfiles/metadata/',
+                                await fetcher<FunctionResult>('/api/configurationfiles',
                                     {
                                         method: 'POST',
                                         body: JSON.stringify(meta)
@@ -152,25 +152,27 @@ export function ConfigFiles(props: ConfigFilesProps): JSX.Element {
                             })
                         }
                     );
-                    await mutateConfigOptions(
-                        async () => {
-                            const result =
-                                await fetcher<FunctionResult>(`/api/configurationfiles/${activeRecord.id}/options`,
-                                    {
-                                        method: 'PUT',
-                                        body: JSON.stringify(options)
-                                    })
-                            if (result.error) {
-                                throw new Error(result.error);
+                    if (options.length > 0) {
+                        await mutateConfigOptions(
+                            async () => {
+                                const result =
+                                    await fetcher<FunctionResult>(`/api/configurationfiles/${activeRecord.id}/options`,
+                                        {
+                                            method: 'PUT',
+                                            body: JSON.stringify(options)
+                                        })
+                                if (result.error) {
+                                    throw new Error(result.error);
+                                }
+                                return options;
                             }
-                            return options;
-                        }
-                    );
+                        );
+                    }
                 } else {
                     await mutate(
                         async () => {
                             await
-                                fetcher('/api/configurationfiles/metadata/' + meta.id,
+                                fetcher('/api/configurationfiles/' + meta.id,
                                     {
                                         method: 'PUT',
                                         body: JSON.stringify(meta)
@@ -178,20 +180,22 @@ export function ConfigFiles(props: ConfigFilesProps): JSX.Element {
                             return data?.map((r) => r.id === meta.id ? meta : r);
                         }
                     );
-                    await mutateConfigOptions(
-                        async () => {
-                            const result =
-                                await fetcher<FunctionResult>(`/api/configurationfiles/${activeRecord.id}/options`,
-                                    {
-                                        method: 'PATCH',
-                                        body: JSON.stringify(optionMutations)
-                                    })
-                            if (result.error) {
-                                throw new Error(result.error);
+                    if (optionMutations.length > 0) {
+                        await mutateConfigOptions(
+                            async () => {
+                                const result =
+                                    await fetcher<FunctionResult>(`/api/configurationfiles/${activeRecord.id}/options`,
+                                        {
+                                            method: 'PATCH',
+                                            body: JSON.stringify(optionMutations)
+                                        })
+                                if (result.error) {
+                                    throw new Error(result.error);
+                                }
+                                return options;
                             }
-                            return options;
-                        }
-                    );
+                        );
+                    }
                 }
                 closeEditor();
                 clearCreatingNewRecord();
@@ -216,7 +220,7 @@ export function ConfigFiles(props: ConfigFilesProps): JSX.Element {
                     const cfs = selection.getSelection() as ConfigFileMetadata[];
                     hideDeleteDialog();
                     for (const cf of cfs) {
-                        const result = await fetcher('/api/configurationfiles/metadata/' + cf.id,
+                        const result = await fetcher('/api/configurationfiles/' + cf.id,
                             { method: 'DELETE' });
                         if (result.error) {
                             throw new Error(result.error);
