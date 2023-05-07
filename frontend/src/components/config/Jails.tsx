@@ -1,5 +1,5 @@
 import { Jail } from "@/models/jails";
-import { FunctionResult, fetcher } from "@/utils/fetcher";
+import { FunctionResult, fetcher, fetcherWithToken } from "@/utils/fetcher";
 import { IColumn, ITextField, Selection } from "@fluentui/react";
 import { useBoolean } from '@fluentui/react-hooks';
 import { useRef, useState } from "react";
@@ -7,6 +7,7 @@ import useSWR from 'swr';
 import { ItemList } from "../ItemList";
 import { JailEditor } from "./JailEditor";
 import { ConfigCommandBar } from "./ConfigCommandBar";
+import { useAzureFunctionsOAuth } from "@/utils/apiAuth";
 
 const columns: IColumn[] = [
     {
@@ -70,7 +71,12 @@ const columns: IColumn[] = [
 export function Jails(): JSX.Element {
     const [editorIsOpen, { setTrue: openEditor, setFalse: closeEditor }] = useBoolean(false);
     const [activeRecord, setActiveRecord] = useState({} as Jail);
-    const { data, error, isLoading, mutate } = useSWR<Jail[], string>('/api/jails', fetcher);
+
+    const { accessToken, isDevelopment } = useAzureFunctionsOAuth();
+    const queryKey = isDevelopment ? '/api/jails' : ['/api/jails', accessToken];
+    const selectedFetcher = isDevelopment ? fetcher : fetcherWithToken;
+    const { data, error, isLoading, mutate } = useSWR<Jail[], string>(queryKey, selectedFetcher);
+
     const [editorError, errorThrown] = useState<string | undefined>(undefined);
     const [addDialogHidden, { setTrue: hideAddDialog, setFalse: showAddDialog }] = useBoolean(true);
     const [deleteDialogHidden, { setTrue: hideDeleteDialog, setFalse: showDeleteDialog }] = useBoolean(true);
@@ -127,7 +133,8 @@ export function Jails(): JSX.Element {
                                 }
                                 return data?.concat({
                                     ...jail,
-                                    id: result.guid });
+                                    id: result.guid
+                                });
                             }
                         )
                     } else {

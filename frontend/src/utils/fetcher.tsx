@@ -19,3 +19,20 @@ export async function fetcher<T = any> (url: RequestInfo | URL, args?: RequestIn
         throw new Error(res.statusText);
     }
 }
+
+
+
+export async function fetcherWithToken<T = any> ([url, token]: [RequestInfo | URL, string], args?: RequestInit | undefined) {
+    const res = await fetch(`${baseUrl}${url}`, {
+        headers: {
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        ...args,
+    });
+    if (res.ok) {
+        return res.json() as T;
+    } else {
+        throw new Error(res.statusText);
+    }
+}

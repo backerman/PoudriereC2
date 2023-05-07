@@ -4,13 +4,23 @@ import { MsalAuthenticationResult, MsalAuthenticationTemplate, MsalProvider } fr
 import { createTheme, FontSizes, IDetailsRowStyles, initializeIcons, ThemeProvider } from '@fluentui/react';
 import type { AppProps } from 'next/app';
 import Layout from '../components/Layout';
+import { AuthConfigContext } from '@/components/AuthConfigContext';
 
 initializeIcons();
+
+const apiScope = process.env.NEXT_PUBLIC_API_SCOPE || 'scope not configured';
+const isDevelopment = process.env.NEXT_PUBLIC_IS_DEVELOPMENT ?
+  ['true', 'yes'].includes(process.env.NEXT_PUBLIC_IS_DEVELOPMENT.toLowerCase()) :
+  false;
 
 const msalConfig: Configuration = {
   auth: {
     clientId: process.env.NEXT_PUBLIC_AAD_CLIENT_ID || 'this space intentionally left blank',
-    authority: `https://login.microsoftonline.com/${process.env.NEXT_PUBLIC_AAD_TENANT_ID}`,
+    authority: `https://login.microsoftonline.com/${process.env.NEXT_PUBLIC_AAD_TENANT_ID}`
+  },
+  cache: {
+    cacheLocation: 'localStorage',
+    storeAuthStateInCookie: false
   }
 }
 
@@ -29,7 +39,7 @@ const AuthInProgress = () => {
 };
 
 // Make a theme to fix font sizes.
-const detailsRowStyles : Partial<IDetailsRowStyles> = {
+const detailsRowStyles: Partial<IDetailsRowStyles> = {
   cell: {
     fontSize: FontSizes.size14
   },
@@ -48,16 +58,25 @@ const myTheme = createTheme({
 export default function App({ Component, pageProps }: AppProps) {
   return (
     <MsalProvider instance={msalInstance}>
-      <ThemeProvider theme={myTheme}>
-        <Layout>
-          <MsalAuthenticationTemplate
-            interactionType={InteractionType.Popup}
-            errorComponent={AuthError}
-            loadingComponent={AuthInProgress}>
-            <Component {...pageProps} />
-          </MsalAuthenticationTemplate>
-        </Layout>
-      </ThemeProvider>
+      <AuthConfigContext.Provider value={{
+        isDevelopment: isDevelopment,
+        functionsScope: apiScope
+      }}>
+        <ThemeProvider theme={myTheme}>
+          <Layout>
+            <MsalAuthenticationTemplate
+              interactionType={InteractionType.Popup}
+              authenticationRequest={{
+                scopes: ['profile'],
+                extraScopesToConsent: [apiScope]
+              }}
+              errorComponent={AuthError}
+              loadingComponent={AuthInProgress}>
+              <Component {...pageProps} />
+            </MsalAuthenticationTemplate>
+          </Layout>
+        </ThemeProvider>
+      </AuthConfigContext.Provider>
     </MsalProvider>
   );
 }

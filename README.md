@@ -49,6 +49,12 @@ Authentication. Create new application.
 Configuration - 
 * PostgresConnection: the connection string for the production database. (FIXME: support Key Vault)
 
+Deployment:
+```shell
+dotnet publish --configuration Release /property:GenerateFullPaths=true /consoleloggerparameters:NoSummary 
+func azure functionapp publish ffpoudrierec2
+```
+
 ### Azure Active Directory
 
 #### Create application roles
@@ -103,8 +109,9 @@ after configuring the following variables:
 | NEXT_PUBLIC_AAD_CLIENT_ID | The client ID of the frontend's AAD application |
 | NEXT_PUBLIC_AAD_TENANT_ID | The ID of the tenant containing the frontend application |
 | NEXT_PUBLIC_API_BASE_URL | The URL of the development API server; normally `http://localhost:7071/` |
+| NEXT_PUBLIC_IS_DEVELOPMENT | "TRUE" or "YES" (case-insensitive) iff a development instance |
+| NEXT_PUBLIC_API_SCOPE | The API scope exposed by the Azure Function |
 
 [afct]: https://learn.microsoft.com/en-us/azure/azure-functions/functions-run-local#install-the-azure-functions-core-tools
-
 
 
