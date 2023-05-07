@@ -13,7 +13,9 @@ To log in with Azure Active Directory, specify the username as the tenant user (
 ```powershell
 $Env:PGPASSWORD=(Get-AzAccessToken -ResourceUrl "https://ossrdbms-aad$((Get-AzContext).Environment.SqlDatabaseDnsSuffix)").Token
 ```
+
 or
+
 ```shell
 export PGPASSWORD=$(az account get-access-token --resource-type oss-rdbms --query "[accessToken]" -o tsv)
 ```
@@ -46,10 +48,12 @@ GRANT poudriereadmin TO poudrierec2;
 
 Authentication. Create new application.
 
-Configuration - 
+Configuration -
+
 * PostgresConnection: the connection string for the production database. (FIXME: support Key Vault)
 
 Deployment:
+
 ```shell
 dotnet publish --configuration Release /property:GenerateFullPaths=true /consoleloggerparameters:NoSummary 
 func azure functionapp publish ffpoudrierec2
@@ -113,5 +117,3 @@ after configuring the following variables:
 | NEXT_PUBLIC_API_SCOPE | The API scope exposed by the Azure Function |
 
 [afct]: https://learn.microsoft.com/en-us/azure/azure-functions/functions-run-local#install-the-azure-functions-core-tools
-
-
