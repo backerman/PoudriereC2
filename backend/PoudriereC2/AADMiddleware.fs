@@ -8,7 +8,9 @@ open System.Threading.Tasks
 
 type AADMiddleware() =
     let upnClaimType = System.Security.Claims.ClaimTypes.Upn
-    let userGuidClaimType = "http://schemas.microsoft.com/identity/claims/objectidentifier"
+
+    let userGuidClaimType =
+        "http://schemas.microsoft.com/identity/claims/objectidentifier"
 
     interface IFunctionsWorkerMiddleware with
         member _.Invoke(context: FunctionContext, next: FunctionExecutionDelegate) : Task =
@@ -16,16 +18,16 @@ type AADMiddleware() =
                 // Pre-invocation
                 let! requestData = context.GetHttpRequestDataAsync()
                 let log = context.GetLogger("AADMiddleware")
+
                 let getClaimByType claimType =
                     let claimIdentity =
                         requestData.Identities
                         |> Seq.tryFind (fun identity ->
                             identity.Claims |> Seq.exists (fun claim -> claim.Type = claimType))
+
                     match claimIdentity with
-                    | None ->
-                        failwithf "Claim of type %s not found" claimType
-                    | Some claimId ->
-                            claimId.Claims |> Seq.find (fun claim -> claim.Type = claimType)
+                    | None -> failwithf "Claim of type %s not found" claimType
+                    | Some claimId -> claimId.Claims |> Seq.find (fun claim -> claim.Type = claimType)
                 // Identify the current assembly.
                 let thisAssembly = System.Reflection.Assembly.GetExecutingAssembly()
                 log.LogDebug("Entry point: {EntryPoint}", context.FunctionDefinition.EntryPoint)
@@ -58,14 +60,14 @@ type AADMiddleware() =
                     let upn =
                         try
                             (getClaimByType upnClaimType).Value
-                        with
-                        | _ ->
+                        with _ ->
                             "Unknown UPN"
+
                     let userGuid =
                         try
                             (getClaimByType userGuidClaimType).Value
-                        with
-                        | _ -> "Unknown GUID"
+                        with _ ->
+                            "Unknown GUID"
 
                     log.LogError(
                         "User {User} ({UserGuid}) does not possess required claim {Claim}",

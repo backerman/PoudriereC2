@@ -13,7 +13,10 @@ type AuthorizationClaim =
         | AuthorizationPolicy.Machine -> "PoudriereC2.Machine"
         | _ -> failwith "Invalid authorization policy."
 
-    static member PolicyIsSatisfiedBy (policy: AuthorizationPolicy) (identities: System.Security.Claims.ClaimsIdentity seq) =
+    static member PolicyIsSatisfiedBy
+        (policy: AuthorizationPolicy)
+        (identities: seq<System.Security.Claims.ClaimsIdentity>)
+        =
         let existsClaim (predicate: (System.Security.Claims.Claim -> bool)) =
             identities
             |> Seq.exists (fun identity -> identity.Claims |> Seq.exists predicate)
