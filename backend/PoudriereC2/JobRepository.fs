@@ -25,6 +25,7 @@ type JobRepository (db: DB.dataContext) =
         }
 
     /// Function that gets a VM's next available job.
+    [<Authorize(AuthorizationPolicy.Machine)>]
     member _.GetNextJob(vmId: Guid) : Async<DatabaseError * ConfigFileMetadata list> = 
         async {
             let mutable dbError = NoError

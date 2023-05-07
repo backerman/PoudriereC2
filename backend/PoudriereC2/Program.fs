@@ -32,7 +32,7 @@ let servicesDelegate (s: IServiceCollection) =
             let loggerFactory = x.GetRequiredService<ILoggerFactory>()
             FSharp.PostgreSQL.OptionTypes.register () |> ignore
 
-            NpgsqlDataSourceBuilder(ConnectionString)
+            NpgsqlDataSourceBuilder(connStr)
                 .UseLoggerFactory(loggerFactory)
                 .EnableParameterLogging(configuration.["AZURE_FUNCTIONS_ENVIRONMENT"] = "Development")
                 .Build())

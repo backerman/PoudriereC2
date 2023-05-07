@@ -6,6 +6,9 @@
     <OutputType>Exe</OutputType>
     <_FunctionsSkipCleanOutput>true</_FunctionsSkipCleanOutput>
   </PropertyGroup>
+  <PropertyGroup>
+    <LangVersion>preview</LangVersion>
+  </PropertyGroup>
   <ItemGroup>
     <!-- The framework reference includes ASP.NET Core 3.1; without this,
          it would be using 2.x. -->
@@ -39,10 +42,11 @@
     <ItemGroup>
       <DevLocalSettings Include="local.settings-dev.json" />
     </ItemGroup>
-    <Copy Condition="!Exists('local.settings.json')" SourceFiles="@(DevLocalSettings)" DestinationFiles="@(DevLocalSettings->'local.settings.json')">
+    <Copy Condition="!Exists('local.settings.json')" SourceFiles="@(DevLocalSettings)" DestinationFiles="@(DevLocalSettings-&gt;'local.settings.json')">
     </Copy>
   </Target>
   <ItemGroup>
+    <Compile Include="AuthorizationAttribute.fs" />
     <Compile Include="DotEnv.fs" />
     <Compile Include="Data.fs" />
     <Compile Include="ConfigTypes.fs" />

@@ -109,6 +109,7 @@ type ConfigFileApi (cfg: ConfigRepository) =
             } |> Async.StartAsTask
 
     [<Function("GenerateConfigFile")>]
+    [<Authorize(AuthorizationPolicy.Machine)>]
     member _.generateConfigFile
         ([<HttpTrigger(AuthorizationLevel.Anonymous, "get", Route="configurationfiles/{configFile:guid}")>]
         req: HttpRequestData) (execContext: FunctionContext) (configFile: Guid) =
@@ -117,7 +118,8 @@ type ConfigFileApi (cfg: ConfigRepository) =
                 let response = req.CreateResponse()
                 match pickReturnMediaType req with
                 | Some AnyType
-                | Some PlainText ->
+                | Some PlainText
+                | None ->
                     // let! configMetadataSeq = cfg.GetConfigFiles configFile
                     let! configOptions =
                         configFile.ToString()
