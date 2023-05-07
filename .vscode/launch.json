@@ -13,7 +13,6 @@
             "request": "attach",
             "processId": "${command:azureFunctions.pickProcess}",
             "justMyCode": true,
-            }
         },
         {
             "type": "node",
