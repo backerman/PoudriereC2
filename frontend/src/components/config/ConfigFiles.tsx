@@ -5,8 +5,9 @@ import { ConfigFileEditor } from './ConfigFileEditor';
 import { useBoolean } from '@fluentui/react-hooks';
 import { ItemList } from 'src/components/ItemList';
 import useSWR from 'swr';
-import { FunctionResult, fetcher } from 'src/utils/fetcher';
+import { FunctionResult, fetcherWithToken } from 'src/utils/fetcher';
 import { ConfigCommandBar } from './ConfigCommandBar';
+import { useAzureFunctionsOAuth } from '@/utils/apiAuth';
 
 type ConfigFilesProps = {
     showDeleted?: boolean;
@@ -82,14 +83,16 @@ export function ConfigFiles(props: ConfigFilesProps): JSX.Element {
     }, [props.showDeleted]);
     const [editorIsOpen, { setTrue: openEditor, setFalse: closeEditor }] = useBoolean(false);
     const [activeRecord, setActiveRecord] = useState({} as ConfigFileMetadata);
-    const { data, error, isLoading, mutate } = useSWR<ConfigFileMetadata[]>('/api/configurationfiles', fetcher);
+    const { accessToken } = useAzureFunctionsOAuth();
+    const queryKey: [string, string | undefined] = ['/api/configurationfiles', accessToken];
+    const { data, error, isLoading, mutate } = useSWR<ConfigFileMetadata[]>(queryKey, fetcherWithToken)
     const { data: configOptions, mutate: mutateConfigOptions } = useSWR<ConfigOption[]>(() => {
         if (!(activeRecord && activeRecord.id)) {
             return null;
         }
         const url = `/api/configurationfiles/${activeRecord.id}/options`;
-        return url;
-    }, fetcher);
+        return [url, accessToken];
+    }, fetcherWithToken);
     const [addDialogHidden, { setTrue: hideAddDialog, setFalse: showAddDialog }] = useBoolean(true);
     const [deleteDialogHidden, { setTrue: hideDeleteDialog, setFalse: showDeleteDialog }] = useBoolean(true);
     // Whether the delete button is enabled; it should be enabled
@@ -135,7 +138,7 @@ export function ConfigFiles(props: ConfigFilesProps): JSX.Element {
                     await mutate(
                         async () => {
                             const result =
-                                await fetcher<FunctionResult>('/api/configurationfiles',
+                                await fetcherWithToken<FunctionResult>(queryKey,
                                     {
                                         method: 'POST',
                                         body: JSON.stringify(meta)
@@ -156,7 +159,8 @@ export function ConfigFiles(props: ConfigFilesProps): JSX.Element {
                         await mutateConfigOptions(
                             async () => {
                                 const result =
-                                    await fetcher<FunctionResult>(`/api/configurationfiles/${activeRecord.id}/options`,
+                                    await fetcherWithToken<FunctionResult>(
+                                        [`/api/configurationfiles/${activeRecord.id}/options`, accessToken],
                                         {
                                             method: 'PUT',
                                             body: JSON.stringify(options)
@@ -172,7 +176,7 @@ export function ConfigFiles(props: ConfigFilesProps): JSX.Element {
                     await mutate(
                         async () => {
                             await
-                                fetcher('/api/configurationfiles/' + meta.id,
+                                fetcherWithToken(['/api/configurationfiles/' + meta.id, accessToken],
                                     {
                                         method: 'PUT',
                                         body: JSON.stringify(meta)
@@ -184,7 +188,8 @@ export function ConfigFiles(props: ConfigFilesProps): JSX.Element {
                         await mutateConfigOptions(
                             async () => {
                                 const result =
-                                    await fetcher<FunctionResult>(`/api/configurationfiles/${activeRecord.id}/options`,
+                                    await fetcherWithToken<FunctionResult>(
+                                        [`/api/configurationfiles/${activeRecord.id}/options`, accessToken],
                                         {
                                             method: 'PATCH',
                                             body: JSON.stringify(optionMutations)
@@ -220,7 +225,8 @@ export function ConfigFiles(props: ConfigFilesProps): JSX.Element {
                     const cfs = selection.getSelection() as ConfigFileMetadata[];
                     hideDeleteDialog();
                     for (const cf of cfs) {
-                        const result = await fetcher('/api/configurationfiles/' + cf.id,
+                        const result = await fetcherWithToken(
+                            ['/api/configurationfiles/' + cf.id, accessToken],
                             { method: 'DELETE' });
                         if (result.error) {
                             throw new Error(result.error);

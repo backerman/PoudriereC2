@@ -1,4 +1,4 @@
-import { FunctionResult, fetcher } from "@/utils/fetcher";
+import { FunctionResult, fetcherWithToken } from "@/utils/fetcher";
 import { IColumn, ITextField, Selection } from "@fluentui/react";
 import { useBoolean } from '@fluentui/react-hooks';
 import { useRef, useState } from "react";
@@ -7,6 +7,7 @@ import useSWR from 'swr';
 import { ItemList } from "../ItemList";
 import { ConfigCommandBar } from "./ConfigCommandBar";
 import { PortSetEditor } from "./PortSetEditor";
+import { useAzureFunctionsOAuth } from "@/utils/apiAuth";
 
 const columns: IColumn[] = [
     {
@@ -48,7 +49,10 @@ const emptyPortSet: PortSet = {
 export function PortSets(): JSX.Element {
     const [editorIsOpen, { setTrue: openEditor, setFalse: closeEditor }] = useBoolean(false);
     const [activeRecord, setActiveRecord] = useState<PortSet | undefined>(undefined);
-    const { data, error, isLoading, mutate } = useSWR<PortSet[]>('/api/portsets', fetcher);
+
+    const { accessToken } = useAzureFunctionsOAuth();
+    const queryKey: [string, string | undefined] = ['/api/portsets', accessToken];
+    const { data, error, isLoading, mutate } = useSWR<PortSet[]>(queryKey, fetcherWithToken);
     const [addDialogHidden, { setTrue: hideAddDialog, setFalse: showAddDialog }] = useBoolean(true);
     const [deleteDialogHidden, { setTrue: hideDeleteDialog, setFalse: showDeleteDialog }] = useBoolean(true);
     // Whether the delete button is enabled; it should be enabled
@@ -91,7 +95,7 @@ export function PortSets(): JSX.Element {
                         console.log("Error: active record id does not match submitted record id")
                     } else if (creatingNewRecord) {
                         await mutate(async () => {
-                            const result = await fetcher<FunctionResult>('/api/portsets', {
+                            const result = await fetcherWithToken<FunctionResult>(queryKey, {
                                 method: 'POST',
                                 body: JSON.stringify({
                                     ...ps,
@@ -120,10 +124,12 @@ export function PortSets(): JSX.Element {
                         var result: FunctionResult;
                         await mutate(
                             async () => {
-                                result = await fetcher<FunctionResult>(`/api/portsets/${ps.id}/members`, {
-                                    method: 'PATCH',
-                                    body: JSON.stringify(actions)
-                                });
+                                result = await fetcherWithToken<FunctionResult>(
+                                    [`/api/portsets/${ps.id}/members`, accessToken],
+                                    {
+                                        method: 'PATCH',
+                                        body: JSON.stringify(actions)
+                                    });
                                 if (result.error) {
                                     throw new Error(result.error);
                                 }
@@ -157,9 +163,11 @@ export function PortSets(): JSX.Element {
                                 const pses = selection.getSelection() as PortSet[];
                                 hideDeleteDialog();
                                 for (const ps of pses) {
-                                    const result = await fetcher<FunctionResult>(`/api/portsets/${ps.id}`, {
-                                        method: 'DELETE'
-                                    });
+                                    const result = await fetcherWithToken<FunctionResult>(
+                                        [`/api/portsets/${ps.id}`, accessToken],
+                                        {
+                                            method: 'DELETE'
+                                        });
                                     if (result.error) {
                                         throw new Error(result.error);
                                     }

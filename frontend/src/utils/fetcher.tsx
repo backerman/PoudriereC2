@@ -20,14 +20,14 @@ export async function fetcher<T = any> (url: RequestInfo | URL, args?: RequestIn
     }
 }
 
-
-
-export async function fetcherWithToken<T = any> ([url, token]: [RequestInfo | URL, string], args?: RequestInit | undefined) {
+export async function fetcherWithToken<T = any> ([url, token]: [RequestInfo | URL, string | undefined], args?: RequestInit | undefined) {
+    const headers = new Headers();
+    headers.append('Accept', 'application/json');
+    if (token) {
+        headers.append('Authorization', `Bearer ${token}`);
+    }
     const res = await fetch(`${baseUrl}${url}`, {
-        headers: {
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${token}`
-        },
+        headers: headers,
         ...args,
     });
     if (res.ok) {
