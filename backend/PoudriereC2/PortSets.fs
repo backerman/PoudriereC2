@@ -40,6 +40,7 @@ type PortSetsApi(ps: PortSetsRepository) =
     [<Function("GetPortSetMembers")>]
     member _.GetPortSetMembers
         (
+            // fsharplint:disable-next-line TypedItemSpacing
             [<HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "portsets/{portset}/members")>] req:
                 HttpRequestData,
             execContext: FunctionContext,
@@ -55,6 +56,7 @@ type PortSetsApi(ps: PortSetsRepository) =
     [<Function("UpdatePortSetMembers")>]
     member _.UpdatePortSetMembers
         (
+            // fsharplint:disable-next-line TypedItemSpacing
             [<HttpTrigger(AuthorizationLevel.Anonymous, "patch", Route = "portsets/{portset}/members")>] req:
                 HttpRequestData,
             execContext: FunctionContext,

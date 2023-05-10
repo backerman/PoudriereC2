@@ -315,7 +315,7 @@
         "maxCharactersOnLine": {
             "enabled": true,
             "config": {
-                "maxCharactersOnLine": 120
+                "maxCharactersOnLine": 130
             }
         },
         "trailingWhitespaceOnLine": {

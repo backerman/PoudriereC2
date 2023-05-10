@@ -11,6 +11,7 @@ type ConfigFileOptionsApi(cfg: ConfigRepository) =
 
     [<Function("UpdateConfigFileOptions")>]
     member _.UpdateConfigFileOptions
+        // fsharplint:disable-next-line TypedItemSpacing
         ([<HttpTrigger(AuthorizationLevel.Anonymous, "patch", Route = "configurationfiles/{configFile:guid}/options")>] req:
             HttpRequestData)
         (execContext: FunctionContext)
@@ -50,6 +51,7 @@ type ConfigFileOptionsApi(cfg: ConfigRepository) =
 
     [<Function("GetConfigFileOptions")>]
     member _.getConfigFileOptions
+        // fsharplint:disable-next-line TypedItemSpacing
         ([<HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "configurationfiles/{configFile:guid}/options")>] req:
             HttpRequestData)
         (execContext: FunctionContext)

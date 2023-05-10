@@ -46,6 +46,7 @@ type ConfigFileApi(cfg: ConfigRepository) =
     [<Function("UpdateConfigFile")>]
     member _.updateConfigFile
         (
+            // fsharplint:disable-next-line TypedItemSpacing
             [<HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "configurationfiles/{configFile:guid}")>] req:
                 HttpRequestData,
             execContext: FunctionContext,
@@ -96,6 +97,7 @@ type ConfigFileApi(cfg: ConfigRepository) =
     [<Function("DeleteConfigFile")>]
     member _.deleteConfigFile
         (
+            // fsharplint:disable-next-line TypedItemSpacing
             [<HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "configurationfiles/{configFile:guid}")>] req:
                 HttpRequestData,
             execContext: FunctionContext,
@@ -124,6 +126,7 @@ type ConfigFileApi(cfg: ConfigRepository) =
     [<Function("GenerateConfigFile")>]
     [<Authorize(AuthorizationPolicy.Machine)>]
     member _.generateConfigFile
+        // fsharplint:disable-next-line TypedItemSpacing
         ([<HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "configurationfiles/{configFile:guid}")>] req:
             HttpRequestData)
         (execContext: FunctionContext)
