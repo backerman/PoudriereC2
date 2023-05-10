@@ -29,6 +29,19 @@
                 "--runInBand",
                 "--watchAll=false"
             ]
+        },
+        {
+            "type": "node",
+            "name": "vscode-jest-debug",
+            "request": "launch",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "cwd": "${workspaceFolder}/frontend",
+            "runtimeArgs": [
+                "--inspect-brk",
+                "node_modules/.bin/jest",
+                "--runInBand"
+            ]
         }
     ]
 }
