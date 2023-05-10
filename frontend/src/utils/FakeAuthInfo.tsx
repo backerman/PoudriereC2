@@ -66,7 +66,9 @@ const fakeBrowserConfiguration: BrowserConfiguration = {
     cache: {
         cacheLocation: 'localStorage',
         storeAuthStateInCookie: false,
-        secureCookies: true
+        secureCookies: true,
+        temporaryCacheLocation: 'localStorage',
+        cacheMigrationEnabled: false
     },
     system: {
         allowNativeBroker: false,

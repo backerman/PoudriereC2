@@ -14,7 +14,7 @@ type ConfigFileApi (cfg: ConfigRepository) =
 
     [<Function("NewConfigFile")>]
     member _.newConfigFile
-        ([<HttpTrigger(AuthorizationLevel.Anonymous, "post", Route="configurationfiles/metadata")>]
+        ([<HttpTrigger(AuthorizationLevel.Anonymous, "post", Route="configurationfiles")>]
          req: HttpRequestData, execContext: FunctionContext) =
             async {
                 let log = execContext.GetLogger()

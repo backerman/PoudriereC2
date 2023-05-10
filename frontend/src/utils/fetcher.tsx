@@ -1,3 +1,5 @@
+import { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
+
 export const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '';
 
 export type FunctionResult = {
@@ -6,33 +8,25 @@ export type FunctionResult = {
     guid?: string;
 }
 
-export async function fetcher<T = any> (url: RequestInfo | URL, args?: RequestInit | undefined) {
-    const res = await fetch(`${baseUrl}${url}`, {
-        headers: {
-            'Accept': 'application/json'
-        },
-        ...args,
-    });
-    if (res.ok) {
-        return res.json() as T;
-    } else {
-        throw new Error(res.statusText);
-    }
-}
+export type FetcherArgs = Omit<Partial<AxiosRequestConfig>, 'headers' | 'url'>;
 
-export async function fetcherWithToken<T = any> ([url, token]: [RequestInfo | URL, string | undefined], args?: RequestInit | undefined) {
-    const headers = new Headers();
-    headers.append('Accept', 'application/json');
-    if (token) {
-        headers.append('Authorization', `Bearer ${token}`);
+export function makeFetcher(axios: AxiosInstance) {
+    async function myFetcher<ResponseData>(url: string, args?: FetcherArgs) {
+        const res = await axios.request<ResponseData>({
+            url: url,
+            baseURL: baseUrl,
+            headers: {
+                'Accept': 'application/json'
+            },
+            ...args,
+        }).catch((err: AxiosError<FunctionResult>) => {
+            if (err.response) {
+                throw new Error(err.response.data.error);
+            } else {
+                throw err.message;
+            }
+        });
+        return res.data;    
     }
-    const res = await fetch(`${baseUrl}${url}`, {
-        headers: headers,
-        ...args,
-    });
-    if (res.ok) {
-        return res.json() as T;
-    } else {
-        throw new Error(res.statusText);
-    }
+    return myFetcher
 }

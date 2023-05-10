@@ -1,5 +1,5 @@
 import { Jail } from "@/models/jails";
-import { FunctionResult, fetcherWithToken } from "@/utils/fetcher";
+import { FunctionResult } from "@/utils/fetcher";
 import { IColumn, ITextField, Selection } from "@fluentui/react";
 import { useBoolean } from '@fluentui/react-hooks';
 import { useRef, useState } from "react";
@@ -72,9 +72,8 @@ export function Jails(): JSX.Element {
     const [editorIsOpen, { setTrue: openEditor, setFalse: closeEditor }] = useBoolean(false);
     const [activeRecord, setActiveRecord] = useState({} as Jail);
 
-    const { accessToken } = useAzureFunctionsOAuth();
-    const queryKey: [string, string | undefined] = ['/api/jails', accessToken];
-    const { data, error, isLoading, mutate } = useSWR<Jail[], string>(queryKey, fetcherWithToken);
+    const { fetcher, keyIfTokenReady } = useAzureFunctionsOAuth();
+    const { data, error, isLoading, mutate } = useSWR<Jail[], string>(keyIfTokenReady('/api/jails'), fetcher);
 
     const [editorError, errorThrown] = useState<string | undefined>(undefined);
     const [addDialogHidden, { setTrue: hideAddDialog, setFalse: showAddDialog }] = useBoolean(true);
@@ -119,10 +118,10 @@ export function Jails(): JSX.Element {
                     } else if (creatingNewRecord) {
                         await mutate(
                             async () => {
-                                const result = await fetcherWithToken<FunctionResult>(queryKey,
+                                const result = await fetcher<FunctionResult>('/api/jails',
                                     {
                                         method: 'POST',
-                                        body: JSON.stringify(jail)
+                                        data: jail
                                     });
                                 if (result.error) {
                                     throw new Error(result.error);
@@ -140,10 +139,10 @@ export function Jails(): JSX.Element {
                         await mutate(
                             async () => {
                                 await
-                                    fetcherWithToken<FunctionResult>(['/api/jails/' + jail.id, accessToken],
+                                    fetcher<FunctionResult>('/api/jails/' + jail.id,
                                         {
                                             method: 'PUT',
-                                            body: JSON.stringify(jail)
+                                            data: jail
                                         });
                                 return data?.map((r) => r.id === jail.id ? jail : r);
                             }, { revalidate: false }
@@ -172,8 +171,8 @@ export function Jails(): JSX.Element {
                             const sel = selection.getSelection() as Jail[];
                             hideDeleteDialog();
                             for (const j of sel) {
-                                const result = await fetcherWithToken<FunctionResult>(
-                                    ['/api/jails/' + j.id, accessToken],
+                                const result = await fetcher<FunctionResult>(
+                                    '/api/jails/' + j.id,
                                     { method: 'DELETE' });
                                 if (result.error) {
                                     throw new Error(result.error);

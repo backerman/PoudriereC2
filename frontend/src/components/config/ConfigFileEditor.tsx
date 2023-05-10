@@ -1,5 +1,5 @@
 import { Dropdown, IComboBox, IComboBoxOption, IDropdownOption, PanelType, Separator, TextField } from "@fluentui/react";
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useReducer } from "react";
 import { Editor } from "@/components/Editor";
 import { ConfigFileMetadata, ConfigOption, ConfigOptionUpdate } from "src/models/configs";
 import { ComboBoxWithFetcher } from "./ComboBoxWithFetcher";

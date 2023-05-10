@@ -1,41 +1,48 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 import { initializeIcons } from '@fluentui/react';
 import { PortsTrees } from './PortsTrees';
-import { FetchMock } from 'jest-fetch-mock/types';
 import { sampleData } from '@/models/portstrees.sample';
 import { SWRConfig } from 'swr';
+import { getMock } from '@/utils/mockUtils';
+import { AuthConfigContext } from '../AuthConfigContext';
 
 initializeIcons();
 
+const { mock, countAllMockRequests } = getMock();
+
 beforeEach(() => {
-    fetchMock.resetMocks();
-    fetchMock.doMock();
+    mock.reset();
 });
 
 it('renders a ports tree list successfully', async () => {
-    expect.assertions(3);
-    expect((fetch as FetchMock).mock.calls.length).toEqual(0);
-    fetchMock.mockResponse(JSON.stringify(sampleData));
+    expect.assertions(4);
+    expect(countAllMockRequests()).toEqual(0);
+    mock.onGet().reply(200, sampleData)
     await act(async () => {
         render(
-            <SWRConfig value={{ provider: () => new Map() }}>
-                <PortsTrees />
-            </SWRConfig>);
+            <AuthConfigContext.Provider value={{ functionsScope: '', isDevelopment: true }}>
+                <SWRConfig value={{ provider: () => new Map() }}>
+                    <PortsTrees />
+                </SWRConfig>
+            </AuthConfigContext.Provider>);
     });
     const samplePortsTreeName = screen.getByText("Bobby Tables");
     expect(samplePortsTreeName).toBeInTheDocument();
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(countAllMockRequests()).toEqual(1);
 });
 
 it('renders errors successfully', async () => {
     expect.hasAssertions();
-    expect((fetch as FetchMock).mock.calls.length).toEqual(0);
-    fetchMock.mockReject(new Error('LOL no'));
+    expect(countAllMockRequests()).toEqual(0);
+    mock.onGet().reply(500, { error: "LOL no" });
     await act(async () => {
         render(
-            <SWRConfig value={{ provider: () => new Map() }}>
-                <PortsTrees />
-            </SWRConfig>);
+            <AuthConfigContext.Provider value={{ functionsScope: '', isDevelopment: true }}>
+                <SWRConfig value={{ provider: () => new Map() }}>
+                    <PortsTrees />
+                </SWRConfig>
+            </AuthConfigContext.Provider>);
     });
 
     await waitFor(() => {

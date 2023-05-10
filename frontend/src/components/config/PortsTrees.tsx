@@ -1,5 +1,5 @@
 import { PortsTree } from '@/models/portstrees';
-import { FunctionResult, fetcherWithToken } from '@/utils/fetcher';
+import { FunctionResult } from '@/utils/fetcher';
 import { IColumn, ITextField, Selection } from '@fluentui/react';
 import { useBoolean } from '@fluentui/react-hooks';
 import { useRef, useState } from 'react';
@@ -48,10 +48,8 @@ const columns: IColumn[] = [
 export function PortsTrees(): JSX.Element {
     const [editorIsOpen, { setTrue: openEditor, setFalse: closeEditor }] = useBoolean(false);
     const [activeRecord, setActiveRecord] = useState<PortsTree | undefined>(undefined);
-
-    const { accessToken } = useAzureFunctionsOAuth();
-    const queryKey: [string, string | undefined] = ['/api/portstrees', accessToken];
-    const { data, error, isLoading, mutate } = useSWR<PortsTree[]>(queryKey, fetcherWithToken);
+    const { fetcher, keyIfTokenReady } = useAzureFunctionsOAuth();
+    const { data, error, isLoading, mutate } = useSWR<PortsTree[]>(keyIfTokenReady('/api/portstrees'), fetcher);
     const [addDialogHidden, { setTrue: hideAddDialog, setFalse: showAddDialog }] = useBoolean(true);
     const [deleteDialogHidden, { setTrue: hideDeleteDialog, setFalse: showDeleteDialog }] = useBoolean(true);
     // Whether the delete button is enabled; it should be enabled
@@ -90,10 +88,9 @@ export function PortsTrees(): JSX.Element {
                 } else if (creatingNewRecord) {
                     await mutate(
                         async () => {
-                            // FIXME check for errors
-                            const result = await fetcherWithToken<FunctionResult>(queryKey, {
+                            const result = await fetcher<FunctionResult>('/api/portstrees', {
                                 method: 'POST',
-                                body: JSON.stringify(tree)
+                                data: tree
                             });
                             if (result.error) {
                                 throw new Error(result.error);
@@ -113,10 +110,10 @@ export function PortsTrees(): JSX.Element {
                         async () => {
                             // FIXME check for errors
                             await
-                                fetcherWithToken(['/api/portstrees/' + tree.id, accessToken],
+                                fetcher(`/api/portstrees/${tree.id}`,
                                     {
                                         method: 'PUT',
-                                        body: JSON.stringify(tree)
+                                        data: tree
                                     });
                             return data?.map((r) => r.id === tree.id ? tree : r);
                         });
@@ -146,8 +143,8 @@ export function PortsTrees(): JSX.Element {
                         const pses = selection.getSelection() as PortsTree[];
                         hideDeleteDialog();
                         for (const ps of pses) {
-                            const result = await fetcherWithToken<FunctionResult>(
-                                [`/api/portstrees/${ps.id}`, accessToken],
+                            const result = await fetcher<FunctionResult>(
+                                `/api/portstrees/${ps.id}`,
                                 {
                                     method: 'DELETE'
                                 });

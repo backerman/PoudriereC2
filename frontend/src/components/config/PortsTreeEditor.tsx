@@ -52,7 +52,7 @@ export function PortsTreeEditor(props: PortsTreeEditorProps): JSX.Element {
         <Editor
             isOpen={props.isOpen}
             isBlocking={false}
-            headerText={"Edit port set “" + props.record.name + "”"}
+            headerText={"Edit ports tree “" + props.record.name + "”"}
             onSubmit={() =>
                 props.onSubmit(portsTreeData)}
             onDismiss={() => {
