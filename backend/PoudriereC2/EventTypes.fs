@@ -18,16 +18,16 @@ type VirtualMachineInfo =
 type HeartbeatInfo =
     {
         /// The 1-, 5-, and 15-minute load averages of the VM.
-        LoadAverage: float list;
+        LoadAverage: float list
         /// The number of CPUs in the VM.
-        NumCPUs: int;
+        NumCPUs: int
         /// <summary>The size of the VM (e.g. <c>Standard_D96as_v4</c>).</summary>
         VmSize: string
     }
 
 /// Payload for a jail event.
 type JailInfo =
-    { 
+    {
         /// The path at which the jail root is mounted in the host filesystem.
         MountPath: string
     }
@@ -36,7 +36,7 @@ type JailInfo =
 type BuilderInfo =
     {
         /// The ID number of the builder jail.
-        Id: int;
+        Id: int
         /// The path at which the builder jail root is mounted in the host filesystem.
         MountPath: string
     }
@@ -48,24 +48,14 @@ let private EventType = "type"
 type EventDetail =
     | Jail of JailInfo
     | Builder of BuilderInfo
-    | PkgBuild of
-        pkgName: string *
-        dependentOrigin: string *
-        reason: string *
-        phase: string
-    | PkgClean of
-        deletedPackages: bool *
-        builtRepository: bool
+    | PkgBuild of pkgName: string * dependentOrigin: string * reason: string * phase: string
+    | PkgClean of deletedPackages: bool * builtRepository: bool
     | PkgRepo of
         packagesDirectory: string *
         pkgRepoSigningKey: string *
         pkgRepoFromHost: string *
         pkgRepoMetaFile: string
-    | Bulk of
-        numBuilt: int *
-        numFailed: int *
-        numIgnored: int *
-        numSkipped: int
+    | Bulk of numBuilt: int * numFailed: int * numIgnored: int * numSkipped: int
     | PortsUpdate
     | Heartbeat of HeartbeatInfo
 
@@ -73,11 +63,11 @@ type EventDetail =
 type Event =
     {
         /// The client timestamp.
-        Timestamp: DateTime;
+        Timestamp: DateTime
         /// The GUID of the client's Azure VM instance (from IMDS).
-        VmGuid: Guid;
+        VmGuid: Guid
         /// The name of the client's Azure VM instance (from IMDS).
-        VmName: string;
+        VmName: string
         /// The event type and payload.
         Event: EventDetail
     }
@@ -90,30 +80,33 @@ type FunctionResult =
 
 type LowerCaseNamingPolicy() =
     inherit JsonNamingPolicy()
-    override _.ConvertName (n: string) : string =
-        n.ToLowerInvariant()
+    override _.ConvertName(n: string) : string = n.ToLowerInvariant()
 
 let serializationOptions discriminator =
-    let serializationOverrides (options: JsonFSharpOptions) = dict [
-                (typeof<ConfigFileType>, options
-                    .WithUnionEncoding(JsonUnionEncoding.UnwrapFieldlessTags)
-                    .WithUnionTagNamingPolicy(LowerCaseNamingPolicy()))
-                (typeof<PortSetUpdate>, options
-                    .WithUnionTagName("action")
-                    .WithUnionTagNamingPolicy(LowerCaseNamingPolicy()))
-                (typeof<ConfigOptionUpdate>, options
-                    .WithUnionTagName("action")
-                    .WithUnionTagNamingPolicy(LowerCaseNamingPolicy()))
-                (typeof<FunctionResult>, options
-                    .WithUnionTagName("result")
-                    .WithUnionTagNamingPolicy(LowerCaseNamingPolicy()))
-                (typeof<PortsTreeMethod>, options
-                    .WithUnionUnwrapFieldlessTags())
-                (typeof<JailMethod>, options
-                    .WithUnionUnwrapFieldlessTags())
-            ]
+    let serializationOverrides (options: JsonFSharpOptions) =
+        dict
+            [ (typeof<ConfigFileType>,
+               options
+                   .WithUnionEncoding(JsonUnionEncoding.UnwrapFieldlessTags)
+                   .WithUnionTagNamingPolicy(LowerCaseNamingPolicy()))
+              (typeof<PortSetUpdate>,
+               options
+                   .WithUnionTagName("action")
+                   .WithUnionTagNamingPolicy(LowerCaseNamingPolicy()))
+              (typeof<ConfigOptionUpdate>,
+               options
+                   .WithUnionTagName("action")
+                   .WithUnionTagNamingPolicy(LowerCaseNamingPolicy()))
+              (typeof<FunctionResult>,
+               options
+                   .WithUnionTagName("result")
+                   .WithUnionTagNamingPolicy(LowerCaseNamingPolicy()))
+              (typeof<PortsTreeMethod>, options.WithUnionUnwrapFieldlessTags())
+              (typeof<JailMethod>, options.WithUnionUnwrapFieldlessTags()) ]
+
     let options =
-        JsonFSharpOptions.Default()
+        JsonFSharpOptions
+            .Default()
             .WithSkippableOptionFields(true)
             .WithUnionTagName(discriminator)
             .WithUnionTagNamingPolicy(JsonNamingPolicy.CamelCase)
@@ -126,6 +119,7 @@ let serializationOptions discriminator =
             .WithAllowOverride(true)
             .WithOverrides(serializationOverrides)
             .ToJsonSerializerOptions()
+
     options.PropertyNamingPolicy <- JsonNamingPolicy.CamelCase
     options
 

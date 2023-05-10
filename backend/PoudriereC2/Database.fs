@@ -54,8 +54,7 @@ type DatabaseError =
             return
                 match opResult with
                 | Choice1Of2 _ -> NoError
-                | Choice2Of2 e ->
-                    DatabaseError.FromException e
+                | Choice2Of2 e -> DatabaseError.FromException e
         }
 
     /// <summary>Handle a DatabaseError, returning a FunctionResult.</summary>
@@ -67,7 +66,7 @@ type DatabaseError =
     /// to send to the user.</returns>
     member dbError.Handle
         (
-            log: ILogger<obj>,
+            log: ILogger,
             failureMessage: string,
             [<ParamArray>] failureMessageArgs: obj[]
         ) : {| httpCode: HttpStatusCode

@@ -165,10 +165,10 @@ type ConfigRepository(db: DB.dataContext) =
 
         async {
             List.iter processAction updates
-            let! result =
-                db.SubmitUpdatesAsync()
-                |> DatabaseError.FromQuery
+            let! result = db.SubmitUpdatesAsync() |> DatabaseError.FromQuery
+
             if result <> NoError then
                 db.ClearUpdates() |> ignore
+
             return result
         }

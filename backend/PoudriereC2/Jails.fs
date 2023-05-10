@@ -17,7 +17,7 @@ type JailApi(jr: JailRepository, fb: FreeBSDInfo) =
             execContext: FunctionContext
         ) =
         async {
-            let log = execContext.GetLogger()
+            let log = execContext.GetLogger("GetJails")
             let response = req.CreateResponse()
             let! jails = jr.GetJails()
             response.writeJsonResponse jails |> ignore
@@ -32,7 +32,7 @@ type JailApi(jr: JailRepository, fb: FreeBSDInfo) =
             execContext: FunctionContext
         ) =
         async {
-            let log = execContext.GetLogger()
+            let log = execContext.GetLogger("NewJail")
             let response = req.CreateResponse()
             let! maybeNewJail = tryDeserialize<Jail> req log
 
@@ -67,7 +67,7 @@ type JailApi(jr: JailRepository, fb: FreeBSDInfo) =
             jailId: Guid
         ) =
         async {
-            let log = execContext.GetLogger()
+            let log = execContext.GetLogger("UpdateJail")
             let response = req.CreateResponse()
             let! maybeJail = tryDeserialize<Jail> req log
 
@@ -102,7 +102,7 @@ type JailApi(jr: JailRepository, fb: FreeBSDInfo) =
             jail: Guid
         ) =
         async {
-            let log = execContext.GetLogger()
+            let log = execContext.GetLogger("DeleteJail")
             let response = req.CreateResponse()
             let! result = jr.DeleteJail jail
 
@@ -128,7 +128,7 @@ type JailApi(jr: JailRepository, fb: FreeBSDInfo) =
             execContext: FunctionContext
         ) =
         async {
-            let log = execContext.GetLogger()
+            let log = execContext.GetLogger("GetAvailableArchitectures")
             let response = req.CreateResponse()
             let! architectures = fb.getFreeBSDArchitectures log
             response.Headers.Add("Cache-Control", "max-age=300")
@@ -147,7 +147,7 @@ type JailApi(jr: JailRepository, fb: FreeBSDInfo) =
             arch: string
         ) =
         async {
-            let log = execContext.GetLogger()
+            let log = execContext.GetLogger("GetAvailableReleases")
             let response = req.CreateResponse()
             // Validate arch value - should consist of only alphanumeric characters and periods,
             // and be less than 40 characters in length - I don't know if there's a spec but this

@@ -3,11 +3,6 @@ namespace Facefault.PoudriereC2
 open Facefault.PoudriereC2.Serialization
 open Microsoft.Azure.Functions.Worker
 open Microsoft.Azure.Functions.Worker.Http
-open Microsoft.Extensions.Logging
-open System
-open System.Net
-open FSharp.Data.Sql
-open System.Runtime.InteropServices
 
 type ScheduleApi (jobs: JobRepository, sched: ScheduleRepository) =
 
@@ -17,7 +12,7 @@ type ScheduleApi (jobs: JobRepository, sched: ScheduleRepository) =
         ([<HttpTrigger(AuthorizationLevel.Anonymous, "put", Route="jobs/schedule")>]
          req: HttpRequestData, execContext: FunctionContext) =
         async {
-            let log = execContext.GetLogger()
+            let log = execContext.GetLogger("ScheduleJob")
             let response = req.CreateResponse()
             let! maybeSchedule = tryDeserialize<JobSchedule> req log
             match maybeSchedule with

@@ -5,41 +5,40 @@ open Npgsql
 open System
 open Facefault.PoudriereC2.Database
 
-type JailRepository (ds: NpgsqlDataSource) =
-    member _.GetJails () =
+type JailRepository(ds: NpgsqlDataSource) =
+    member _.GetJails() =
         async {
             let query =
                 """SELECT * FROM poudrierec2.jails
                    ORDER BY name"""
+
             use! conn = ds.OpenConnectionAsync()
-            let! jails =
-                query
-                |> conn.QueryAsync<Jail>
+            let! jails = query |> conn.QueryAsync<Jail>
             return jails
         }
 
-    member _.CreateJail (j: Jail)=
+    member _.CreateJail(j: Jail) =
         async {
             let query =
                 """INSERT INTO poudrierec2.jails (id, name, version, architecture, method, url)
                    VALUES (@id, @name, @version, @architecture, @method, @url)"""
+
             let newGuid = Guid.NewGuid()
             use! conn = ds.OpenConnectionAsync()
+
             let! result =
-                conn.ExecuteAsync(query, {j with Id = Some newGuid})
+                conn.ExecuteAsync(query, { j with Id = Some newGuid })
                 |> DatabaseError.FromQuery
+
             return (result, newGuid)
         }
 
-    member _.DeleteJail (jailId: Guid) =
+    member _.DeleteJail(jailId: Guid) =
         async {
-            let query =
-                "DELETE FROM poudrierec2.jails WHERE id = @id"
-            let queryParams = [("id" => jailId)] |> dict
+            let query = "DELETE FROM poudrierec2.jails WHERE id = @id"
+            let queryParams = [ ("id" => jailId) ] |> dict
             use! conn = ds.OpenConnectionAsync()
-            let! result =
-                conn.ExecuteAsync(query, queryParams)
-                |> DatabaseError.FromQuery
+            let! result = conn.ExecuteAsync(query, queryParams) |> DatabaseError.FromQuery
             return result
         }
 
@@ -50,9 +49,8 @@ type JailRepository (ds: NpgsqlDataSource) =
                    SET name = @name, version = @version, architecture = @architecture, method = @method,
                        url = @url, path = @path
                    WHERE id = @id"""
+
             use! conn = ds.OpenConnectionAsync()
-            let! result =
-                conn.ExecuteAsync(query, {j with Id = Some jailId})
-                |> DatabaseError.FromQuery
+            let! result = conn.ExecuteAsync(query, { j with Id = Some jailId }) |> DatabaseError.FromQuery
             return result
         }

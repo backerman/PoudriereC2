@@ -11,33 +11,35 @@ open System.Text
 let tryDeserialize<'T> (req: HttpRequestData) (log: ILogger) =
     async {
         let! tryDeserialize =
-            (JsonSerializer.DeserializeAsync<'T>
-                (req.Body, eventSerializationOptions)).AsTask()
+            (JsonSerializer.DeserializeAsync<'T>(req.Body, eventSerializationOptions))
+                .AsTask()
             |> Async.AwaitTask
             |> Async.Catch
+
         let res =
             match tryDeserialize with
             | Choice1Of2 successResult -> Some successResult
             | Choice2Of2 e ->
-                log.LogError
-                    (e, "Failed deserialization")
+                log.LogError(e, "Failed deserialization")
                 None
+
         return res
     }
 
 type HttpResponseData with
-    member this.writeJsonResponse<'T> (body: 'T) =
+
+    member this.writeJsonResponse<'T>(body: 'T) =
         match this.StatusCode with
         | HttpStatusCode.NoContent ->
             // Can't write to a 204 per specification.
             ()
         | _ ->
             this.Headers.Add("Content-Type", "application/json; charset=utf-8")
-            JsonSerializer.Serialize(body, eventSerializationOptions)
-            |> this.WriteString
+            JsonSerializer.Serialize(body, eventSerializationOptions) |> this.WriteString
+
         this
 
-    member this.writeTextResponse (body: string) =
+    member this.writeTextResponse(body: string) =
         match this.StatusCode with
         | HttpStatusCode.NoContent ->
             // Can't write to a 204 per specification.
@@ -45,16 +47,37 @@ type HttpResponseData with
         | _ ->
             this.Headers.Add("Content-Type", "text/plain; charset=utf-8")
             this.WriteString body
+
         this
 
 let private posixSpecials =
-    ['|'; '&'; ';'; '<'; '>'; '('; ')'; '$'; '`'; '\\'; '"'; '\''; ' '; '\r'; '\n';
-     '*'; '?'; '['; '#'; '~'; '='; '%' ]
+    [ '|'
+      '&'
+      ';'
+      '<'
+      '>'
+      '('
+      ')'
+      '$'
+      '`'
+      '\\'
+      '"'
+      '\''
+      ' '
+      '\r'
+      '\n'
+      '*'
+      '?'
+      '['
+      '#'
+      '~'
+      '='
+      '%' ]
 
-let private posixEscapeInQuotes =
-    ['"'; '$'; '`'; '\\']
+let private posixEscapeInQuotes = [ '"'; '$'; '`'; '\\' ]
 
 type System.String with
+
     /// Escape all shell special characters per POSIX.1-2017 by enclosing
     /// the string in quotes iff necessary.
     member this.ShellQuote() =
@@ -62,24 +85,23 @@ type System.String with
             // quote it
             let sb = StringBuilder()
             sb.Append '"' |> ignore
+
             this
-            |> String.iter
-                (fun c ->
-                    if Seq.contains c posixEscapeInQuotes then
-                        sb.Append '\\' |> ignore
-                    sb.Append c |> ignore)
+            |> String.iter (fun c ->
+                if Seq.contains c posixEscapeInQuotes then
+                    sb.Append '\\' |> ignore
+
+                sb.Append c |> ignore)
+
             sb.Append('"').ToString()
         else
             // No need for quoting
             this
 
-let private applicationJson = 
-    StringSegment "application/json"
-    |> MediaTypeHeaderValue.Parse 
+let private applicationJson =
+    StringSegment "application/json" |> MediaTypeHeaderValue.Parse
 
-let private textPlain =
-    StringSegment "text/plain"
-    |> MediaTypeHeaderValue.Parse 
+let private textPlain = StringSegment "text/plain" |> MediaTypeHeaderValue.Parse
 
 type ReturnMediaType =
     | Json
@@ -91,16 +113,15 @@ type ReturnMediaType =
 let pickReturnMediaType (req: HttpRequestData) =
     let typeMatches m =
         Option.bind
-            (fun (mt: MediaTypeHeaderValue) -> 
+            (fun (mt: MediaTypeHeaderValue) ->
                 if mt.MatchesAllTypes then Some AnyType
                 elif mt.IsSubsetOf applicationJson then Some Json
                 elif mt.IsSubsetOf textPlain then Some PlainText
-                else None) m
+                else None)
+            m
 
     let parsedMediaType strType =
-        Option.bind
-            (StringSegment >> MediaTypeHeaderValue.Parse >> Some)
-            strType
+        Option.bind (StringSegment >> MediaTypeHeaderValue.Parse >> Some) strType
 
     req.Headers.GetValues(HeaderNames.Accept)
     |> Seq.tryExactlyOne
