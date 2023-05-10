@@ -115,7 +115,6 @@ CREATE TABLE poudrierec2.portstrees (
 	name text NOT NULL,
 	method text NOT NULL,
 	url text,
-	CONSTRAINT portstrees_url_presence CHECK (((method = 'null'::text) OR (url IS NOT NULL))),
 	CONSTRAINT portstrees_pk PRIMARY KEY (id)
 );
 COMMENT ON COLUMN poudrierec2.portstrees.name IS E'The name of the ports tree';
