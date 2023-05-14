@@ -9,7 +9,7 @@ SET search_path TO poudrierec2;
 
 CREATE TABLE poudrierec2.jobconfigs (
 	id uuid NOT NULL DEFAULT gen_random_uuid(),
-	title text NOT NULL,
+	name text NOT NULL,
 	portstree uuid NOT NULL,
 	portset uuid NOT NULL,
 	jail uuid NOT NULL,

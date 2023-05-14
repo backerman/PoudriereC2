@@ -11,6 +11,7 @@ type JobAPI(repo: JobRepository) =
 
     /// Endpoint called by a worker VM requesting a job.
     [<Function("RequestJob")>]
+    [<Authorize(AuthorizationPolicy.Machine)>]
     member _.requestJob
         (
             [<HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "jobs/request")>] req: HttpRequestData,
@@ -47,6 +48,7 @@ type JobAPI(repo: JobRepository) =
 
     /// Endpoint called by a worker VM to mark job completed.
     [<Function("CompleteJob")>]
+    [<Authorize(AuthorizationPolicy.Machine)>]
     member _.completeJob
         (
             [<HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "jobs/complete")>] req: HttpRequestData,

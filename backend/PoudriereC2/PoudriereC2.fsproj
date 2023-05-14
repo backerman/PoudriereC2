@@ -67,6 +67,7 @@
     <Compile Include="ScheduleRepository.fs" />
     <Compile Include="Schedule.fs" />
     <Compile Include="Jobs.fs" />
+    <Compile Include="JobConfigs.fs" />
     <Compile Include="AADMiddleware.fs" />
     <Compile Include="Program.fs" />
     <None Include="host.json">

@@ -55,14 +55,14 @@ module ConfigTypes =
         | Delete of Options: string list
 
     /// The configuration of a build job.
+    [<CLIMutable>]
     type JobConfig =
         { Id: Guid
           Deleted: bool
-          Title: string
+          Name: string
           PortsTree: Guid
           PortSet: Guid
-          Jail: string
-          ConfigFiles: Guid list }
+          Jail: Guid }
 
     type PortsTreeMethod =
         | Null

@@ -13,7 +13,7 @@ type JailRepository(ds: NpgsqlDataSource) =
                    ORDER BY name"""
 
             use! conn = ds.OpenConnectionAsync()
-            let! jails = query |> conn.QueryAsync<Jail>
+            let! jails = conn.QueryAsync<Jail> query
             return jails
         }
 
