@@ -57,12 +57,15 @@ module ConfigTypes =
     /// The configuration of a build job.
     [<CLIMutable>]
     type JobConfig =
-        { Id: Guid
+        { Id: Guid option
           Deleted: bool
           Name: string
           PortsTree: Guid
+          PortsTreeName: string option
           PortSet: Guid
-          Jail: Guid }
+          PortSetName: string option
+          Jail: Guid
+          JailName: string option }
 
     type PortsTreeMethod =
         | Null

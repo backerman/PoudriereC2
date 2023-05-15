@@ -30,7 +30,7 @@ const navLinkGroups: INavLinkGroup[] = [
                 expandAriaLabel: 'Expand configuration section',
                 links: [
                     {
-                        name: 'Files',
+                        name: 'Configuration files',
                         url: '/config/files',
                         key: 'files',
                     },
@@ -48,6 +48,11 @@ const navLinkGroups: INavLinkGroup[] = [
                         name: 'Ports trees',
                         url: '/config/portstrees',
                         key: 'portstrees',
+                    },
+                    {
+                        name: 'Job configurations',
+                        url: '/config/jobconfigs',
+                        key: 'jobconfigs',
                     },
                 ],
                 isExpanded: false,
