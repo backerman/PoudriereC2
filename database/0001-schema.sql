@@ -158,13 +158,6 @@ COMMENT ON TABLE poudrierec2.portset_members IS E'Members of a port set';
 COMMENT ON COLUMN poudrierec2.portset_members.portname IS E'Origin (with optional flavor) to build.';
 ALTER TABLE poudrierec2.portset_members OWNER TO poudriereadmin;
 
-CREATE TABLE poudrierec2.jobconfigs_configfiles (
-	id_jobconfigs uuid NOT NULL,
-	id_configfiles uuid NOT NULL,
-	CONSTRAINT jobconfigs_configfiles_pk PRIMARY KEY (id_jobconfigs,id_configfiles)
-);
-ALTER TABLE poudrierec2.jobconfigs_configfiles OWNER TO postgres;
-
 CREATE TABLE poudrierec2.jails (
 	id uuid NOT NULL,
 	name text NOT NULL,
@@ -287,14 +280,6 @@ ON DELETE RESTRICT ON UPDATE CASCADE;
 ALTER TABLE poudrierec2.portset_members ADD CONSTRAINT portset_member_fk FOREIGN KEY (portset)
 REFERENCES poudrierec2.portsets (id) MATCH FULL
 ON DELETE CASCADE ON UPDATE NO ACTION;
-
-ALTER TABLE poudrierec2.jobconfigs_configfiles ADD CONSTRAINT jobconfigs_fk FOREIGN KEY (id_jobconfigs)
-REFERENCES poudrierec2.jobconfigs (id) MATCH FULL
-ON DELETE RESTRICT ON UPDATE CASCADE;
-
-ALTER TABLE poudrierec2.jobconfigs_configfiles ADD CONSTRAINT configfiles_fk FOREIGN KEY (id_configfiles)
-REFERENCES poudrierec2.configfiles (id) MATCH FULL
-ON DELETE RESTRICT ON UPDATE CASCADE;
 
 ALTER TABLE poudrierec2.schedules ADD CONSTRAINT schedules_jobconfig_fk FOREIGN KEY (jobconfig)
 REFERENCES poudrierec2.jobconfigs (id) MATCH FULL
