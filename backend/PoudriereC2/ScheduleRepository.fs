@@ -9,7 +9,9 @@ type ScheduleRepository(db: DB.dataContext) =
     /// Function that creates a new schedule.
     member _.ScheduleJob(sched: JobSchedule) : Async<DatabaseError> =
         async {
-            db.Poudrierec2.Schedules.Create(sched.JobId, sched.RunAt) |> ignore
+            let row = db.Poudrierec2.Schedules.Create()
+            row.Jobconfig <- sched.JobId
+            row.Runat <- sched.RunAt
             let! result = db.SubmitUpdatesAsync() |> DatabaseError.FromQuery
             return result
         }
