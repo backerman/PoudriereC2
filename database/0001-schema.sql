@@ -7,18 +7,6 @@ ALTER SCHEMA poudrierec2 OWNER TO poudriereadmin;
 -- Everything is contained in the application schema.
 SET search_path TO poudrierec2;
 
-CREATE TABLE poudrierec2.jobconfigs (
-	id uuid NOT NULL DEFAULT gen_random_uuid(),
-	name text NOT NULL,
-	portstree uuid NOT NULL,
-	portset uuid NOT NULL,
-	jail uuid NOT NULL,
-	deleted boolean NOT NULL DEFAULT false,
-	CONSTRAINT configs_pk PRIMARY KEY (id)
-);
-COMMENT ON TABLE poudrierec2.jobconfigs IS E'Run configurations';
-ALTER TABLE poudrierec2.jobconfigs OWNER TO poudriereadmin;
-
 CREATE TABLE poudrierec2.configoptions (
 	configfile uuid NOT NULL,
 	name text NOT NULL,
@@ -188,6 +176,22 @@ CREATE UNIQUE INDEX configfiles_index_undeleted_titles ON poudrierec2.configfile
 USING btree(name)
 WHERE (NOT deleted);
 
+CREATE TABLE poudrierec2.jobconfigs (
+	id uuid NOT NULL DEFAULT gen_random_uuid(),
+	name text NOT NULL,
+	portstree uuid NOT NULL REFERENCES poudrierec2.portstrees (id),
+	portset uuid NOT NULL REFERENCES poudrierec2.portsets (id),
+	jail uuid NOT NULL REFERENCES poudrierec2.jails (id),
+	deleted boolean NOT NULL DEFAULT false,
+	CONSTRAINT configs_pk PRIMARY KEY (id)
+);
+COMMENT ON TABLE poudrierec2.jobconfigs IS E'Run configurations';
+ALTER TABLE poudrierec2.jobconfigs OWNER TO poudriereadmin;
+
+CREATE UNIQUE INDEX jobconfigs_unique_undeleted_names ON poudrierec2.jobconfigs
+USING btree(name)
+WHERE (NOT deleted);
+
 CREATE TABLE poudrierec2.schedules (
 	jobconfig uuid NOT NULL,
 	runat text NOT NULL,
@@ -195,13 +199,8 @@ CREATE TABLE poudrierec2.schedules (
 );
 COMMENT ON COLUMN poudrierec2.schedules.runat IS E'Crontab string to evaluate for scheduling jobs.';
 ALTER TABLE poudrierec2.schedules ADD CONSTRAINT schedules_jobconfig_fk FOREIGN KEY (jobconfig)
-REFERENCES poudrierec2.jobconfigs (id) MATCH FULL
-ON DELETE CASCADE ON UPDATE NO ACTION;
+REFERENCES poudrierec2.jobconfigs (id) MATCH FULL;
 ALTER TABLE poudrierec2.schedules OWNER TO poudriereadmin;
-
-CREATE UNIQUE INDEX jobconfigs_unique_undeleted_names ON poudrierec2.jobconfigs
-USING btree(name)
-WHERE (NOT deleted);
 
 CREATE TABLE poudrierec2.jobruns (
 	jobconfig uuid NOT NULL,
@@ -209,7 +208,9 @@ CREATE TABLE poudrierec2.jobruns (
 	virtualmachine uuid,
 	started timestamp with time zone,
 	completed timestamp with time zone,
-	CONSTRAINT jobruns_pk PRIMARY KEY (jobconfig, requested)
+	CONSTRAINT jobruns_pk PRIMARY KEY (jobconfig, requested),
+	CONSTRAINT jobruns_completed_implies_started CHECK ((completed IS NULL) OR (started IS NOT NULL)),
+	CONSTRAINT jobruns_started_implies_vm_assigned CHECK ((started IS NULL) OR (virtualmachine IS NOT NULL))
 );
 COMMENT ON TABLE poudrierec2.jobruns IS E'Historical, current, and scheduled jobs.';
 ALTER TABLE poudrierec2.jobruns OWNER TO poudriereadmin;
@@ -220,6 +221,20 @@ REFERENCES poudrierec2.jobconfigs (id);
 CREATE INDEX jobruns_completed ON poudrierec2.jobruns (jobconfig, completed)
 WHERE (completed IS NOT NULL);
 
+CREATE VIEW poudrierec2.jobruns_current AS
+SELECT *
+FROM poudrierec2.jobruns
+WHERE virtualmachine IS NOT NULL
+AND started IS NOT NULL
+AND completed IS NULL;
+COMMENT ON VIEW poudrierec2.jobruns_current IS E'Jobs that are currently executing.';
+
+CREATE VIEW poudrierec2.jobruns_mostrecentcompleted AS
+SELECT jobconfig, max(completed) AS completed
+FROM poudrierec2.jobruns
+WHERE completed IS NOT NULL
+GROUP BY jobconfig;
+COMMENT ON VIEW poudrierec2.jobruns_current IS E'Most recent completed job for each configuration.';
 
 CREATE TABLE poudrierec2.portstree_methods (
 	name text NOT NULL,
@@ -233,18 +248,6 @@ ALTER TABLE poudrierec2.portstree_methods OWNER TO poudriereadmin;
 INSERT INTO poudrierec2.portstree_methods (name, isdefault) VALUES (E'null', DEFAULT);
 INSERT INTO poudrierec2.portstree_methods (name, isdefault) VALUES (E'git', true);
 INSERT INTO poudrierec2.portstree_methods (name, isdefault) VALUES (E'svn', DEFAULT);
-
-ALTER TABLE poudrierec2.jobconfigs ADD CONSTRAINT portstrees_fk FOREIGN KEY (portstree)
-REFERENCES poudrierec2.portstrees (id) MATCH FULL
-ON DELETE RESTRICT ON UPDATE CASCADE;
-
-ALTER TABLE poudrierec2.jobconfigs ADD CONSTRAINT portsets_fk FOREIGN KEY (portset)
-REFERENCES poudrierec2.portsets (id) MATCH FULL
-ON DELETE RESTRICT ON UPDATE CASCADE;
-
-ALTER TABLE poudrierec2.jobconfigs ADD CONSTRAINT jails_fk FOREIGN KEY (jail)
-REFERENCES poudrierec2.jails (id) MATCH FULL
-ON DELETE RESTRICT ON UPDATE CASCADE;
 
 ALTER TABLE poudrierec2.configoptions ADD CONSTRAINT configfile_id FOREIGN KEY (configfile)
 REFERENCES poudrierec2.configfiles (id) MATCH FULL
