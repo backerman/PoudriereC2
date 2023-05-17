@@ -118,7 +118,6 @@ CREATE TABLE poudrierec2.portstrees (
 	CONSTRAINT portstrees_pk PRIMARY KEY (id)
 );
 COMMENT ON COLUMN poudrierec2.portstrees.name IS E'The name of the ports tree';
-COMMENT ON CONSTRAINT portstrees_url_presence ON poudrierec2.portstrees IS E'URL must be present if "method" is not "null".';
 ALTER TABLE poudrierec2.portstrees OWNER TO poudriereadmin;
 
 CREATE FUNCTION poudrierec2.configfile_is_makeconf ()
@@ -191,18 +190,17 @@ WHERE (NOT deleted);
 
 CREATE TABLE poudrierec2.schedules (
 	jobconfig uuid NOT NULL,
-	runat text NOT NULL
-
+	runat text NOT NULL,
+	CONSTRAINT schedules_pk PRIMARY KEY (jobconfig, runat) -- rows should be unique
 );
 COMMENT ON COLUMN poudrierec2.schedules.runat IS E'Crontab string to evaluate for scheduling jobs.';
+ALTER TABLE poudrierec2.schedules ADD CONSTRAINT schedules_jobconfig_fk FOREIGN KEY (jobconfig)
+REFERENCES poudrierec2.jobconfigs (id) MATCH FULL
+ON DELETE CASCADE ON UPDATE NO ACTION;
 ALTER TABLE poudrierec2.schedules OWNER TO poudriereadmin;
 
-CREATE UNIQUE INDEX schedules_unique ON poudrierec2.schedules
-USING btree(jobconfig, runat);
-COMMENT ON INDEX poudrierec2.schedules_unique IS E'Schedule crontabs for a job must be distinct.';
-
-CREATE INDEX jobconfigs_unique_undeleted_titles ON poudrierec2.jobconfigs
-USING btree(title)
+CREATE UNIQUE INDEX jobconfigs_unique_undeleted_names ON poudrierec2.jobconfigs
+USING btree(name)
 WHERE (NOT deleted);
 
 CREATE TABLE poudrierec2.jobruns (
@@ -211,10 +209,17 @@ CREATE TABLE poudrierec2.jobruns (
 	virtualmachine uuid,
 	started timestamp with time zone,
 	completed timestamp with time zone,
-	CONSTRAINT jobruns_pk PRIMARY KEY (jobconfig,requested)
+	CONSTRAINT jobruns_pk PRIMARY KEY (jobconfig, requested)
 );
 COMMENT ON TABLE poudrierec2.jobruns IS E'Historical, current, and scheduled jobs.';
 ALTER TABLE poudrierec2.jobruns OWNER TO poudriereadmin;
+ALTER TABLE poudrierec2.jobruns ADD CONSTRAINT virtualmachines_fk FOREIGN KEY (virtualmachine)
+REFERENCES poudrierec2.virtualmachines (azuuid);
+ALTER TABLE poudrierec2.jobruns ADD CONSTRAINT jobruns_jobconfig_fk FOREIGN KEY (jobconfig)
+REFERENCES poudrierec2.jobconfigs (id);
+CREATE INDEX jobruns_completed ON poudrierec2.jobruns (jobconfig, completed)
+WHERE (completed IS NOT NULL);
+
 
 CREATE TABLE poudrierec2.portstree_methods (
 	name text NOT NULL,
@@ -280,15 +285,3 @@ ON DELETE RESTRICT ON UPDATE CASCADE;
 ALTER TABLE poudrierec2.portset_members ADD CONSTRAINT portset_member_fk FOREIGN KEY (portset)
 REFERENCES poudrierec2.portsets (id) MATCH FULL
 ON DELETE CASCADE ON UPDATE NO ACTION;
-
-ALTER TABLE poudrierec2.schedules ADD CONSTRAINT schedules_jobconfig_fk FOREIGN KEY (jobconfig)
-REFERENCES poudrierec2.jobconfigs (id) MATCH FULL
-ON DELETE CASCADE ON UPDATE NO ACTION;
-
-ALTER TABLE poudrierec2.jobruns ADD CONSTRAINT virtualmachines_fk FOREIGN KEY (virtualmachine)
-REFERENCES poudrierec2.virtualmachines (azuuid) MATCH FULL
-ON DELETE RESTRICT ON UPDATE NO ACTION;
-
-ALTER TABLE poudrierec2.jobruns ADD CONSTRAINT jobruns_jobconfig_fk FOREIGN KEY (jobconfig)
-REFERENCES poudrierec2.jobconfigs (id) MATCH FULL
-ON DELETE RESTRICT ON UPDATE NO ACTION;

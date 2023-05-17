@@ -35,14 +35,9 @@ INSERT INTO poudrierec2.packageoptions (configfile, category, package, set, unse
 VALUES
 ('7557d8a8-bba5-4c99-ba6f-2ffbebb0be63', null, null, '{"DANE", "DTRACE", "FOP", "FORTRAN"}', '{"ALSA", "ASS", "CUPS", "DBUS", "DOXYGEN"}');
 
-INSERT INTO poudrierec2.jobconfigs (id, title, portstree, portset, jail)
+INSERT INTO poudrierec2.jobconfigs (id, name, portstree, portset, jail)
 VALUES
 ('209fc7b5-18c5-40e1-a205-4ae82790621e', 'Yes it''s a job configuration!', '4e6d2feb-2a99-4bed-8545-d5462c66ba0c', '11a4e47a-e778-4499-8ad3-4ad117fe0a2f', '0a62a787-c7c1-48bc-8ba0-90d7fbe9c098');
-
-INSERT INTO poudrierec2.jobconfigs_configfiles (id_jobconfigs, id_configfiles)
-VALUES
-('209fc7b5-18c5-40e1-a205-4ae82790621e', '7557d8a8-bba5-4c99-ba6f-2ffbebb0be63'),
-('209fc7b5-18c5-40e1-a205-4ae82790621e', '97241b1e-9c04-4b58-9cdc-4c90eef35225');
 
 INSERT INTO poudrierec2.virtualmachines (azuuid, created)
 VALUES
