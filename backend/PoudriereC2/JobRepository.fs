@@ -36,10 +36,52 @@ type JobRepository(ds: NpgsqlDataSource) =
         }
 
     /// Function that gets a specific job's metadata.
-    member _.GetJobConfig(id: Guid) : Async<JobConfig option> =
+    member _.GetJobConfig(id: Guid) : Async<JobInfo option> =
         async {
-            failwith "To be implemented"
-            return None
+            use! conn = ds.OpenConnectionAsync()
+
+            let query =
+                """
+                SELECT     jc.id Id, jc.name Name, pt.id PortsTree, pt.name PortsTreeName,
+                           ps.id PortSet, ps.name PortSetName, j.id Jail, j.name JailName,
+                           pt.id Id, pt.name Name, pt.method Method, pt.url Url,
+                           ps.id Id, ps.name Name, psorigins.origins Origins,
+                           j.id Id, j.name Name, j.version Verison, j.architecture Architecture,
+                           j.method Method, j.url Url, j.path Path,
+                           configs.config_files id -- slightly hacky
+                FROM       poudrierec2.jobconfigs jc
+                LEFT JOIN  poudrierec2.portstrees pt ON jc.portstree = pt.id
+                LEFT JOIN  poudrierec2.portsets ps ON jc.portset = ps.id
+                LEFT JOIN  poudrierec2.jails j ON jc.jail = j.id,
+                LATERAL    (SELECT ARRAY(
+                           SELECT psm.portname
+                           FROM poudrierec2.portset_members psm
+                           WHERE psm.portset = ps.id) origins) psorigins,
+                LATERAL    (SELECT ARRAY(
+                            SELECT cf.id
+                            FROM poudrierec2.configfiles cf
+                            WHERE (cf.portset = ps.id OR cf.portset IS NULL)
+                            AND   (cf.portstree = pt.id OR cf.portstree IS NULL)
+                            AND   (cf.jail = j.id OR cf.jail IS NULL)
+                            AND   NOT deleted) config_files) configs
+                WHERE      jc.id = @id
+                """
+
+            let! result =
+                conn.QueryAsync<JobConfig, PortsTree, PortSet, Jail, Guid array, JobInfo>(
+                    query,
+                    (fun (jc: JobConfig) (pt: PortsTree) (ps: PortSet) (j: Jail) (cfs: Guid array) ->
+                        // FIXME some DUs need fixed dapper mapping functions
+                        { JobId = jc.Id.Value
+                          JobName = jc.Name
+                          PortSet = ps
+                          PortsTree = pt
+                          Jail = j
+                          ConfigFiles = cfs }),
+                    dict [ "id" => id ]
+                )
+
+            return result |> Seq.tryExactlyOne
         }
 
     /// Update a job configuration.
@@ -92,14 +134,17 @@ type JobRepository(ds: NpgsqlDataSource) =
         async {
             use! conn = ds.OpenConnectionAsync()
             let newGuid = Guid.NewGuid()
+
             let query =
                 """ INSERT INTO poudrierec2.jobconfigs
                     (id, name, portset, portstree, jail)
                     VALUES (@id, @name, @portset, @portstree, @jail)
                 """
+
             let! result =
-                conn.ExecuteAsync(query, {jc with Id = Some newGuid})
+                conn.ExecuteAsync(query, { jc with Id = Some newGuid })
                 |> DatabaseError.FromQuery
+
             return (result, newGuid)
         }
 

@@ -23,7 +23,7 @@ type PortSetsRepository(db: DB.dataContext) =
                         select
                             { Id = Some portsetEntity.Id
                               Name = portsetEntity.Name
-                              Origins = [] }
+                              Origins = [||] }
                 }
                 |> Seq.executeQueryAsync
 
@@ -39,7 +39,7 @@ type PortSetsRepository(db: DB.dataContext) =
                         sortBy port.Portname
                         select port.Portname
                 }
-                |> List.executeQueryAsync
+                |> Array.executeQueryAsync
 
             return ports
         }

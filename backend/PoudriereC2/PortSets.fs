@@ -111,7 +111,7 @@ type PortSetsApi(ps: PortSetsRepository) =
 
                 match createResult with
                 | (NoError, newGuid) ->
-                    let! psmResults = ps.UpdatePortSetMembers newGuid [ Add pst.Origins ]
+                    let! psmResults = ps.UpdatePortSetMembers newGuid [ Add (List.ofArray pst.Origins) ]
 
                     match psmResults with
                     | NoError ->

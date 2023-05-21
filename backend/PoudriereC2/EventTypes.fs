@@ -125,11 +125,3 @@ let serializationOptions discriminator =
 
 /// The JSON serialization options to use for types in this module.
 let eventSerializationOptions = serializationOptions EventType
-
-/// One execution (or requested execution) of a job.
-type JobHistory =
-    { JobConfig: Guid
-      VirtualMachine: Guid option
-      Requested: DateTime
-      Started: DateTime
-      Completed: DateTime }

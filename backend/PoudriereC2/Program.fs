@@ -42,6 +42,7 @@ let servicesDelegate (s: IServiceCollection) =
         .AddSingleton<PortSetsRepository>()
         .AddSingleton<JailRepository>()
         .AddSingleton<FreeBSDInfo>()
+        .AddSingleton<ScheduleRepository>()
     |> ignore
 
 [<EntryPoint>]
@@ -63,5 +64,6 @@ let main argv =
     // Set up Dapper type mappers.
     SqlMapper.AddTypeHandler(JailMethodTypeHandler())
     SqlMapper.AddTypeHandler(JailMethodOptionTypeHandler())
+    SqlMapper.AddTypeHandler(PortsTreeMethodTypeHandler())
     host.Run()
     0

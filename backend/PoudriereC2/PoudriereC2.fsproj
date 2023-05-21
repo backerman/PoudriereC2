@@ -15,6 +15,7 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Update="FSharp.Core" Version="7.0.200" />
     <PackageReference Include="Azure.Identity" Version="1.9.0" />
+    <PackageReference Include="Cronos" Version="0.7.1" />
     <PackageReference Include="Dapper.FSharp" Version="4.5.0" />
     <PackageReference Include="FSharp.Control.FusionTasks" Version="2.6.0" />
     <PackageReference Include="FSharp.Data" Version="6.2.0" />
@@ -42,7 +43,7 @@
     <ItemGroup>
       <DevLocalSettings Include="local.settings-dev.json" />
     </ItemGroup>
-    <Copy Condition="!Exists('local.settings.json')" SourceFiles="@(DevLocalSettings)" DestinationFiles="@(DevLocalSettings-&gt;'local.settings.json')">
+    <Copy Condition="!Exists('local.settings.json')" SourceFiles="@(DevLocalSettings)" DestinationFiles="@(DevLocalSettings->'local.settings.json')">
     </Copy>
   </Target>
   <ItemGroup>

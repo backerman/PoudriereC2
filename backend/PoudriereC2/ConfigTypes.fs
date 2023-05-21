@@ -7,8 +7,19 @@ open Data
 
 [<AutoOpen>]
 module ConfigTypes =
+    open Npgsql
+
     /// Run a specific job with a specific crontab schedule.
-    type JobSchedule = { JobId: Guid; RunAt: string }
+    [<CLIMutable>]
+    type JobSchedule =
+        {
+            Name: string option
+            JobId: Guid
+            /// The last time this job was started and successfully completed;
+            /// will only be populated if provided by GetSchedulableJobs.
+            LastFinished: DateTimeOffset option
+            RunAt: string
+        }
 
     type PackageOptions =
         { Id: int
@@ -77,6 +88,7 @@ module ConfigTypes =
     /// A repository of port definitions that can be built.
     /// Id may only be None when creating a new ports tree, where it will be
     /// ignored.
+    [<CLIMutable>]
     type PortsTree =
         { Id: Guid option
           Name: string
@@ -86,10 +98,11 @@ module ConfigTypes =
     /// A set of ports to be built.
     /// Id may only be None when creating a new port set, where it will be
     /// ignored.
+    [<CLIMutable>]
     type PortSet =
         { Id: Guid option
           Name: string
-          Origins: string list }
+          Origins: string array }
 
     /// Command to add or delete ports from a port set
     type PortSetUpdate =
@@ -120,14 +133,24 @@ module ConfigTypes =
           Url: string option
           Path: string option }
 
-    type AutoTypeHandler<'T>() =
+    /// A configuration to send to the worker node.
+    [<CLIMutable>]
+    type JobInfo =
+        { JobId: Guid
+          JobName: string
+          PortsTree: PortsTree
+          PortSet: PortSet
+          Jail: Jail
+          ConfigFiles: Guid array }
+
+    type UnionAutoTypeHandler<'T>() =
         inherit SqlMapper.TypeHandler<'T>()
 
         override _.SetValue(param, value) = param.Value <- UnionToString value
 
         override _.Parse(value) = value |> string |> FromString<'T>
 
-    type AutoTypeHandlerOption<'T>() =
+    type UnionOptionAutoTypeHandler<'T>() =
         inherit SqlMapper.TypeHandler<'T option>()
 
         override _.SetValue(param, value) =
@@ -140,5 +163,6 @@ module ConfigTypes =
             | null -> None
             | _ -> Some(value |> string |> FromString<'T>)
 
-    type JailMethodTypeHandler = AutoTypeHandler<JailMethod>
-    type JailMethodOptionTypeHandler = AutoTypeHandlerOption<JailMethod>
+    type JailMethodTypeHandler = UnionAutoTypeHandler<JailMethod>
+    type JailMethodOptionTypeHandler = UnionOptionAutoTypeHandler<JailMethod>
+    type PortsTreeMethodTypeHandler = UnionAutoTypeHandler<PortsTreeMethod>

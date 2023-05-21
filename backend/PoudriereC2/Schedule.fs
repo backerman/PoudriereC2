@@ -1,20 +1,40 @@
 namespace Facefault.PoudriereC2
 
+open Cronos
 open Facefault.PoudriereC2.Serialization
 open Microsoft.Azure.Functions.Worker
 open Microsoft.Azure.Functions.Worker.Http
+open System
+open System.Net
 
-type ScheduleApi (jobs: JobRepository, sched: ScheduleRepository) =
+type ScheduleApi(jobs: JobRepository, sched: ScheduleRepository) =
+
+    let isJobSchedulable (job: JobSchedule) =
+        match job.LastFinished with
+        | None -> true
+        | Some lastFinishedTime ->
+            let cronExpression = Cronos.CronExpression.Parse(job.RunAt)
+
+            let nextRunTime =
+                cronExpression.GetNextOccurrence(lastFinishedTime, TimeZoneInfo.Utc)
+
+            match nextRunTime.HasValue with
+            | false -> false
+            | true -> nextRunTime.Value > DateTimeOffset.UtcNow
 
     /// Schedule a job.
     [<Function("ScheduleJob")>]
+    [<Authorize(AuthorizationPolicy.Administrator)>]
     member _.scheduleJob
-        ([<HttpTrigger(AuthorizationLevel.Anonymous, "put", Route="jobs/schedule")>]
-         req: HttpRequestData, execContext: FunctionContext) =
+        (
+            [<HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "jobs")>] req: HttpRequestData,
+            execContext: FunctionContext
+        ) =
         async {
             let log = execContext.GetLogger("ScheduleJob")
             let response = req.CreateResponse()
             let! maybeSchedule = tryDeserialize<JobSchedule> req log
+
             match maybeSchedule with
             | Some jobSchedule ->
                 let! result = sched.ScheduleJob jobSchedule
@@ -22,7 +42,41 @@ type ScheduleApi (jobs: JobRepository, sched: ScheduleRepository) =
                 response.StatusCode <- handled.httpCode
                 response.writeJsonResponse handled.result |> ignore
             | None ->
-                let responseData : FunctionResult = Error "Invalid or nonexistent payload"
+                let responseData: FunctionResult = Error "Invalid or nonexistent payload"
                 response.writeJsonResponse responseData |> ignore
+
             return response
-        } |> Async.StartAsTask
+        }
+        |> Async.StartAsTask
+
+    /// Get a job for the calling virtual machine.
+    [<Function("GetNextJob")>]
+    [<Authorize(AuthorizationPolicy.Machine)>]
+    member _.getNextJob
+        (
+            [<HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "jobs/mine")>] req: HttpRequestData,
+            execContext: FunctionContext
+        ) =
+        async {
+            let log = execContext.GetLogger("GetNextJob")
+            let response = req.CreateResponse()
+            let! schedulableJobs = sched.GetSchedulableJobs()
+            let needToBeRun = schedulableJobs |> List.filter isJobSchedulable
+            // TODO: Something based on the specific machine.
+            let job = needToBeRun |> List.tryHead
+
+            match job with
+            | None -> response.StatusCode <- HttpStatusCode.NoContent
+            | Some job ->
+                let! result = jobs.GetJobConfig job.JobId
+
+                match result with
+                | None ->
+                    response.StatusCode <- HttpStatusCode.InternalServerError
+                    Error "Unable to get job config" |> response.writeJsonResponse |> ignore
+                | Some jobConfig ->
+                    response.writeJsonResponse jobConfig |> ignore
+
+            return response
+        }
+        |> Async.StartAsTask
