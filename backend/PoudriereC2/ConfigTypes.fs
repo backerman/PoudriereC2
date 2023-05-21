@@ -102,7 +102,7 @@ module ConfigTypes =
     type PortSet =
         { Id: Guid option
           Name: string
-          Origins: string array }
+          Origins: string[] }
 
     /// Command to add or delete ports from a port set
     type PortSetUpdate =
@@ -141,7 +141,7 @@ module ConfigTypes =
           PortsTree: PortsTree
           PortSet: PortSet
           Jail: Jail
-          ConfigFiles: Guid array }
+          ConfigFiles: Guid[] }
 
     type UnionAutoTypeHandler<'T>() =
         inherit SqlMapper.TypeHandler<'T>()

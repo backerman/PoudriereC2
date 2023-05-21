@@ -68,9 +68,9 @@ type JobRepository(ds: NpgsqlDataSource) =
                 """
 
             let! result =
-                conn.QueryAsync<JobConfig, PortsTree, PortSet, Jail, Guid array, JobInfo>(
+                conn.QueryAsync<JobConfig, PortsTree, PortSet, Jail, Guid[], JobInfo>(
                     query,
-                    (fun (jc: JobConfig) (pt: PortsTree) (ps: PortSet) (j: Jail) (cfs: Guid array) ->
+                    (fun (jc: JobConfig) (pt: PortsTree) (ps: PortSet) (j: Jail) (cfs: Guid[]) ->
                         // FIXME some DUs need fixed dapper mapping functions
                         { JobId = jc.Id.Value
                           JobName = jc.Name
