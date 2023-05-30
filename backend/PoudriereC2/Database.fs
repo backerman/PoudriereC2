@@ -7,7 +7,6 @@ open System
 open Microsoft.Extensions.Logging
 open System.Net
 open Azure.Core
-open Dapper
 
 [<Literal>]
 let ConnectionString = Env.PostgresConnection.Value
