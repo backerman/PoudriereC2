@@ -46,7 +46,7 @@ type JobRepository(ds: NpgsqlDataSource) =
                            ps.id PortSet, ps.name PortSetName, j.id Jail, j.name JailName,
                            pt.id Id, pt.name Name, pt.method Method, pt.url Url,
                            ps.id Id, ps.name Name, psorigins.origins Origins,
-                           j.id Id, j.name Name, j.version Verison, j.architecture Architecture,
+                           j.id Id, j.name Name, j.version Version, j.architecture Architecture,
                            j.method Method, j.url Url, j.path Path,
                            configs.config_files id -- slightly hacky
                 FROM       poudrierec2.jobconfigs jc

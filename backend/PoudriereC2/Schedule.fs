@@ -4,6 +4,7 @@ open Cronos
 open Facefault.PoudriereC2.Serialization
 open Microsoft.Azure.Functions.Worker
 open Microsoft.Azure.Functions.Worker.Http
+open Microsoft.Extensions.Logging
 open System
 open System.Net
 
@@ -66,15 +67,19 @@ type ScheduleApi(jobs: JobRepository, sched: ScheduleRepository) =
             let job = needToBeRun |> List.tryHead
 
             match job with
-            | None -> response.StatusCode <- HttpStatusCode.NoContent
+            | None ->
+                log.LogInformation("No jobs available")
+                response.StatusCode <- HttpStatusCode.NoContent
             | Some job ->
                 let! result = jobs.GetJobConfig job.JobId
 
                 match result with
                 | None ->
+                    log.LogError("Unable to get job configuration ID {JobId}", job.JobId)
                     response.StatusCode <- HttpStatusCode.InternalServerError
                     Error "Unable to get job config" |> response.writeJsonResponse |> ignore
                 | Some jobConfig ->
+                    log.LogInformation("Returning job {JobId}: {JobInfo}", job.JobId, jobConfig)
                     response.writeJsonResponse jobConfig |> ignore
 
             return response

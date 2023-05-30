@@ -5,11 +5,13 @@
     <GenerateProgramFile>false</GenerateProgramFile>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="DatabaseSetup.fs" />
     <Compile Include="RequestData.fs" />
     <Compile Include="Serialization.fs" />
     <Compile Include="MediaType.fs" />
     <Compile Include="TypeConversion.fs" />
     <Compile Include="TestJson.fs" />
+    <Compile Include="TestJobRepository.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
