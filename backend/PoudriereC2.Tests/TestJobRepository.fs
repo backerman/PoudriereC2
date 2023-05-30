@@ -25,7 +25,7 @@ type JobRepositoryTests() =
     member _.TestGetJobConfig() =
         async {
             let ds = testScope.DataSource
-            let repo = new JobRepository(ds)
+            let repo = JobRepository(ds)
             let! (err, jobConfigs) = repo.GetJobConfigs()
             err |> should equal NoError
             Array.ofSeq jobConfigs |> should haveLength 1
