@@ -179,6 +179,7 @@ WHERE (NOT deleted);
 CREATE TABLE poudrierec2.jobconfigs (
 	id uuid NOT NULL DEFAULT gen_random_uuid(),
 	name text NOT NULL,
+	poudriereconf uuid NOT NULL REFERENCES poudrierec2.configfiles (id),
 	portstree uuid NOT NULL REFERENCES poudrierec2.portstrees (id),
 	portset uuid NOT NULL REFERENCES poudrierec2.portsets (id),
 	jail uuid NOT NULL REFERENCES poudrierec2.jails (id),
@@ -191,6 +192,30 @@ ALTER TABLE poudrierec2.jobconfigs OWNER TO poudriereadmin;
 CREATE UNIQUE INDEX jobconfigs_unique_undeleted_names ON poudrierec2.jobconfigs
 USING btree(name)
 WHERE (NOT deleted);
+
+CREATE FUNCTION poudrierec2.jobconfig_poudriereconf_is_one ()
+	RETURNS trigger
+	LANGUAGE plpgsql
+	PARALLEL SAFE
+	AS $$
+DECLARE
+  configType poudrierec2.configfiles.configtype%TYPE;
+BEGIN
+SELECT cf.configtype
+INTO configType
+FROM poudrierec2.configfiles cf
+WHERE cf.id = NEW.poudriereconf;
+IF configType <> 'poudriereconf' THEN
+  RAISE EXCEPTION 'poudriere.conf must be a poudriere.conf';
+END IF;
+RETURN NEW;
+END
+$$;
+
+COMMENT ON FUNCTION poudrierec2.jobconfig_poudriereconf_is_one() IS 'Validate that this job config''s poudriere.conf is a poudriere.conf.';
+ALTER FUNCTION poudrierec2.jobconfig_poudriereconf_is_one() OWNER TO poudriereadmin;
+CREATE TRIGGER jobconfig_pc_validate BEFORE INSERT OR UPDATE ON poudrierec2.jobconfigs
+	FOR EACH ROW EXECUTE FUNCTION poudrierec2.jobconfig_poudriereconf_is_one();
 
 CREATE TABLE poudrierec2.schedules (
 	jobconfig uuid NOT NULL,
