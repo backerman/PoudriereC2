@@ -39,7 +39,7 @@ type JobRepository(ds: NpgsqlDataSource) =
     member _.GetJobConfig(id: Guid) : Async<JobInfo option> =
         async {
             use! conn = ds.OpenConnectionAsync()
-
+            // FIXME need to add a separate field for the poudriere.conf file
             let query =
                 """
                 SELECT     jc.id Id, jc.name Name, pt.id PortsTree, pt.name PortsTreeName,
@@ -63,6 +63,7 @@ type JobRepository(ds: NpgsqlDataSource) =
                             WHERE (cf.portset = ps.id OR cf.portset IS NULL)
                             AND   (cf.portstree = pt.id OR cf.portstree IS NULL)
                             AND   (cf.jail = j.id OR cf.jail IS NULL)
+                            AND   (cf.configtype <> 'poudriereconf')
                             AND   NOT deleted) config_files) configs
                 WHERE      jc.id = @id
                 """
