@@ -6,6 +6,7 @@ open Npgsql
 open Facefault.PoudriereC2
 open System
 open System.IO
+open System.Threading.Tasks
 
 // Inspired by https://blog.sanderaernouts.com/database-testing-with-nunit
 // but required a ton of changes for F#.
@@ -93,8 +94,28 @@ type TestScope() =
             ()
         }
 
+    member _.dropDatabaseAsync() =
+        async {
+            let cmd =
+                dbCreateDropDataSource.CreateCommand("DROP DATABASE IF EXISTS " + database.Name)
+
+            do! workDataSource.DisposeAsync()
+            let! _ = cmd.ExecuteNonQueryAsync()
+            ()
+        }
+
     interface IDisposable with
-        member _.Dispose() = (database :> IDisposable).Dispose()
+        member this.Dispose() =
+            this.dropDatabaseAsync () |> Async.RunSynchronously
+            (database :> IDisposable).Dispose()
+
+    interface IAsyncDisposable with
+        member this.DisposeAsync() =
+            task {
+                do! this.dropDatabaseAsync ()
+                (database :> IDisposable).Dispose()
+            }
+            |> ValueTask
 
 [<SetUpFixture>]
 type DapperSetup() =
