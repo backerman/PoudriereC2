@@ -1,4 +1,5 @@
-import {IComboBox, IComboBoxOption, PanelType, Separator, TextField } from "@fluentui/react";
+import { IComboBox, IComboBoxOption, TextField } from "@fluentui/react";
+import { useBoolean } from '@fluentui/react-hooks';
 import { useEffect, useReducer } from "react";
 import { Editor } from "@/components/Editor";
 import { ComboBoxWithFetcher } from "./ComboBoxWithFetcher";
@@ -6,6 +7,7 @@ import { PortSet } from "@/models/portsets";
 import { PortsTree } from "@/models/portstrees";
 import { Jail } from "@/models/jails";
 import { JobConfig } from "@/models/jobconfigs";
+import { ConfigFileMetadata } from "@/models/configs";
 
 export interface JobConfigEditorProps {
     isOpen: boolean
@@ -36,23 +38,26 @@ function updateMetadataState<K extends keyof JobConfig>(state: JobConfig,
 };
 
 export function JobConfigEditor(props: JobConfigEditorProps): JSX.Element {
-
+    let [submitted, { setFalse: clearSubmitted, setTrue: setSubmitted }] = useBoolean(false);
     let [jobConfig, setJobConfig] =
         useReducer(updateMetadataState, {} as JobConfig);
 
     // Reset state when props change.
     useEffect(() => {
         setJobConfig(props.record);
-    }, [props.record])
+        clearSubmitted();
+    }, [props.record, clearSubmitted])
 
     const onTextChange = (fieldName: keyof JobConfig) => {
         return (event: React.FormEvent<any>, newValue?: string) => {
+            clearSubmitted();
             setJobConfig({ field: fieldName, value: (newValue || '') });
         }
     };
 
     const onComboBoxChange = (fieldName: keyof JobConfig) => {
         return (event: React.FormEvent<IComboBox>, option?: IComboBoxOption) => {
+            clearSubmitted();
             let newVal: string | undefined;
             if (option === undefined || option.key === undefined || option.key === '') {
                 newVal = undefined;
@@ -62,6 +67,9 @@ export function JobConfigEditor(props: JobConfigEditorProps): JSX.Element {
             setJobConfig({ field: fieldName, value: newVal });
         }
     };
+
+    const errorMessage = (fieldName: keyof JobConfig, fieldNameHumanReadable: string = fieldName.charAt(0).toLocaleUpperCase() + fieldName.slice(1)) =>
+        submitted && (jobConfig[fieldName] === undefined || jobConfig[fieldName] === '') ? `${fieldNameHumanReadable} is required` : undefined
 
     return (
         <Editor
@@ -76,19 +84,55 @@ export function JobConfigEditor(props: JobConfigEditorProps): JSX.Element {
                 }
             }
             onSubmit={() => {
-                return props.onSubmit ? props.onSubmit(jobConfig) : null
+                setSubmitted();
+                if (jobConfig.name === undefined || jobConfig.name === '') {
+                    return;
+                }
+                if (jobConfig.jail === undefined || jobConfig.jail === '') {
+                    return;
+                }
+                if (jobConfig.portSet === undefined || jobConfig.portSet === '') {
+                    return;
+                }
+                if (jobConfig.portsTree === undefined || jobConfig.portsTree === '') {
+                    return;
+                }
+                if (jobConfig.poudriereConf === undefined || jobConfig.poudriereConf === '') {
+                    return;
+                }
+                return props.onSubmit ? props.onSubmit(jobConfig) : null;
             }}>
             <TextField
                 label="GUID"
+                required={true}
                 value={jobConfig.id || ''}
                 readOnly={true} />
             <TextField
                 label="Name"
+                required={true}
+                errorMessage={errorMessage("name")}
                 data-testid="config-file-name"
                 value={jobConfig.name || ''}
                 onChange={onTextChange("name")} />
+            <ComboBoxWithFetcher<ConfigFileMetadata>
+                dataUrl="/api/configurationfiles"
+                filter={(item) => item.fileType === "poudriereconf"}
+                required={true}
+                errorMessage={errorMessage("poudriereConf", "poudriere.conf")}
+                label="poudriere.conf"
+                selectedKey={jobConfig.poudriereConf || ''}
+                onChange={onComboBoxChange('poudriereConf')}
+                onInputValueChange={(val: string) => {
+                    if (val === '') {
+                        // Text box blanked; clear jail selection.
+                        setJobConfig({ field: "poudriereConf", value: undefined });
+                    }
+                }}
+            />
             <ComboBoxWithFetcher<Jail>
                 dataUrl="/api/jails"
+                required={true}
+                errorMessage={errorMessage("jail")}
                 label="Jail"
                 selectedKey={jobConfig.jail || ''}
                 onChange={onComboBoxChange('jail')}
@@ -101,6 +145,8 @@ export function JobConfigEditor(props: JobConfigEditorProps): JSX.Element {
             />
             <ComboBoxWithFetcher<PortSet>
                 dataUrl="/api/portsets"
+                required={true}
+                errorMessage={errorMessage("portSet", "Port set")}
                 label="Port set"
                 onChange={onComboBoxChange('portSet')}
                 selectedKey={jobConfig.portSet || null}
@@ -113,6 +159,8 @@ export function JobConfigEditor(props: JobConfigEditorProps): JSX.Element {
             />
             <ComboBoxWithFetcher<PortsTree>
                 dataUrl="/api/portstrees"
+                required={true}
+                errorMessage={errorMessage("portsTree", "Ports tree")}
                 label="Ports tree"
                 onChange={onComboBoxChange('portsTree')}
                 selectedKey={jobConfig.portsTree || null}
@@ -123,6 +171,5 @@ export function JobConfigEditor(props: JobConfigEditorProps): JSX.Element {
                     }
                 }}
             />
-            <Separator />
         </Editor>)
 };

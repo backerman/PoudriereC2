@@ -21,11 +21,23 @@ const columns: IColumn[] = [
         isSorted: true,
         isSortedDescending: false,
         minWidth: 100,
-        maxWidth: 1500,
+        maxWidth: 1000,
         isResizable: true,
         targetWidthProportion: 0.2,
         isCollapsible: false,
         isRowHeader: true,
+    },
+    {
+        key: 'poudriereConf',
+        name: 'poudriere.conf',
+        fieldName: 'poudriereConf',
+        minWidth: 250,
+        maxWidth: 500,
+        isResizable: true,
+        targetWidthProportion: 0.2,
+        isCollapsible: true,
+        onRender: (item: JobConfig) =>
+            item.poudriereConfName
     },
     {
         key: 'portSet',

@@ -8,13 +8,14 @@ export interface ComboBoxWithFetcherItem {
     name: string;
 }
 
-export interface ComboBoxWithFetcherProps extends Omit<IComboBoxProps, "options"> {
+export interface ComboBoxWithFetcherProps<T> extends Omit<IComboBoxProps, "options"> {
     dataUrl: string;
+    filter?: (item: T) => boolean;
     noResultsMessage?: string;
 }
 
-export function ComboBoxWithFetcher<T extends ComboBoxWithFetcherItem | string>(props: ComboBoxWithFetcherProps): JSX.Element {
-    const { dataUrl, noResultsMessage } = props;
+export function ComboBoxWithFetcher<T extends ComboBoxWithFetcherItem | string>(props: ComboBoxWithFetcherProps<T>): JSX.Element {
+    const { dataUrl, filter, noResultsMessage } = props;
     const { fetcher, keyIfTokenReady } = useAzureFunctionsOAuth();
     const { data, error, isLoading } = useSWR<T[]>(keyIfTokenReady(dataUrl), fetcher);
     const placeholder = useCallback(() => {
@@ -32,14 +33,14 @@ export function ComboBoxWithFetcher<T extends ComboBoxWithFetcherItem | string>(
                 return {
                     key: item,
                     text: item,
-                    hidden: false,
+                    hidden: filter && !filter(item),
                     itemType: SelectableOptionMenuItemType.Normal
                 }
             } else {
                 return {
                     key: item.id || 'undefined',
                     text: item.name,
-                    hidden: item.id === undefined,
+                    hidden: item.id === undefined || (filter && !filter(item)),
                     itemType: SelectableOptionMenuItemType.Normal
                 }
             }

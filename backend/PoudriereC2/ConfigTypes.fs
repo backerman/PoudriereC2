@@ -72,6 +72,7 @@ module ConfigTypes =
           Deleted: bool
           Name: string
           PoudriereConf: Guid
+          PoudriereConfName: string option
           PortsTree: Guid
           PortsTreeName: string option
           PortSet: Guid

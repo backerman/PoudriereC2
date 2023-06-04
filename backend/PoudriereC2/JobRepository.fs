@@ -17,6 +17,7 @@ type JobRepository(ds: NpgsqlDataSource) =
                 """
                 SELECT jc.id id, jc.name name, jc.deleted deleted,
                        jc.poudriereconf poudriereconf,
+                       cf.name poudriereconfname,
                        ps.id portset, ps.name portsetname,
                        pt.id portstree, pt.name portstreename,
                        j.id jail, j.name jailname
@@ -24,6 +25,7 @@ type JobRepository(ds: NpgsqlDataSource) =
                 JOIN poudrierec2.portsets ps ON jc.portset = ps.id
                 JOIN poudrierec2.portstrees pt ON jc.portstree = pt.id
                 JOIN poudrierec2.jails j ON jc.jail = j.id
+                JOIN poudrierec2.configfiles cf ON jc.poudriereconf = cf.id
                 ORDER BY name, id
                 """
                 |> conn.QueryAsync<JobConfig>
@@ -43,7 +45,8 @@ type JobRepository(ds: NpgsqlDataSource) =
 
             let query =
                 """
-                SELECT     jc.id Id, jc.name Name, pt.id PortsTree, pt.name PortsTreeName,
+                SELECT     jc.id Id, jc.name Name, jc.poudriereconf PoudriereConf, pc.name PoudriereConfName,
+                           pt.id PortsTree, pt.name PortsTreeName,
                            ps.id PortSet, ps.name PortSetName, j.id Jail, j.name JailName,
                            pt.id Id, pt.name Name, pt.method Method, pt.url Url,
                            ps.id Id, ps.name Name, psorigins.origins Origins,
@@ -51,6 +54,7 @@ type JobRepository(ds: NpgsqlDataSource) =
                            j.method Method, j.url Url, j.path Path,
                            configs.config_files id -- slightly hacky
                 FROM       poudrierec2.jobconfigs jc
+                LEFT JOIN  poudrierec2.configfiles pc ON jc.poudriereconf = pc.id
                 LEFT JOIN  poudrierec2.portstrees pt ON jc.portstree = pt.id
                 LEFT JOIN  poudrierec2.portsets ps ON jc.portset = ps.id
                 LEFT JOIN  poudrierec2.jails j ON jc.jail = j.id,
@@ -96,8 +100,9 @@ type JobRepository(ds: NpgsqlDataSource) =
             let query =
                 """
                 UPDATE poudrierec2.jobconfigs
-                SET name = @name, portset = @portset, portstree = @portstree, jail = @jail
-                WHERE id = @id
+                SET    name = @name, portset = @portset, portstree = @portstree, jail = @jail,
+                       poudriereconf = @poudriereconf
+                WHERE  id = @id
                 """
 
             let! result = conn.ExecuteAsync(query, jc) |> Async.AwaitTask |> Async.Catch
