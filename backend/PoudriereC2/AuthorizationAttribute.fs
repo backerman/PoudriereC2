@@ -3,14 +3,14 @@ namespace Facefault.PoudriereC2
 type AuthorizationPolicy =
     | Administrator = 'A'
     | Viewer = 'V'
-    | Machine = 'M'
+    | WorkerNode = 'N'
 
 type AuthorizationClaim =
     static member RequiredClaim(policy: AuthorizationPolicy) =
         match policy with
         | AuthorizationPolicy.Administrator -> "PoudriereC2.Administrator"
         | AuthorizationPolicy.Viewer -> "PoudriereC2.Viewer"
-        | AuthorizationPolicy.Machine -> "PoudriereC2.Machine"
+        | AuthorizationPolicy.WorkerNode -> "PoudriereC2.WorkerNode"
         | _ -> failwith "Invalid authorization policy."
 
     static member PolicyIsSatisfiedBy

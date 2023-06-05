@@ -52,7 +52,7 @@ type ScheduleApi(jobs: JobRepository, sched: ScheduleRepository) =
 
     /// Get a job for the calling virtual machine.
     [<Function("GetNextJob")>]
-    [<Authorize(AuthorizationPolicy.Machine)>]
+    [<Authorize(AuthorizationPolicy.WorkerNode)>]
     member _.getNextJob
         (
             [<HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "jobs/mine")>] req: HttpRequestData,

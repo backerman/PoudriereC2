@@ -124,7 +124,7 @@ type ConfigFileApi(cfg: ConfigRepository) =
         |> Async.StartAsTask
 
     [<Function("GenerateConfigFile")>]
-    [<Authorize(AuthorizationPolicy.Machine)>]
+    [<Authorize(AuthorizationPolicy.WorkerNode)>]
     member _.generateConfigFile
         // fsharplint:disable-next-line TypedItemSpacing
         ([<HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "configurationfiles/{configFile:guid}")>] req:
