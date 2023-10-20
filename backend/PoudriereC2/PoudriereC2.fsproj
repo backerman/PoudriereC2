@@ -18,7 +18,7 @@
     <PackageReference Include="Cronos" Version="0.7.1" />
     <PackageReference Include="Dapper.FSharp" Version="4.7.0" />
     <PackageReference Include="FSharp.Control.FusionTasks" Version="2.6.0" />
-    <PackageReference Include="FSharp.Data" Version="6.2.0" />
+    <PackageReference Include="FSharp.Data" Version="6.3.0" />
     <PackageReference Include="FSharp.Data.LiteralProviders" Version="1.0.3" />
     <PackageReference Include="FSharp.SystemTextJson" Version="1.2.42" />
     <!-- out of process now -->
