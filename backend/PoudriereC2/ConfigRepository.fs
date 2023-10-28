@@ -9,12 +9,12 @@ open System.Linq
 
 type ConfigRepository(db: DB.dataContext) =
 
-    member _.GetConfigFileOptions(configFile: string) =
+    member _.GetConfigFileOptions(configFile: Guid) =
         async {
             let! opts =
                 query {
                     for configOption in db.Poudrierec2.Configoptions do
-                        where (configOption.Configfile = Guid configFile)
+                        where (configOption.Configfile = configFile)
                         sortBy configOption.Name
 
                         select
@@ -26,12 +26,12 @@ type ConfigRepository(db: DB.dataContext) =
             return opts
         }
 
-    member _.GetConfigFiles(?configFile: string) =
+    member _.GetConfigFiles(?configFile: Guid) =
         async {
             let filterQuery =
                 match configFile with
                 | None -> <@ fun (_: DB.dataContext.``poudrierec2.configfilesEntity``) -> true @>
-                | Some f -> <@ fun (file: DB.dataContext.``poudrierec2.configfilesEntity``) -> file.Id = Guid f @>
+                | Some f -> <@ fun (file: DB.dataContext.``poudrierec2.configfilesEntity``) -> file.Id = f @>
 
             let! configFiles =
                 query {
