@@ -55,7 +55,7 @@ type ConfigFileOptionsApi(cfg: ConfigRepository) =
         ([<HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "configurationfiles/{configFile:guid}/options")>] req:
             HttpRequestData)
         (execContext: FunctionContext)
-        (configFile: string)
+        (configFile: Guid)
         =
         async {
             let log = execContext.GetLogger("GetConfigFileOptions")

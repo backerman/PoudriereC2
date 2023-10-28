@@ -4,6 +4,7 @@ open Facefault.PoudriereC2.Database
 open Facefault.PoudriereC2.Serialization
 open Microsoft.Azure.Functions.Worker
 open Microsoft.Azure.Functions.Worker.Http
+open Microsoft.Extensions.Logging
 open System
 open System.Net
 open FSharp.Data.Sql
@@ -140,10 +141,12 @@ type ConfigFileApi(cfg: ConfigRepository) =
             | Some AnyType
             | Some PlainText
             | None ->
-                // let! configMetadataSeq = cfg.GetConfigFiles configFile
-                let! configOptions = configFile.ToString() |> cfg.GetConfigFileOptions
+                let! metadataSeq = cfg.GetConfigFiles configFile
+                let metadata = metadataSeq |> Seq.exactlyOne
+                let! configOptions = cfg.GetConfigFileOptions configFile
                 response.StatusCode <- HttpStatusCode.OK
-
+                log.LogInformation("Retrieving configuration file {ConfigFile} ({ConfigFileGuid})", metadata.Name, configFile);
+                response.Headers.Add("Content-Disposition", $"attachment; filename=\"{metadata.Name}\"")
                 configOptions
                 |> Seq.map (fun opt -> $"{opt.Name}={opt.Value.ShellQuote()}")
                 |> String.concat Environment.NewLine
