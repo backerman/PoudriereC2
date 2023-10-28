@@ -15,7 +15,7 @@
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Update="FSharp.Core" Version="7.0.400" />
+    <PackageReference Update="FSharp.Core" Version="7.0.401" />
     <PackageReference Include="AutoFixture.AutoFoq" Version="4.18.0" />
     <PackageReference Include="Foq" Version="1.8.0" />
     <PackageReference Include="FsUnit" Version="5.4.0" />
