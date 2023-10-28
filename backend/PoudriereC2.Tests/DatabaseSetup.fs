@@ -35,7 +35,7 @@ type Database(ctx: TestContext) =
         member _.Dispose() = ()
 
 type TestScope() =
-    let mutable isInitalized: bool = false
+    let mutable isInitialized: bool = false
     let database = new Database(TestContext.CurrentContext)
 
     let dbCreateDropDataSource =
@@ -48,7 +48,7 @@ type TestScope() =
 
     // The NpgsqlDataSource to use for tests within this scope.
     member _.DataSource =
-        if isInitalized then
+        if isInitialized then
             workDataSource
         else
             dbCreateDropDataSource
@@ -84,7 +84,7 @@ type TestScope() =
             let schemaFiles = System.IO.Directory.GetFiles(schemaFileDir, "*.sql")
             let sampleFiles = System.IO.Directory.GetFiles(sampleFileDir, "*.sql")
             // Must be set here so that the correct DataSource is used.
-            isInitalized <- true
+            isInitialized <- true
 
             let! _ =
                 Array.append schemaFiles sampleFiles
