@@ -7,6 +7,7 @@ open System
 open System.Text.Json
 open System.IO
 
+/// Convert a JSON string to a minimized version.
 let canonicalizeJson (json: string) =
     use stream = new MemoryStream()
     use writer = new Utf8JsonWriter(stream)
@@ -105,8 +106,17 @@ type JsonTests() =
 
         let expected =
             """
-            {"id":"12345678-9abc-def0-1234-56789abcdef0","name":"test","portableName":"test","origins":["www/apache24","security/tailscale"]}
+            {
+                "id": "12345678-9abc-def0-1234-56789abcdef0",
+                "name": "test",
+                "portableName": "test",
+                "origins": [
+                    "www/apache24",
+                    "security/tailscale"
+                ]
+            }
             """
+            |> canonicalizeJson
 
         JsonSerializer.Serialize(somePortSet, eventSerializationOptions)
         |> should equal (expected.Trim())
@@ -120,7 +130,7 @@ type JsonTests() =
             """
             {"name":"test","portableName":"test","origins":["www/apache24","security/tailscale"]}
             """
-                .Trim()
+            |> canonicalizeJson
 
         let expectedNoGuid =
             { Id = None
@@ -133,8 +143,17 @@ type JsonTests() =
 
         let withGuidPortSetJson =
             """
-            {"id":"12345678-9abc-def0-1234-56789abcdef0","name":"test","portableName":"test","origins":["www/apache24","security/tailscale"]}
+            {
+                "id": "12345678-9abc-def0-1234-56789abcdef0",
+                "name": "test",
+                "portableName": "test",
+                "origins": [
+                    "www/apache24",
+                    "security/tailscale"
+                ]
+            }
             """
+            |> canonicalizeJson
 
         let expectedWithGuid =
             { Id = Some(Guid "12345678-9abc-def0-1234-56789abcdef0")
