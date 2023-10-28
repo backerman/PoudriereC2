@@ -29,6 +29,7 @@ type PortsRepository(db: DB.dataContext) =
                 |> Seq.map (fun pt ->
                     { Id = Some pt.Id
                       Name = pt.Name
+                      PortableName = pt.PortableName
                       Method =
                         // FIXME Just drop the + and everything after it;
                         // poudriere doesn't actually need it.

@@ -101,12 +101,16 @@ ALTER TABLE poudrierec2.configfiles OWNER TO poudriereadmin;
 CREATE TABLE poudrierec2.portstrees (
 	id uuid NOT NULL,
 	name text NOT NULL,
+	portable_name text NOT NULL,
 	method text NOT NULL,
 	url text,
 	CONSTRAINT portstrees_pk PRIMARY KEY (id)
 );
 COMMENT ON COLUMN poudrierec2.portstrees.name IS E'The name of the ports tree';
 ALTER TABLE poudrierec2.portstrees OWNER TO poudriereadmin;
+
+CREATE UNIQUE INDEX portstrees_index_undeleted_names_portable ON poudrierec2.portstrees
+USING btree(portable_name);
 
 CREATE FUNCTION poudrierec2.configfile_is_makeconf ()
 	RETURNS trigger
@@ -131,10 +135,14 @@ COMMENT ON FUNCTION poudrierec2.configfile_is_makeconf() IS E'Validate that the 
 CREATE TABLE poudrierec2.portsets (
 	id uuid NOT NULL,
 	name text NOT NULL,
+	portable_name text NOT NULL,
 	CONSTRAINT portsets_pk PRIMARY KEY (id)
 );
 COMMENT ON TABLE poudrierec2.portsets IS E'Sets of ports.';
 ALTER TABLE poudrierec2.portsets OWNER TO poudriereadmin;
+
+CREATE UNIQUE INDEX portsets_index_undeleted_names_portable ON poudrierec2.portsets
+USING btree(portable_name);
 
 CREATE TABLE poudrierec2.portset_members (
 	portset uuid NOT NULL,
@@ -148,6 +156,7 @@ ALTER TABLE poudrierec2.portset_members OWNER TO poudriereadmin;
 CREATE TABLE poudrierec2.jails (
 	id uuid NOT NULL,
 	name text NOT NULL,
+	portable_name text NOT NULL,
 	version text,
 	architecture text,
 	method text,
@@ -161,6 +170,9 @@ COMMENT ON COLUMN poudrierec2.jails.version IS E'The OS version to install in th
 COMMENT ON COLUMN poudrierec2.jails.architecture IS E'The architecture of the jail (e.g. amd64)';
 ALTER TABLE poudrierec2.jails OWNER TO poudriereadmin;
 
+CREATE UNIQUE INDEX jails_index_undeleted_names_portable ON poudrierec2.jails
+USING btree(portable_name);
+
 CREATE TABLE poudrierec2.configfiletypes (
 	name text NOT NULL,
 	CONSTRAINT configfiletypes_pk PRIMARY KEY (name)
@@ -172,7 +184,7 @@ INSERT INTO poudrierec2.configfiletypes (name) VALUES (E'poudriereconf');
 INSERT INTO poudrierec2.configfiletypes (name) VALUES (E'makeconf');
 INSERT INTO poudrierec2.configfiletypes (name) VALUES (E'srcconf');
 
-CREATE UNIQUE INDEX configfiles_index_undeleted_titles ON poudrierec2.configfiles
+CREATE UNIQUE INDEX configfiles_index_undeleted_names ON poudrierec2.configfiles
 USING btree(name)
 WHERE (NOT deleted);
 

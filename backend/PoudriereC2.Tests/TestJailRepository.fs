@@ -31,8 +31,9 @@ type JailRepositoryTests() =
                 equal {
                     Id = Guid("0a62a787-c7c1-48bc-8ba0-90d7fbe9c098") |> Some
                     Name = "13_0-amd64"
-                    Version = "13.0-RELEASE" |> Some
-                    Architecture = "amd64.amd64" |> Some
+                    PortableName = "130-amd64"
+                    Version = Some "13.0-RELEASE"
+                    Architecture = Some "amd64.amd64"
                     Method = None
                     Url = None
                     Path = None

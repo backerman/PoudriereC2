@@ -1,5 +1,6 @@
 module Facefault.PoudriereC2.Database
 
+open Dapper
 open FSharp.Data.LiteralProviders
 open FSharp.Data.Sql
 open Npgsql
@@ -25,11 +26,15 @@ type DB =
 // Dapper stuff
 let inline (=>) a b = (a, box b)
 
-// let getDatabaseConnection () =
-//     let conn = new NpgsqlConnection(ConnectionString)
-//     conn.Open()
-//     FSharp.PostgreSQL.OptionTypes.register () |> ignore
-//     conn
+type PropertySelectorDelegate = delegate of (Type * string) -> Reflection.PropertyInfo
+
+let setupDatabaseMappers() =
+    FSharp.PostgreSQL.OptionTypes.register () |> ignore
+
+    DefaultTypeMap.MatchNamesWithUnderscores <- true
+    SqlMapper.AddTypeHandler(JailMethodTypeHandler())
+    SqlMapper.AddTypeHandler(JailMethodOptionTypeHandler())
+    SqlMapper.AddTypeHandler(PortsTreeMethodTypeHandler())
 
 type DatabaseError =
     | NoError

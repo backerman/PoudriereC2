@@ -100,11 +100,12 @@ type JsonTests() =
         let somePortSet =
             { Id = Some(Guid("12345678-9abc-def0-1234-56789abcdef0"))
               Name = "test"
+              PortableName = "test"
               Origins = [| "www/apache24"; "security/tailscale" |] }
 
         let expected =
             """
-            {"id":"12345678-9abc-def0-1234-56789abcdef0","name":"test","origins":["www/apache24","security/tailscale"]}
+            {"id":"12345678-9abc-def0-1234-56789abcdef0","name":"test","portableName":"test","origins":["www/apache24","security/tailscale"]}
             """
 
         JsonSerializer.Serialize(somePortSet, eventSerializationOptions)
@@ -117,13 +118,14 @@ type JsonTests() =
     member _.TestPortSetDeserialization() =
         let noGuidPortSetJson =
             """
-            {"name":"test","origins":["www/apache24","security/tailscale"]}
+            {"name":"test","portableName":"test","origins":["www/apache24","security/tailscale"]}
             """
                 .Trim()
 
         let expectedNoGuid =
             { Id = None
               Name = "test"
+              PortableName = "test"
               Origins = [| "www/apache24"; "security/tailscale" |] }
 
         JsonSerializer.Deserialize<PortSet>(noGuidPortSetJson, eventSerializationOptions)
@@ -131,12 +133,13 @@ type JsonTests() =
 
         let withGuidPortSetJson =
             """
-            {"id":"12345678-9abc-def0-1234-56789abcdef0","name":"test","origins":["www/apache24","security/tailscale"]}
+            {"id":"12345678-9abc-def0-1234-56789abcdef0","name":"test","portableName":"test","origins":["www/apache24","security/tailscale"]}
             """
 
         let expectedWithGuid =
             { Id = Some(Guid "12345678-9abc-def0-1234-56789abcdef0")
               Name = "test"
+              PortableName = "test"
               Origins = [| "www/apache24"; "security/tailscale" |] }
 
         JsonSerializer.Deserialize<PortSet>(withGuidPortSetJson, eventSerializationOptions)
@@ -146,13 +149,14 @@ type JsonTests() =
     member _.TestNullPortsTreeSerialization() =
         let sampleTreeJson =
             """
-            {"name": "foo bar baz", "method": "null"}
+            {"name": "foo bar baz", "portableName": "foobarbaz", "method": "null"}
             """
             |> canonicalizeJson
 
         let expectedTree =
             { Id = None
               Name = "foo bar baz"
+              PortableName = "foobarbaz"
               Method = PortsTreeMethod.Null
               Url = None }
 
@@ -169,6 +173,7 @@ type JsonTests() =
             """
             {"id": "572abd41-a8eb-41f5-9a54-9329513dbba4",
              "name": "foo bar baz!",
+             "portableName": "foobarbaz",
              "method": "git",
              "url": "https://github.com/foo/bar.git"}
             """
@@ -177,6 +182,7 @@ type JsonTests() =
         let expectedTree =
             { Id = Some(Guid("572abd41-a8eb-41f5-9a54-9329513dbba4"))
               Name = "foo bar baz!"
+              PortableName = "foobarbaz"
               Method = PortsTreeMethod.Git
               Url = Some "https://github.com/foo/bar.git" }
 
@@ -193,6 +199,7 @@ type JsonTests() =
             [ """
             {"id": "c8d14c28-dff3-4a3a-9cd0-42a47224d8aa",
              "name": "次の死にたい奴、前に出ろ！",
+             "portableName": "tuginosinitaiyatumaenidero",
              "version": "13.2-RELEASE",
              "method": "http",
              "url": "https://git.freebsd.org/src.git"
@@ -201,6 +208,7 @@ type JsonTests() =
               """
             {"id": "2e8b9f94-5d3a-4fdd-b346-e238d640ea48",
              "name": "United States Disciplinary Barracks",
+             "portableName": "unitedstatesdisciplinarybarracks",
              "version": "6.2-RELEASE",
              "architecture": "sparc64",
              "method": "ftp-archive"
@@ -211,6 +219,7 @@ type JsonTests() =
         let expectedJails =
             [ { Id = Some(Guid("c8d14c28-dff3-4a3a-9cd0-42a47224d8aa"))
                 Name = "次の死にたい奴、前に出ろ！"
+                PortableName = "tuginosinitaiyatumaenidero"
                 Version = Some "13.2-RELEASE"
                 Method = Some Http
                 Architecture = None
@@ -218,6 +227,7 @@ type JsonTests() =
                 Url = Some "https://git.freebsd.org/src.git" }
               { Id = Some(Guid("2e8b9f94-5d3a-4fdd-b346-e238d640ea48"))
                 Name = "United States Disciplinary Barracks"
+                PortableName = "unitedstatesdisciplinarybarracks"
                 Version = Some "6.2-RELEASE"
                 Method = Some FtpArchive
                 Architecture = Some "sparc64"

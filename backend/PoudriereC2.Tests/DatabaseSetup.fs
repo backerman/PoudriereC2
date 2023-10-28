@@ -121,8 +121,5 @@ type TestScope() =
 type DapperSetup() =
     [<OneTimeSetUp>]
     member _.SetUpThings() =
-        FSharp.PostgreSQL.OptionTypes.register () |> ignore
         // Temporary? Copy from the bit in Program.fs.
-        SqlMapper.AddTypeHandler(JailMethodTypeHandler())
-        SqlMapper.AddTypeHandler(JailMethodOptionTypeHandler())
-        SqlMapper.AddTypeHandler(PortsTreeMethodTypeHandler())
+        Facefault.PoudriereC2.Database.setupDatabaseMappers()

@@ -45,13 +45,15 @@ type JobRepository(ds: NpgsqlDataSource) =
 
             let query =
                 """
-                SELECT     jc.id Id, jc.name Name, jc.poudriereconf PoudriereConf, pc.name PoudriereConfName,
-                           pt.id PortsTree, pt.name PortsTreeName,
-                           ps.id PortSet, ps.name PortSetName, j.id Jail, j.name JailName,
-                           pt.id Id, pt.name Name, pt.method Method, pt.url Url,
-                           ps.id Id, ps.name Name, psorigins.origins Origins,
-                           j.id Id, j.name Name, j.version Version, j.architecture Architecture,
+                SELECT     jc.id id, jc.name Name,
+                           -- PortsTree
+                           pt.id id, pt.name Name, pt.portable_name PortableName, pt.method Method, pt.url Url,
+                           -- PortsSet
+                           ps.id id, ps.name Name, ps.portable_name PortableName, psorigins.origins Origins,
+                           -- Jail
+                           j.id Id, j.name Name, j.portable_name PortableName, j.version Version, j.architecture Architecture,
                            j.method Method, j.url Url, j.path Path,
+                           -- Config files
                            configs.config_files id -- slightly hacky
                 FROM       poudrierec2.jobconfigs jc
                 LEFT JOIN  poudrierec2.configfiles pc ON jc.poudriereconf = pc.id

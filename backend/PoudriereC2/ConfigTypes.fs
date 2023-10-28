@@ -94,6 +94,7 @@ module ConfigTypes =
     type PortsTree =
         { Id: Guid option
           Name: string
+          PortableName: string
           Method: PortsTreeMethod
           Url: string option }
 
@@ -104,6 +105,7 @@ module ConfigTypes =
     type PortSet =
         { Id: Guid option
           Name: string
+          PortableName: string
           Origins: string[] }
 
     /// Command to add or delete ports from a port set
@@ -129,6 +131,7 @@ module ConfigTypes =
     type Jail =
         { Id: Guid option
           Name: string
+          PortableName: string
           Version: string option
           Architecture: string option
           Method: JailMethod option

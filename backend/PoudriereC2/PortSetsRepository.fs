@@ -23,6 +23,7 @@ type PortSetsRepository(db: DB.dataContext) =
                         select
                             { Id = Some portsetEntity.Id
                               Name = portsetEntity.Name
+                              PortableName = portsetEntity.PortableName
                               Origins = [||] }
                 }
                 |> Seq.executeQueryAsync

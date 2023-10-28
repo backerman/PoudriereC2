@@ -20,8 +20,8 @@ type JailRepository(ds: NpgsqlDataSource) =
     member _.CreateJail(j: Jail) =
         async {
             let query =
-                """INSERT INTO poudrierec2.jails (id, name, version, architecture, method, url)
-                   VALUES (@id, @name, @version, @architecture, @method, @url)"""
+                """INSERT INTO poudrierec2.jails (id, name, name_portable, version, architecture, method, url)
+                   VALUES (@id, @name, @portablename, @version, @architecture, @method, @url)"""
 
             let newGuid = Guid.NewGuid()
             use! conn = ds.OpenConnectionAsync()
@@ -46,7 +46,7 @@ type JailRepository(ds: NpgsqlDataSource) =
         async {
             let query =
                 """UPDATE poudrierec2.jails
-                   SET name = @name, version = @version, architecture = @architecture, method = @method,
+                   SET name = @name, name_portable = @portablename, version = @version, architecture = @architecture, method = @method,
                        url = @url, path = @path
                    WHERE id = @id"""
 

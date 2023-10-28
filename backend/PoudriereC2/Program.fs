@@ -30,8 +30,7 @@ let servicesDelegate (s: IServiceCollection) =
         .AddSingleton<DB.dataContext>(DB.GetDataContext(connStr))
         .AddSingleton<NpgsqlDataSource>(fun x ->
             let loggerFactory = x.GetRequiredService<ILoggerFactory>()
-            FSharp.PostgreSQL.OptionTypes.register () |> ignore
-
+            setupDatabaseMappers()
             NpgsqlDataSourceBuilder(connStr)
                 .UseLoggerFactory(loggerFactory)
                 .EnableParameterLogging(configuration.["AZURE_FUNCTIONS_ENVIRONMENT"] = "Development")
@@ -60,10 +59,5 @@ let main argv =
     if configuration.["AZURE_FUNCTIONS_ENVIRONMENT"] = "Development" then
         Common.QueryEvents.SqlQueryEvent
         |> Event.add (fun sql -> printfn $"Executing SQL: {sql}")
-
-    // Set up Dapper type mappers.
-    SqlMapper.AddTypeHandler(JailMethodTypeHandler())
-    SqlMapper.AddTypeHandler(JailMethodOptionTypeHandler())
-    SqlMapper.AddTypeHandler(PortsTreeMethodTypeHandler())
     host.Run()
     0
