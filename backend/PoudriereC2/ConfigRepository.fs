@@ -138,8 +138,8 @@ type ConfigRepository(ds: NpgsqlDataSource) =
                         (@name{j}, @value{j}, @configfile)
                         """
 
-                    let sqlPredicates = new System.Collections.Generic.List<string>()
-                    let p = new DynamicParameters()
+                    let sqlPredicates = Collections.Generic.List<string>()
+                    let p = DynamicParameters()
 
                     opts
                     |> List.iteri (fun j opt ->
@@ -151,7 +151,7 @@ type ConfigRepository(ds: NpgsqlDataSource) =
                     let sqlQuery = sqlInsert + String.Join(", ", sqlPredicates)
                     (sqlQuery, p)
                 | ConfigOptionUpdate.Delete opts ->
-                    let p = new DynamicParameters()
+                    let p = DynamicParameters()
 
                     let namesPlaceholders =
                         opts

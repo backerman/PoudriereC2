@@ -66,6 +66,20 @@
 			"isTestCommand": true
 		},
 		{
+			"label": "test with coverage",
+			"command": "dotnet",
+			"args": [
+                "test",
+                "/p:CollectCoverage=true",
+                "/p:CoverletOutputFormat=lcov",
+                "/p:CoverletOutput=./lcov.info",
+                "${workspaceFolder}/backend/PoudriereC2.Tests/PoudriereC2.Tests.fsproj"
+			],
+			"type": "process",
+			"problemMatcher": "$msCompile",
+			"isTestCommand": true
+		},
+		{
 			"label": "debug tests",
 			"command": "dotnet",
 			"args": [
