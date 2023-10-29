@@ -31,7 +31,8 @@ VALUES
 ('97241b1e-9c04-4b58-9cdc-4c90eef35225', 'USE_TMPFS', 'all'),
 ('97241b1e-9c04-4b58-9cdc-4c90eef35225', 'DISTFILES_CACHE', '/usr/ports/distfiles'),
 ('97241b1e-9c04-4b58-9cdc-4c90eef35225', 'ALLOW_MAKE_JOBS_PACKAGES', 'llvm* rust py* openjdk* mono gcc* gdal'),
-('7557d8a8-bba5-4c99-ba6f-2ffbebb0be63', 'DEFAULT_VERSIONS+', 'java=11 pgsql=13 php=8.0 python=3.8 python3=3.8 llvm=11 lua=5.4 samba=4.12 mono=6.8');
+('7557d8a8-bba5-4c99-ba6f-2ffbebb0be63', 'DEFAULT_VERSIONS+', 'java=11 pgsql=13 php=8.0 python=3.8 python3=3.8 llvm=11 lua=5.4 samba=4.12 mono=6.8'),
+('7557d8a8-bba5-4c99-ba6f-2ffbebb0be63', 'NO_MODULES', 'yes');
 
 INSERT INTO poudrierec2.packageoptions (configfile, category, package, set, unset)
 VALUES

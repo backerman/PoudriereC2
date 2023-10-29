@@ -35,6 +35,7 @@ let setupDatabaseMappers() =
     SqlMapper.AddTypeHandler(JailMethodTypeHandler())
     SqlMapper.AddTypeHandler(JailMethodOptionTypeHandler())
     SqlMapper.AddTypeHandler(PortsTreeMethodTypeHandler())
+    SqlMapper.AddTypeHandler(ConfigFileTypeHandler())
 
 type DatabaseError =
     | NoError

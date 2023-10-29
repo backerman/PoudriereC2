@@ -30,11 +30,13 @@ let servicesDelegate (s: IServiceCollection) =
         .AddSingleton<DB.dataContext>(DB.GetDataContext(connStr))
         .AddSingleton<NpgsqlDataSource>(fun x ->
             let loggerFactory = x.GetRequiredService<ILoggerFactory>()
+            let ds =
+                NpgsqlDataSourceBuilder(connStr)
+                    .UseLoggerFactory(loggerFactory)
+                    .EnableParameterLogging(configuration.["AZURE_FUNCTIONS_ENVIRONMENT"] = "Development")
+                    .Build()
             setupDatabaseMappers()
-            NpgsqlDataSourceBuilder(connStr)
-                .UseLoggerFactory(loggerFactory)
-                .EnableParameterLogging(configuration.["AZURE_FUNCTIONS_ENVIRONMENT"] = "Development")
-                .Build())
+            ds)
         .AddSingleton<ConfigRepository>()
         .AddSingleton<PortsRepository>()
         .AddSingleton<JobRepository>()

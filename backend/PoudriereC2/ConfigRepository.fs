@@ -1,174 +1,198 @@
 namespace Facefault.PoudriereC2
 
 open Facefault.PoudriereC2
-open Facefault.PoudriereC2.Data
 open Facefault.PoudriereC2.Database
 open System
 open FSharp.Data.Sql
-open System.Linq
+open Npgsql
+open Dapper
+open System.Data
 
-type ConfigRepository(db: DB.dataContext) =
+type ConfigRepository(ds: NpgsqlDataSource) =
 
     member _.GetConfigFileOptions(configFile: Guid) =
         async {
-            let! opts =
-                query {
-                    for configOption in db.Poudrierec2.Configoptions do
-                        where (configOption.Configfile = configFile)
-                        sortBy configOption.Name
+            use! conn = ds.OpenConnectionAsync()
 
-                        select
-                            { Name = configOption.Name
-                              Value = configOption.Value }
-                }
-                |> Seq.executeQueryAsync
+            let querySql =
+                """
+                SELECT    cfo.name, cfo.value
+                FROM      poudrierec2.configoptions cfo
+                WHERE     cfo.configfile = @configFile
+                ORDER BY  cfo.name
+                """
 
+            let! opts = conn.QueryAsync<ConfigOption>(querySql, dict [ "configFile" => configFile ])
             return opts
         }
 
     member _.GetConfigFiles(?configFile: Guid) =
         async {
-            let filterQuery =
+            use! conn = ds.OpenConnectionAsync()
+
+            let querySql =
+                """
+                SELECT    cf.id, cf.deleted, cf.name,
+                          ps.id PortSet, ps.name PortSetName, pt.id PortsTree, pt.name PortsTreeName,
+                          j.id Jail, j.name JailName, cf.configtype FileType
+                FROM      poudrierec2.configfiles cf
+                LEFT JOIN poudrierec2.portsets ps ON cf.portset = ps.id
+                LEFT JOIN poudrierec2.portstrees pt ON cf.portstree = pt.id
+                LEFT JOIN poudrierec2.jails j ON cf.jail = j.id
+                WHERE     (%%filter%%)
+                ORDER BY  cf.id
+                """
+
+            let filterSql =
                 match configFile with
-                | None -> <@ fun (_: DB.dataContext.``poudrierec2.configfilesEntity``) -> true @>
-                | Some f -> <@ fun (file: DB.dataContext.``poudrierec2.configfilesEntity``) -> file.Id = f @>
+                | None -> "1 = 1"
+                | Some f -> "cf.id = @configFile"
 
-            let! configFiles =
-                query {
-                    for file in db.Poudrierec2.Configfiles do
-                        where ((%filterQuery) file)
-                        join portSet in (!!) db.Poudrierec2.Portsets on (file.Portset = Some portSet.Id)
-                        join portsTree in (!!) db.Poudrierec2.Portstrees on (file.Portstree = Some portsTree.Id)
-                        join jail in (!!) db.Poudrierec2.Jails on (file.Jail = Some jail.Id)
-                        sortBy file.Id
+            let sqlParams =
+                match configFile with
+                | None -> []
+                | Some f -> [ "configFile" => f ]
+                |> dict
 
-                        select
-                            { Id = Some file.Id
-                              Deleted = file.Deleted
-                              Name = file.Name
-                              PortSet = file.Portset
-                              PortSetName =
-                                match portSet with
-                                | null -> None
-                                | _ -> Some portSet.Name
-                              PortsTree = file.Portstree
-                              PortsTreeName =
-                                match portsTree with
-                                | null -> None
-                                | _ -> Some portsTree.Name
-                              Jail = file.Jail
-                              JailName =
-                                match jail with
-                                | null -> None
-                                | _ -> Some jail.Name
-                              FileType = FromString<ConfigFileType> file.Configtype }
-                }
-                |> Seq.executeQueryAsync
+            let! result =
+                let executeSql = querySql.Replace("%%filter%%", filterSql)
+                conn.QueryAsync<ConfigFileMetadata>(executeSql, sqlParams)
 
-            return configFiles
+            return result
         }
 
     member _.NewConfigFile(metadata: ConfigFileMetadata) =
         async {
+            use! conn = ds.OpenConnectionAsync()
             let guid = Guid.NewGuid()
-            let row = db.Poudrierec2.Configfiles.Create()
-            row.Name <- metadata.Name
-            row.Deleted <- false
-            row.Id <- guid
-            row.Jail <- metadata.Jail
-            row.Portset <- metadata.PortSet
-            row.Portstree <- metadata.PortsTree
-            row.Configtype <- UnionToString metadata.FileType
 
-            row.OnConflict <- Common.OnConflict.Update
-            let! result = DatabaseError.FromQuery(db.SubmitUpdatesAsync())
+            let sql =
+                """
+                INSERT INTO poudrierec2.configfiles
+                (id, deleted, name, portset, portstree, jail, configtype)
+                VALUES
+                (@id, @deleted, @name, @portset, @portstree, @jail, @filetype)
+                """
 
-            if result <> NoError then
-                db.ClearUpdates() |> ignore
+            let! result =
+                conn.ExecuteAsync(sql, { metadata with Id = Some guid })
+                |> DatabaseError.FromQuery
 
-            return (result, row.Id)
+            return (result, guid)
         }
 
     member _.UpdateConfigFile(metadata: ConfigFileMetadata) : Async<DatabaseError> =
         async {
+            use! conn = ds.OpenConnectionAsync()
+
             let rowGuid =
                 match metadata.Id with
                 | Some id -> id
                 | None -> raise (ArgumentException("Config file metadata must have an ID"))
 
-            let! row =
-                query {
-                    for file in db.Poudrierec2.Configfiles do
-                        where (file.Id = rowGuid)
-                        select file
-                }
-                |> Seq.exactlyOneAsync
+            let sql =
+                """
+                UPDATE poudrierec2.configfiles
+                SET    deleted = @deleted, name = @name, portset = @portset,
+                       portstree = @portstree, jail = @jail, configtype = @filetype
+                WHERE id = @id
+                """
 
-            row.Name <- metadata.Name
-            row.Deleted <- metadata.Deleted
-            row.Jail <- metadata.Jail
-            row.Portset <- metadata.PortSet
-            row.Portstree <- metadata.PortsTree
-            row.Configtype <- UnionToString metadata.FileType
-
-            row.OnConflict <- Common.OnConflict.Throw
-            let! result = DatabaseError.FromQuery(db.SubmitUpdatesAsync())
-
-            if result <> NoError then
-                db.ClearUpdates() |> ignore
+            let! result =
+                conn.ExecuteAsync(sql, { metadata with Id = Some rowGuid })
+                |> DatabaseError.FromQuery
 
             return result
         }
 
     member _.DeleteConfigFile(configFile: Guid) : Async<DatabaseError> =
         async {
-            let! row =
-                query {
-                    for file in db.Poudrierec2.Configfiles do
-                        where (file.Id = configFile)
-                        select file
-                }
-                |> Seq.exactlyOneAsync
+            use! conn = ds.OpenConnectionAsync()
 
-            row.Deleted <- true
-            row.OnConflict <- Common.OnConflict.Throw
-            let! result = DatabaseError.FromQuery(db.SubmitUpdatesAsync())
+            let sql =
+                """
+                UPDATE poudrierec2.configfiles
+                SET    deleted = true
+                WHERE  id = @id
+                """
 
-            if result <> NoError then
-                db.ClearUpdates() |> ignore
+            let! result = conn.ExecuteAsync(sql, dict [ "id" => configFile ]) |> DatabaseError.FromQuery
 
             return result
         }
 
     member _.UpdateConfigFileOptions (configFile: Guid) (updates: ConfigOptionUpdate list) =
-        let processAction (action: ConfigOptionUpdate) : unit =
-            match action with
-            | ConfigOptionUpdate.Add opts ->
-                opts
-                |> List.map (fun opt -> db.Poudrierec2.Configoptions.Create())
-                |> List.zip opts
-                |> List.map (fun (opt, row) ->
-                    row.Name <- opt.Name
-                    row.Value <- opt.Value
-                    row.Configfile <- configFile
-                    row.OnConflict <- Common.OnConflict.Throw)
-                |> ignore
-            | ConfigOptionUpdate.Delete opts ->
-                opts
-                |> List.map (fun opt ->
-                    query {
-                        for o in db.Poudrierec2.Configoptions do
-                            where (o.Configfile = configFile && o.Name = opt)
-                    }
-                    |> Seq.iter (fun row -> row.Delete()))
-                |> ignore
+        let processAction (conn: NpgsqlConnection) (txn: NpgsqlTransaction) (action: ConfigOptionUpdate) =
+            let (sql, ps) =
+                match action with
+                | ConfigOptionUpdate.Add opts ->
+                    let sqlInsert =
+                        """
+                        INSERT INTO poudrierec2.configoptions
+                        (name, value, configfile)
+                        VALUES
+                        """
+
+                    let sqlValues (j: int) : string =
+                        $"""
+                        (@name{j}, @value{j}, @configfile)
+                        """
+
+                    let sqlPredicates = new System.Collections.Generic.List<string>()
+                    let p = new DynamicParameters()
+
+                    opts
+                    |> List.iteri (fun j opt ->
+                        p.Add($"name{j}", opt.Name, DbType.String)
+                        p.Add($"value{j}", opt.Value)
+                        sqlPredicates.Add(sqlValues j))
+
+                    p.Add("configfile", configFile, DbType.Guid)
+                    let sqlQuery = sqlInsert + String.Join(", ", sqlPredicates)
+                    (sqlQuery, p)
+                | ConfigOptionUpdate.Delete opts ->
+                    let p = new DynamicParameters()
+
+                    let namesPlaceholders =
+                        opts
+                        |> List.mapi (fun i opt ->
+                            p.Add($"name{i}", opt, DbType.String)
+                            $"@name{i}")
+                        |> List.toArray
+
+                    let namesPlaceholders2 = String.Join(", ", namesPlaceholders)
+
+                    let sqlDelete =
+                        $"""
+                        DELETE
+                        FROM     poudrierec2.configoptions WHERE configfile = @configFile
+                        AND      name IN ({namesPlaceholders2})
+                        """
+
+                    p.Add("configFile", configFile, DbType.Guid)
+                    p.Add("names", opts |> Array.ofList)
+                    (sqlDelete, p)
+
+            async {
+                let! result = conn.ExecuteAsync(sql, ps, transaction = txn)
+                return result
+            }
 
         async {
-            List.iter processAction updates
-            let! result = db.SubmitUpdatesAsync() |> DatabaseError.FromQuery
+            use! conn = ds.OpenConnectionAsync()
+            use! txn = conn.BeginTransactionAsync()
 
-            if result <> NoError then
-                db.ClearUpdates() |> ignore
+            let! result =
+                updates
+                |> List.map (fun action -> processAction conn txn action)
+                |> Async.Sequential
+                |> Async.AsTask
+                |> DatabaseError.FromQuery
+
+            if result = NoError then
+                do! txn.CommitAsync()
+            else
+                do! txn.RollbackAsync()
 
             return result
         }

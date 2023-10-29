@@ -40,6 +40,7 @@ module ConfigTypes =
 
         override x.ToString() = Data.UnionToString(x)
 
+    [<CLIMutable>]
     type ConfigFileMetadata =
         { Id: Guid option
           Deleted: bool
@@ -171,3 +172,4 @@ module ConfigTypes =
     type JailMethodTypeHandler = UnionAutoTypeHandler<JailMethod>
     type JailMethodOptionTypeHandler = UnionOptionAutoTypeHandler<JailMethod>
     type PortsTreeMethodTypeHandler = UnionAutoTypeHandler<PortsTreeMethod>
+    type ConfigFileTypeHandler = UnionAutoTypeHandler<ConfigFileType>
