@@ -7,18 +7,6 @@ ALTER SCHEMA poudrierec2 OWNER TO poudriereadmin;
 -- Everything is contained in the application schema.
 SET search_path TO poudrierec2;
 
-CREATE TABLE poudrierec2.configoptions (
-	configfile uuid NOT NULL,
-	name text NOT NULL,
-	value text NOT NULL,
-	CONSTRAINT configoptions_pk PRIMARY KEY (configfile,name)
-);
-COMMENT ON TABLE poudrierec2.configoptions IS E'The options set in a configuration';
-COMMENT ON COLUMN poudrierec2.configoptions.configfile IS E'The configuration this references.';
-COMMENT ON COLUMN poudrierec2.configoptions.name IS E'The name of the option to set';
-COMMENT ON COLUMN poudrierec2.configoptions.value IS E'The value of the option to set';
-ALTER TABLE poudrierec2.configoptions OWNER TO poudriereadmin;
-
 CREATE TABLE poudrierec2.packageoptions (
 	category text,
 	package text,
@@ -97,6 +85,22 @@ COMMENT ON TABLE poudrierec2.configfiles IS E'A configuration file that can be u
 COMMENT ON COLUMN poudrierec2.configfiles.name IS E'Human-readable name of this file.';
 COMMENT ON CONSTRAINT poudriereconf_no_portset ON poudrierec2.configfiles IS E'A poudriere.conf file does not have a portset.';
 ALTER TABLE poudrierec2.configfiles OWNER TO poudriereadmin;
+
+CREATE TABLE poudrierec2.configoptions (
+	configfile uuid NOT NULL,
+	name text NOT NULL,
+	value text NOT NULL,
+	CONSTRAINT configoptions_pk PRIMARY KEY (configfile,name)
+);
+COMMENT ON TABLE poudrierec2.configoptions IS E'The options set in a configuration';
+COMMENT ON COLUMN poudrierec2.configoptions.configfile IS E'The configuration this references.';
+COMMENT ON COLUMN poudrierec2.configoptions.name IS E'The name of the option to set';
+COMMENT ON COLUMN poudrierec2.configoptions.value IS E'The value of the option to set';
+ALTER TABLE poudrierec2.configoptions OWNER TO poudriereadmin;
+
+ALTER TABLE poudrierec2.configoptions ADD CONSTRAINT configfile_id FOREIGN KEY (configfile)
+REFERENCES poudrierec2.configfiles (id) MATCH FULL
+ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 CREATE TABLE poudrierec2.portstrees (
 	id uuid NOT NULL,
@@ -285,10 +289,6 @@ ALTER TABLE poudrierec2.portstree_methods OWNER TO poudriereadmin;
 INSERT INTO poudrierec2.portstree_methods (name, isdefault) VALUES (E'null', DEFAULT);
 INSERT INTO poudrierec2.portstree_methods (name, isdefault) VALUES (E'git', true);
 INSERT INTO poudrierec2.portstree_methods (name, isdefault) VALUES (E'svn', DEFAULT);
-
-ALTER TABLE poudrierec2.configoptions ADD CONSTRAINT configfile_id FOREIGN KEY (configfile)
-REFERENCES poudrierec2.configfiles (id) MATCH FULL
-ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 ALTER TABLE poudrierec2.packageoptions ADD CONSTRAINT configfiles_fk FOREIGN KEY (configfile)
 REFERENCES poudrierec2.configfiles (id) MATCH FULL
