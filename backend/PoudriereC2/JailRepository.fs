@@ -46,7 +46,7 @@ type JailRepository(ds: NpgsqlDataSource) =
         async {
             let query =
                 """UPDATE poudrierec2.jails
-                   SET name = @name, name_portable = @portablename, version = @version,
+                   SET name = @name, portable_name = @portablename, version = @version,
                        architecture = @architecture, method = @method,
                        url = @url, path = @path
                    WHERE id = @id"""
