@@ -130,6 +130,7 @@ export function Jails(): JSX.Element {
                                 if (!result.guid) {
                                     throw new Error("No GUID returned");
                                 }
+                                errorThrown(undefined);
                                 return data?.concat({
                                     ...jail,
                                     id: result.guid
@@ -147,7 +148,8 @@ export function Jails(): JSX.Element {
                                         });
                                 return data?.map((r) => r.id === jail.id ? jail : r);
                             }, { revalidate: false }
-                        ).catch((e) => errorThrown(e?.toString()));
+                        ).catch((e) => errorThrown(e?.toString()))
+                            .then(() => errorThrown(undefined));
                     }
                     closeEditor();
                     clearCreatingNewRecord();
