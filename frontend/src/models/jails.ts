@@ -21,6 +21,7 @@ export const JailMethods: JailMethodInfo[] = [
 export type Jail = {
     id?: string;
     name: string;
+    portableName: string;
     version?: string;
     architecture?: string;
     method?: string;

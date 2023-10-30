@@ -1,4 +1,4 @@
-import { sortBy } from './utils';
+import { makePortable, sortBy } from './utils';
 import * as fc from 'fast-check';
 
 it("successfully sorts a list of objects", () => {
@@ -27,5 +27,16 @@ it("successfully sorts a list of objects", () => {
                     expected = 0;
                 const actual = sortFunc(sortA, sortB);
                 return actual === expected;
+            }));
+})
+
+it("removes non-portable characters from a string", () => {
+    const arb = fc.unicodeString({minLength: 1});
+    fc.assert(
+        fc.property(arb,
+            (testCase) => {
+                const actual = makePortable(testCase);
+                const hasNonPortableCharacters = /[^-a-z0-9]/g.test(actual);
+                return !hasNonPortableCharacters
             }));
 })

@@ -31,6 +31,14 @@ function updateState<K extends keyof Jail>(state: Jail,
     return newState;
 }
 
+function updateValidity<K extends keyof Jail>(
+    state: Map<K, boolean>,
+    action: { field: K, value: boolean }): Map<K, boolean> {
+    let newState = new Map(state);
+    newState.set(action.field, action.value);
+    return newState;
+}
+
 const jailMethodChoices: IDropdownOption<JailMethodInfo>[] =
     JailMethods.map((method) => { return { key: method.name, text: method.name, data: method }; });
 
@@ -43,6 +51,13 @@ export function JailEditor(props: JailEditorProps): JSX.Element {
         creatingNewRecord
     } = props;
 
+    // Set up validity status map initial state.
+    const initialValidityState = new Map<keyof Jail, boolean>();
+    for (const key of Object.keys(record) as (keyof Jail)[]) {
+        initialValidityState.set(key, true);
+    }
+    let [validityData, setValidityData] = useReducer(updateValidity, initialValidityState)
+
     let [mostRecentPropsRecord, setMostRecentPropsRecord] = useState(record);
     let [jailData, setState] = useReducer(updateState, {} as Jail);
     let methodRef = useRef<JailMethodInfo | undefined>(JailMethods.find((method) => method.name === jailData.method));
@@ -52,6 +67,15 @@ export function JailEditor(props: JailEditorProps): JSX.Element {
         setState(record);
         setMostRecentPropsRecord(record);
         methodRef.current = JailMethods.find((method) => method.name === record.method)
+    }
+
+    const isFormValid = () => {
+        for (const key of validityData.keys()) {
+            if (!validityData.get(key)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     const onTextChange = (fieldName: keyof Jail) => {
@@ -77,6 +101,7 @@ export function JailEditor(props: JailEditorProps): JSX.Element {
             isOpen={isOpen}
             isBlocking={false}
             onDismiss={onDismiss}
+            submitDisabled={!isFormValid()}
             headerText={`${props.creatingNewRecord ? 'Create' : 'Edit'} jail ${props.record.name}`}
             onSubmit={() => {
                 if (onSubmit) {
@@ -108,6 +133,29 @@ export function JailEditor(props: JailEditorProps): JSX.Element {
                 label="Name"
                 value={jailData.name || ''}
                 onChange={onTextChange('name')}
+            />
+            <TextField
+                label="Portable name"
+                value={jailData.portableName || ''}
+                onGetErrorMessage={(val) => {
+                    let errMsg = '';
+                    if (val === '') {
+                        errMsg = "Portable name cannot be blank.";
+                    } else if (val.length > 63) {
+                        errMsg = "Portable name must be 63 characters or fewer.";
+                    } else if (!val.match(/^[A-Za-z0-9-]+$/)) {
+                        errMsg = "Portable name may only contain letters, numbers, and hyphens.";
+                    }
+                    if (errMsg !== '') {
+                        // Field is invalid.
+                        setValidityData({ field: 'portableName', value: false });
+                    } else {
+                        // Field is valid.
+                        setValidityData({ field: 'portableName', value: true });
+                    }
+                    return errMsg;
+                }}
+                onChange={onTextChange('portableName')}
             />
             <ComboBoxWithFetcher<string>
                 dataUrl="/api/freebsd/arch"

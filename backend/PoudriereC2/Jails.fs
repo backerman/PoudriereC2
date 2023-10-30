@@ -158,7 +158,7 @@ type JailApi(jr: JailRepository, fb: FreeBSDInfo) =
             let isValidLength = arch.Length < 40
 
             if isValidCharset && isValidLength then
-                let! releases = fb.getFreeBSDReleases arch
+                let! releases = fb.getFreeBSDReleases log arch
                 response.Headers.Add("Cache-Control", "max-age=300")
                 response.writeJsonResponse releases |> ignore
             else

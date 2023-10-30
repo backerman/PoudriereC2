@@ -15,7 +15,10 @@ type FreeBSDInfo() =
     static let archRegex = Regex("^([a-z][a-z0-9]+)/$", RegexOptions.Compiled)
 
     static let releaseRegex =
-        Regex("^([0-9.][0-9A-Za-z.]+-(RELEASE|STABLE|CURRENT|SNAPSHOT|PRERELEASE))/$", RegexOptions.Compiled)
+        Regex(
+            "^([0-9.][0-9A-Za-z.]+-(RELEASE|STABLE|CURRENT|SNAPSHOT|PRERELEASE|RC\d+))/$",
+            RegexOptions.Compiled
+        )
 
     static let downloadPrefix =
         match Environment.GetEnvironmentVariable "FREEBSD_MIRROR_BASE" with
@@ -25,55 +28,43 @@ type FreeBSDInfo() =
 
     static let cache = MemoryCache.Default
 
-    member private _.getArchitectureListing(url: string) =
+    /// Get a downloads.freebsd.org directory listing and parse entries.
+    member private _.getAndParse (regex: Regex) (url: string) =
         async {
-            let! releaseDoc = HtmlDocument.AsyncLoad(url)
+            let! maybeDoc = HtmlDocument.AsyncLoad(url) |> Async.Catch
 
-            let architectures =
-                "td.link > a[href]"
-                |> releaseDoc.CssSelect
-                |> List.map (fun x ->
-                    let hrefValue = (x.Attribute "href").Value()
+            let entries =
+                match maybeDoc with
+                | Choice2Of2 _ -> []
+                | Choice1Of2 doc ->
+                    "td.link > a[href]"
+                    |> doc.CssSelect
+                    |> List.map (fun x ->
+                        let hrefValue = (x.Attribute "href").Value()
 
-                    match archRegex.Match(hrefValue) with
-                    | m when m.Success -> Some m.Groups[1].Value
-                    | _ -> None)
-                |> List.filter (fun x -> x.IsSome)
-                |> List.map (fun x -> x.Value)
+                        match regex.Match(hrefValue) with
+                        | m when m.Success -> Some m.Groups[1].Value
+                        | _ -> None)
+                    |> List.filter (fun x -> x.IsSome)
+                    |> List.map (fun x -> x.Value)
 
+            return entries
+        }
+
+    member private this.getArchitectureListing (log: ILogger) (url: string) =
+        async {
+            let! architectures = this.getAndParse archRegex url
             return architectures
         }
 
-    member private _.getReleaseListing(url: string) =
+    member private this.getReleaseListing(url: string) =
         async {
-            let! archReleasesDoc = HtmlDocument.AsyncLoad(url)
-
-            let releases =
-                // The cache doesn't want to take a string list.
-                let cacheContents: CacheEntry = cache.[url] :?> CacheEntry
-
-                match cacheContents with
-                | (e: CacheEntry) when not (isNull e) -> e.entries
-                | _ ->
-                    let returnedValue =
-                        "td.link > a[href]"
-                        |> archReleasesDoc.CssSelect
-                        |> List.map (fun x ->
-                            let hrefValue = (x.Attribute "href").Value()
-
-                            match releaseRegex.Match(hrefValue) with
-                            | m when m.Success -> Some m.Groups[1].Value
-                            | _ -> None)
-                        |> List.filter (fun x -> x.IsSome)
-                        |> List.map (fun x -> x.Value)
-
-                    cache.Set(url, CacheEntry(returnedValue), DateTimeOffset.Now.AddMinutes(5.0))
-                    returnedValue
-
+            let! releases = this.getAndParse releaseRegex url
+            cache.Set(url, CacheEntry(releases), DateTimeOffset.Now.AddMinutes(5.0))
             return releases
         }
 
-    member private this.getArchitecturesOneLevel(levels: string list) =
+    member private this.getArchitecturesOneLevel (log: ILogger) (levels: string list) =
         async {
             let! architectures =
                 [ "snapshots/"; "releases/" ]
@@ -83,7 +74,7 @@ type FreeBSDInfo() =
                         builder.Path <- releaseType
                         List.iter (fun x -> builder.Path <- builder.Path + x + "/") levels
                         builder.ToString())
-                    >> this.getArchitectureListing
+                    >> this.getArchitectureListing log
                 )
                 |> Async.Parallel
 
@@ -110,11 +101,11 @@ type FreeBSDInfo() =
                 return cacheEntry.entries
             else
                 log.LogDebug("Fetching architectures")
-                let! primaryArchitectures = this.getArchitecturesOneLevel []
+                let! primaryArchitectures = this.getArchitecturesOneLevel log []
 
                 let! variantsArray =
                     primaryArchitectures
-                    |> List.map (fun x -> this.getArchitecturesOneLevel [ x ])
+                    |> List.map (fun x -> this.getArchitecturesOneLevel log [ x ])
                     |> Async.Sequential
 
                 let variants = variantsArray |> List.concat |> List.sort |> List.distinct
@@ -123,7 +114,7 @@ type FreeBSDInfo() =
                 return variants
         }
 
-    member this.getFreeBSDReleases(arch: string) =
+    member this.getFreeBSDReleases (log: ILogger) (arch: string) =
         async {
             let archPath = arch.Replace(".", "/")
 

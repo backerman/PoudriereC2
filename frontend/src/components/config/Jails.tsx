@@ -8,6 +8,7 @@ import { ItemList } from "../ItemList";
 import { JailEditor } from "./JailEditor";
 import { ConfigCommandBar } from "./ConfigCommandBar";
 import { useAzureFunctionsOAuth } from "@/utils/apiAuth";
+import { makePortable } from "@/utils/utils";
 
 const columns: IColumn[] = [
     {
@@ -158,8 +159,10 @@ export function Jails(): JSX.Element {
                 pluralItemName={"jails"}
                 addConfirmButtonText={"Configure"}
                 onAddConfirmClick={async () => {
+                    const name = addNameRef.current?.value || '';
                     setActiveRecord({
-                        name: addNameRef.current?.value || ''
+                        name: name,
+                        portableName: makePortable(name),
                     });
                     setCreatingNewRecord();
                     hideAddDialog();
