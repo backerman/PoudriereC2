@@ -1,95 +1,86 @@
 namespace Facefault.PoudriereC2
 
 open Facefault.PoudriereC2
-open Facefault.PoudriereC2.Data
 open Facefault.PoudriereC2.Database
 open FSharp.Data.Sql
+open Npgsql
 open System
+open Dapper
 
-type PortsRepository(db: DB.dataContext) =
+type PortsRepository(ds: NpgsqlDataSource) =
 
-    member _.GetPortsTrees(?portsTree: string) =
+    member _.GetPortsTrees(?portsTree: Guid) =
         async {
+            let p = DynamicParameters()
+
             let filterQuery =
                 match portsTree with
-                | None -> <@ fun (_: DB.dataContext.``poudrierec2.portstreesEntity``) -> true @>
-                | Some f -> <@ fun (pt: DB.dataContext.``poudrierec2.portstreesEntity``) -> pt.Name = portsTree.Value @>
+                | None -> "1 = 1"
+                | Some id ->
+                    p.Add("id", id)
+                    "id = @id"
 
-            let! trees =
-                query {
-                    for pt in db.Poudrierec2.Portstrees do
-                        where ((%filterQuery) pt)
-                        sortBy pt.Name
-                        select pt
-                }
-                |> Seq.executeQueryAsync
+            let query =
+                $"""
+                SELECT * FROM poudrierec2.portstrees
+                WHERE {filterQuery}
+                ORDER BY name
+                """
 
-            return
-                trees
-                |> Seq.map (fun pt ->
-                    { Id = Some pt.Id
-                      Name = pt.Name
-                      PortableName = pt.PortableName
-                      Method =
-                        // FIXME Just drop the + and everything after it;
-                        // poudriere doesn't actually need it.
-                        pt.Method.Split([| '+' |]).[0] |> FromString<PortsTreeMethod>
-                      Url = pt.Url })
+            use! conn = ds.OpenConnectionAsync()
+            let! trees = conn.QueryAsync<PortsTree>(query, p)
+            return trees
         }
 
     member _.AddPortsTree(tree: PortsTree) =
         async {
-            let row = db.Poudrierec2.Portstrees.Create()
-            row.Id <- Guid.NewGuid()
-            row.Name <- tree.Name
-            row.Method <- UnionToString tree.Method
-            row.Url <- tree.Url
-            row.OnConflict <- Common.OnConflict.Throw
-            let! result = DatabaseError.FromQuery(db.SubmitUpdatesAsync())
+            use! conn = ds.OpenConnectionAsync()
+            let guid = Guid.NewGuid()
 
-            if result <> NoError then
-                db.ClearUpdates() |> ignore
+            let sql =
+                """
+                INSERT INTO poudrierec2.portstrees
+                (id, name, portable_name, method, url)
+                VALUES
+                (@id, @name, @portablename, @method, @url)
+                """
 
-            return (result, row.Id)
+            let! result = conn.ExecuteAsync(sql, { tree with Id = Some guid }) |> DatabaseError.FromQuery
+
+            return (result, guid)
         }
 
-    member _.UpdatePortsTree (treeId: Guid) (tree: PortsTree) =
+    member _.UpdatePortsTree(tree: PortsTree) =
         async {
-            let! row =
-                query {
-                    for pt in db.Poudrierec2.Portstrees do
-                        where (pt.Id = treeId)
-                        select pt
-                }
-                |> Seq.exactlyOneAsync
+            use! conn = ds.OpenConnectionAsync()
 
-            row.Name <- tree.Name
-            row.Method <- tree.Method.ToString()
-            row.Url <- tree.Url
-            row.OnConflict <- Common.OnConflict.Update
-            let! result = DatabaseError.FromQuery(db.SubmitUpdatesAsync())
+            if tree.Id.IsNone then
+                raise (ArgumentException("Ports tree metadata must have an ID"))
 
-            if result <> NoError then
-                db.ClearUpdates() |> ignore
+            let sql =
+                """
+                UPDATE poudrierec2.portstrees
+                SET    name = @name, portable_name = @portablename,
+                       method = @method, url = @url
+                WHERE id = @id
+                """
+
+            let! result = conn.ExecuteAsync(sql, tree) |> DatabaseError.FromQuery
 
             return result
         }
 
     member _.DeletePortsTree(treeId: Guid) =
         async {
-            let! row =
-                query {
-                    for pt in db.Poudrierec2.Portstrees do
-                        where (pt.Id = treeId)
-                        select pt
-                }
-                |> Seq.exactlyOneAsync
+            use! conn = ds.OpenConnectionAsync()
 
-            row.Delete()
-            let! result = DatabaseError.FromQuery(db.SubmitUpdatesAsync())
+            let sql =
+                """
+                DELETE FROM poudrierec2.configfiles
+                WHERE       id = @id
+                """
 
-            if result <> NoError then
-                db.ClearUpdates() |> ignore
+            let! result = conn.ExecuteAsync(sql, dict [ "id" => treeId ]) |> DatabaseError.FromQuery
 
             return result
         }

@@ -42,22 +42,34 @@ type PortsTreesApi(cfg: PortsRepository) =
         }
         |> Async.StartAsTask
 
+    [<Function("GetPortsTree")>]
+    member _.GetPortsTree
+        (
+            // fsharplint:disable-next-line TypedItemSpacing
+            [<HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "portstrees/{treeId:guid}")>] req:
+                HttpRequestData,
+            execContext: FunctionContext,
+            treeId: Guid
+        ) =
+        let log = execContext.GetLogger("GetPortsTree")
+
+        async {
+            let! files = cfg.GetPortsTrees(treeId)
+            let response = req.CreateResponse(HttpStatusCode.OK)
+            return response.writeJsonResponse files
+        }
+        |> Async.StartAsTask
+
     [<Function("GetPortsTrees")>]
     member _.GetPortsTrees
         (
-            [<HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "portstrees/{treeName?}")>] req: HttpRequestData,
-            execContext: FunctionContext,
-            treeName: string
+            [<HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "portstrees")>] req: HttpRequestData,
+            execContext: FunctionContext
         ) =
         let log = execContext.GetLogger("GetPortsTrees")
 
-        let treeNameOpt =
-            match treeName with
-            | null -> None
-            | _ -> Some treeName
-
         async {
-            let! files = cfg.GetPortsTrees() // FIXME ignores optional parameter
+            let! files = cfg.GetPortsTrees()
             let response = req.CreateResponse(HttpStatusCode.OK)
             return response.writeJsonResponse files
         }
@@ -79,7 +91,7 @@ type PortsTreesApi(cfg: PortsRepository) =
             match maybeConfig with
             | None -> response.StatusCode <- HttpStatusCode.BadRequest
             | Some meta ->
-                let! result = cfg.UpdatePortsTree treeId meta
+                let! result = cfg.UpdatePortsTree {meta with Id = Some treeId}
 
                 match result with
                 | NoError ->
