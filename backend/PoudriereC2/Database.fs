@@ -45,6 +45,9 @@ type DatabaseError =
 
     static member FromException(e: Exception) =
         match e.InnerException with
+        | :? AggregateException as ex ->
+            // recurse again
+            DatabaseError.FromException(ex)
         | :? PostgresException as ex ->
             match ex.SqlState with
             | PostgresErrorCodes.ForeignKeyViolation -> ForeignKeyViolation ex
