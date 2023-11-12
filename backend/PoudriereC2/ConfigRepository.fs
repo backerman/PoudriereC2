@@ -153,6 +153,8 @@ type ConfigRepository(ds: NpgsqlDataSource) =
                 | ConfigOptionUpdate.Delete opts ->
                     let p = DynamicParameters()
 
+                    // Generate a list of numbered placeholders for the names
+                    // and add them to the DynamicParameters object.
                     let namesPlaceholders =
                         opts
                         |> List.mapi (fun i opt ->
@@ -160,8 +162,11 @@ type ConfigRepository(ds: NpgsqlDataSource) =
                             $"@name{i}")
                         |> List.toArray
 
+                    // Generate the list of placeholders to insert in the parameterized SQL query.
                     let namesPlaceholders2 = String.Join(", ", namesPlaceholders)
 
+                    // Compose the query. The AND clause will have the form
+                    // AND name IN (@name0, @name1, @name2, ...)
                     let sqlDelete =
                         $"""
                         DELETE
@@ -170,7 +175,6 @@ type ConfigRepository(ds: NpgsqlDataSource) =
                         """
 
                     p.Add("configFile", configFile, DbType.Guid)
-                    p.Add("names", opts |> Array.ofList)
                     (sqlDelete, p)
 
             async {
