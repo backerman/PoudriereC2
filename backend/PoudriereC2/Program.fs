@@ -40,7 +40,7 @@ let servicesDelegate (s: IServiceCollection) =
         .AddSingleton<ConfigRepository>()
         .AddSingleton<PortsRepository>()
         .AddSingleton<JobRepository>()
-        .AddSingleton<PortSetsRepository>()
+        .AddSingleton<PortSetRepository>()
         .AddSingleton<JailRepository>()
         .AddSingleton<FreeBSDInfo>()
         .AddSingleton<ScheduleRepository>()

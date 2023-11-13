@@ -6,6 +6,14 @@ open System
 open Dapper
 open Npgsql
 
+[<CLIMutable>]
+type private PortSetButArray =
+    // This is a short-term thing. Longer-term, fix Dapper to work with F# lists.
+    { Id: Guid option
+      Name: string
+      PortableName: string
+      Origins: string[] }
+
 type JobRepository(ds: NpgsqlDataSource) =
 
     /// Get a list of all job configurations.
@@ -78,16 +86,21 @@ type JobRepository(ds: NpgsqlDataSource) =
                 """
 
             let! result =
-                conn.QueryAsync<JobConfig, PortsTree, PortSet, Jail, Guid[], JobInfo>(
+                conn.QueryAsync<JobConfig, PortsTree, PortSetButArray, Jail, Guid[], JobInfo>(
                     query,
-                    (fun (jc: JobConfig) (pt: PortsTree) (ps: PortSet) (j: Jail) (cfs: Guid[]) ->
+                    // fsharplint:disable-next-line
+                    (fun (jc: JobConfig) (pt: PortsTree) (ps: PortSetButArray) (j: Jail) (cfs: Guid array) ->
                         // FIXME some DUs need fixed dapper mapping functions
                         { JobId = jc.Id.Value
                           JobName = jc.Name
-                          PortSet = ps
+                          PortSet =
+                            { Id = ps.Id
+                              Name = ps.Name
+                              PortableName = ps.PortableName
+                              Origins = ps.Origins |> Array.toList }
                           PortsTree = pt
                           Jail = j
-                          ConfigFiles = cfs }),
+                          ConfigFiles = cfs |> Array.toList }),
                     dict [ "id" => id ]
                 )
 

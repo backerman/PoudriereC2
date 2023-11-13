@@ -43,7 +43,7 @@
     <ItemGroup>
       <DevLocalSettings Include="local.settings-dev.json" />
     </ItemGroup>
-    <Copy Condition="!Exists('local.settings.json')" SourceFiles="@(DevLocalSettings)" DestinationFiles="@(DevLocalSettings->'local.settings.json')">
+    <Copy Condition="!Exists('local.settings.json')" SourceFiles="@(DevLocalSettings)" DestinationFiles="@(DevLocalSettings-&gt;'local.settings.json')">
     </Copy>
   </Target>
   <ItemGroup>
@@ -56,7 +56,7 @@
     <Compile Include="Serialization.fs" />
     <Compile Include="PortsRepository.fs" />
     <Compile Include="PortsTrees.fs" />
-    <Compile Include="PortSetsRepository.fs" />
+    <Compile Include="PortSetRepository.fs" />
     <Compile Include="PortSets.fs" />
     <Compile Include="ConfigRepository.fs" />
     <Compile Include="ConfigFiles.fs" />

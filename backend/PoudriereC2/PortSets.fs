@@ -7,16 +7,17 @@ open Microsoft.Azure.Functions.Worker.Http
 open System.Net
 open System
 
-type PortSetsApi(ps: PortSetsRepository) =
-    [<Function("GetPortSets")>]
-    member _.GetPortSets
+type PortSetsApi(ps: PortSetRepository) =
+    [<Function("GetPortSet")>]
+    member _.GetPortSet
         (
-            [<HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "portsets/{portset?}")>] req: HttpRequestData,
+            [<HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "portsets/{portset:guid}")>] req: HttpRequestData,
             execContext: FunctionContext,
-            portset: Guid option
+            portset: Guid
         ) =
         async {
-            let! portsets = ps.GetPortSets(portset)
+            let log = execContext.GetLogger("GetPortSet")
+            let! portsets = ps.GetPortSets(Some portset)
 
             let! portsetsWithMembers =
                 portsets
@@ -24,13 +25,36 @@ type PortSetsApi(ps: PortSetsRepository) =
                     async {
                         let! members =
                             match portset.Id with
-                            | None -> raise (InvalidOperationException("Port set ID is null"))
                             | Some id -> id
+                            // Should never be able to happen, since the database requires an id.
+                            | None -> raise (InvalidOperationException("Port set ID is null"))
                             |> ps.GetPortSetMembers
 
                         return { portset with Origins = members }
                     })
                 |> Async.Parallel
+
+            let response = req.CreateResponse(HttpStatusCode.OK)
+            return response.writeJsonResponse portsetsWithMembers
+        }
+        |> Async.StartAsTask
+
+    [<Function("GetPortSets")>]
+    member _.GetPortSets
+        (
+            [<HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "portsets")>] req: HttpRequestData,
+            execContext: FunctionContext
+        ) =
+        async {
+            let log = execContext.GetLogger("GetPortSets")
+            let! portsets = ps.GetPortSets(None)
+            let! portsetMembers = portsets |> List.map (fun ps -> ps.Id.Value) |> ps.GetPortSetMembers
+
+            let portsetsWithMembers =
+                portsets
+                |> List.map (fun (ps) ->
+                    { ps with
+                        Origins = portsetMembers.[ps.Id.Value] })
 
             let response = req.CreateResponse(HttpStatusCode.OK)
             return response.writeJsonResponse portsetsWithMembers
@@ -47,6 +71,7 @@ type PortSetsApi(ps: PortSetsRepository) =
             portset: Guid
         ) =
         async {
+            let log = execContext.GetLogger("GetPortSetMembers")
             let! portsets = ps.GetPortSetMembers(portset)
             let response = req.CreateResponse(HttpStatusCode.OK)
             return response.writeJsonResponse portsets
@@ -111,7 +136,7 @@ type PortSetsApi(ps: PortSetsRepository) =
 
                 match createResult with
                 | (NoError, newGuid) ->
-                    let! psmResults = ps.UpdatePortSetMembers newGuid [ Add (List.ofArray pst.Origins) ]
+                    let! psmResults = ps.UpdatePortSetMembers newGuid [ Add(pst.Origins) ]
 
                     match psmResults with
                     | NoError ->

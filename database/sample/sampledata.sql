@@ -8,13 +8,18 @@ VALUES ('4e6d2feb-2a99-4bed-8545-d5462c66ba0c', 'main', 'main', 'git', 'https://
 
 INSERT INTO poudrierec2.portsets (id, name, portable_name)
 VALUES
-('11a4e47a-e778-4499-8ad3-4ad117fe0a2f', 'server', 'server');
+('11a4e47a-e778-4499-8ad3-4ad117fe0a2f', 'server', 'server'),
+('47234d7c-82d1-4ffd-ae18-25aae674f245', '田中太郎', 'tanakatarou');
 
 INSERT INTO poudrierec2.portset_members (portset, portname)
 VALUES
 ('11a4e47a-e778-4499-8ad3-4ad117fe0a2f', 'net/rclone'),
 ('11a4e47a-e778-4499-8ad3-4ad117fe0a2f', 'security/sssd'),
-('11a4e47a-e778-4499-8ad3-4ad117fe0a2f', 'sysutils/tmux');
+('11a4e47a-e778-4499-8ad3-4ad117fe0a2f', 'sysutils/tmux'),
+('47234d7c-82d1-4ffd-ae18-25aae674f245', 'sysutils/py-azure-cli'),
+('47234d7c-82d1-4ffd-ae18-25aae674f245', 'editors/vim'),
+('47234d7c-82d1-4ffd-ae18-25aae674f245', 'sysutils/htop'),
+('47234d7c-82d1-4ffd-ae18-25aae674f245', 'archivers/cabextract');
 
 INSERT INTO poudrierec2.configfiles (id, deleted, name, configtype, jail)
 VALUES

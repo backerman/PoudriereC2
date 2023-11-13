@@ -2,7 +2,6 @@ namespace Facefault.PoudriereC2
 
 open Facefault.PoudriereC2
 open Facefault.PoudriereC2.Database
-open FSharp.Data.Sql
 open Npgsql
 open System
 open Dapper
@@ -24,7 +23,7 @@ type PortsRepository(ds: NpgsqlDataSource) =
                 $"""
                 SELECT * FROM poudrierec2.portstrees
                 WHERE {filterQuery}
-                ORDER BY name
+                ORDER BY id
                 """
 
             use! conn = ds.OpenConnectionAsync()

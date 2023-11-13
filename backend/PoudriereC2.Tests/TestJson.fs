@@ -102,7 +102,7 @@ type JsonTests() =
             { Id = Some(Guid("12345678-9abc-def0-1234-56789abcdef0"))
               Name = "test"
               PortableName = "test"
-              Origins = [| "www/apache24"; "security/tailscale" |] }
+              Origins = [ "www/apache24"; "security/tailscale" ] }
 
         let expected =
             """
@@ -136,7 +136,7 @@ type JsonTests() =
             { Id = None
               Name = "test"
               PortableName = "test"
-              Origins = [| "www/apache24"; "security/tailscale" |] }
+              Origins = [ "www/apache24"; "security/tailscale" ] }
 
         JsonSerializer.Deserialize<PortSet>(noGuidPortSetJson, eventSerializationOptions)
         |> should equal expectedNoGuid
@@ -159,7 +159,7 @@ type JsonTests() =
             { Id = Some(Guid "12345678-9abc-def0-1234-56789abcdef0")
               Name = "test"
               PortableName = "test"
-              Origins = [| "www/apache24"; "security/tailscale" |] }
+              Origins = [ "www/apache24"; "security/tailscale" ] }
 
         JsonSerializer.Deserialize<PortSet>(withGuidPortSetJson, eventSerializationOptions)
         |> should equal expectedWithGuid

@@ -97,7 +97,7 @@ type TestScope() =
     member _.dropDatabaseAsync() =
         async {
             let cmd =
-                dbCreateDropDataSource.CreateCommand("DROP DATABASE IF EXISTS " + database.Name)
+                dbCreateDropDataSource.CreateCommand("DROP DATABASE IF EXISTS " + database.Name + " WITH (FORCE)")
 
             do! workDataSource.DisposeAsync()
             let! _ = cmd.ExecuteNonQueryAsync()
@@ -122,4 +122,4 @@ type DapperSetup() =
     [<OneTimeSetUp>]
     member _.SetUpThings() =
         // Temporary? Copy from the bit in Program.fs.
-        Facefault.PoudriereC2.Database.setupDatabaseMappers()
+        Facefault.PoudriereC2.Database.setupDatabaseMappers ()

@@ -8,6 +8,7 @@ open System
 open Microsoft.Extensions.Logging
 open System.Net
 open Azure.Core
+open System.Data
 
 [<Literal>]
 let ConnectionString = Env.PostgresConnection.Value
@@ -121,3 +122,14 @@ let getAccessTokenWithScope (scopeUri: string) =
 /// Get an access token (MSI or otherwise) from AAD for PostgreSQL.
 let getAccessToken () =
     getAccessTokenWithScope "https://ossrdbms-aad.database.windows.net"
+
+let makePlaceholders (values: 'a list) (prefix: string) (dbType: DbType) =
+    let p = DynamicParameters()
+    let placeholderArray =
+        values
+        |> List.mapi (fun i opt ->
+            p.Add($"{prefix}{i}", opt, dbType)
+            $"@{prefix}{i}")
+        |> List.toArray
+    let placeholdersString = String.Join(", ", placeholderArray)
+    (placeholdersString, p)

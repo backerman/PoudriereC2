@@ -67,7 +67,7 @@ type JobRepositoryTests() =
                     { Id = Guid("11a4e47a-e778-4499-8ad3-4ad117fe0a2f") |> Some
                       Name = "server"
                       PortableName = "server"
-                      Origins = [| "net/rclone"; "security/sssd"; "sysutils/tmux" |] }
+                      Origins = [ "net/rclone"; "security/sssd"; "sysutils/tmux" ] }
                   Jail =
                     { Id = Guid("0a62a787-c7c1-48bc-8ba0-90d7fbe9c098") |> Some
                       Name = "13_0-amd64"
@@ -77,7 +77,9 @@ type JobRepositoryTests() =
                       Method = None
                       Url = None
                       Path = None }
-                  ConfigFiles = [| Guid "7557d8a8-bba5-4c99-ba6f-2ffbebb0be63"; Guid "97241b1e-9c04-4b58-9cdc-4c90eef35225" |] }
+                  ConfigFiles =
+                    [ Guid "7557d8a8-bba5-4c99-ba6f-2ffbebb0be63"
+                      Guid "97241b1e-9c04-4b58-9cdc-4c90eef35225" ] }
 
             ()
         }
