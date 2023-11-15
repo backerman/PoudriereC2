@@ -6,7 +6,7 @@ open Npgsql
 open System
 open Dapper
 
-type PortsRepository(ds: NpgsqlDataSource) =
+type PortRepository(ds: NpgsqlDataSource) =
 
     member _.GetPortsTrees(?portsTree: Guid) =
         async {

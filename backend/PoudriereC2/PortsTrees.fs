@@ -8,7 +8,7 @@ open Microsoft.Extensions.Logging
 open System.Net
 open System
 
-type PortsTreesApi(cfg: PortsRepository) =
+type PortsTreesApi(cfg: PortRepository) =
     [<Function("NewPortsTree")>]
     member _.NewPortsTree
         (

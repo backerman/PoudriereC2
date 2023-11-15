@@ -38,7 +38,7 @@ let servicesDelegate (s: IServiceCollection) =
             setupDatabaseMappers()
             ds)
         .AddSingleton<ConfigRepository>()
-        .AddSingleton<PortsRepository>()
+        .AddSingleton<PortRepository>()
         .AddSingleton<JobRepository>()
         .AddSingleton<PortSetRepository>()
         .AddSingleton<JailRepository>()

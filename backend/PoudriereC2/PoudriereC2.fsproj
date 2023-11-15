@@ -54,7 +54,7 @@
     <Compile Include="EventTypes.fs" />
     <Compile Include="Database.fs" />
     <Compile Include="Serialization.fs" />
-    <Compile Include="PortsRepository.fs" />
+    <Compile Include="PortRepository.fs" />
     <Compile Include="PortsTrees.fs" />
     <Compile Include="PortSetRepository.fs" />
     <Compile Include="PortSets.fs" />
