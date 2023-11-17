@@ -4,7 +4,6 @@ open NUnit.Framework
 open System
 open Facefault.PoudriereC2
 open FsUnit
-open Facefault.PoudriereC2.Database
 
 [<TestFixture>]
 type JailRepositoryTests() =

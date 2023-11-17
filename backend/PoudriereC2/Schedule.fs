@@ -14,7 +14,7 @@ type ScheduleApi(jobs: JobRepository, sched: ScheduleRepository) =
         match job.LastFinished with
         | None -> true
         | Some lastFinishedTime ->
-            let cronExpression = Cronos.CronExpression.Parse(job.RunAt)
+            let cronExpression = CronExpression.Parse(job.RunAt)
 
             let nextRunTime =
                 cronExpression.GetNextOccurrence(lastFinishedTime, TimeZoneInfo.Utc)

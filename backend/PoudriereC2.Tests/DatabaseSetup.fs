@@ -1,9 +1,7 @@
 namespace PoudriereC2.Tests
 
-open Dapper
 open NUnit.Framework
 open Npgsql
-open Facefault.PoudriereC2
 open System
 open System.IO
 open System.Threading.Tasks

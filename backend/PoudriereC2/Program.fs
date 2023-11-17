@@ -6,7 +6,6 @@ open Microsoft.Extensions.Hosting
 open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Configuration
 open System
-open System.Data
 open Npgsql
 open Microsoft.Extensions.Logging
 
