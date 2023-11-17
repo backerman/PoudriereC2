@@ -10,7 +10,7 @@ open FSharp.Control
 open System.Collections.Generic
 open System.Data
 
-type PortSetRepository(db: DB.dataContext, ds: NpgsqlDataSource) =
+type PortSetRepository(ds: NpgsqlDataSource) =
     /// Return a list of all port sets if portSet is None, or a list
     /// containing only the port set with the given ID if portSet is Some.
     /// The list is sorted by ID, and the returned values do not have their
@@ -87,14 +87,19 @@ type PortSetRepository(db: DB.dataContext, ds: NpgsqlDataSource) =
             return mapResult.[portSet]
         }
 
-    /// Process one or more add/delete actions on a port set as part of a
-    /// single transaction.
-    member _.UpdatePortSetMembers (portSet: Guid) (actions: PortSetUpdate list) =
-        let updateParamsQuery (action: PortSetUpdate) =
+    /// Perform the requested update in a provided transaction. This call will
+    /// not commit or roll back the transaction.
+    member _.UpdatePortSetMembersWithTransaction
+        (conn: IDbConnection)
+        (txn: IDbTransaction)
+        (portSet: Guid)
+        (action: PortSetUpdate)
+        =
+        let updateParamsQuery (anAction: PortSetUpdate) =
             let stringListToRecordList (ports: string list) =
                 ports |> List.map (fun port -> {| portset = portSet; portname = port |})
 
-            match action with
+            match anAction with
             | Add ports ->
                 let query =
                     """
@@ -115,12 +120,19 @@ type PortSetRepository(db: DB.dataContext, ds: NpgsqlDataSource) =
                 let parameters = stringListToRecordList ports
                 (parameters, query)
 
-        let processAction (conn: NpgsqlConnection) (txn: NpgsqlTransaction) (action: PortSetUpdate) =
-            async {
-                let (parameters, query) = updateParamsQuery action
-                let! result = conn.ExecuteAsync(query, parameters, transaction = txn)
-                return result
-            }
+        async {
+            let (parameters, query) = updateParamsQuery action
+
+            let! result =
+                conn.ExecuteAsync(query, parameters, transaction = txn)
+                |> DatabaseError.FromQuery
+
+            return result
+        }
+
+    /// Process one or more add/delete actions on a port set as part of a
+    /// single transaction.
+    member this.UpdatePortSetMembers (portSet: Guid) (actions: PortSetUpdate list) =
 
         async {
             use! conn = ds.OpenConnectionAsync()
@@ -128,48 +140,60 @@ type PortSetRepository(db: DB.dataContext, ds: NpgsqlDataSource) =
 
             let! result =
                 actions
-                |> List.map (processAction conn txn)
+                |> List.map (this.UpdatePortSetMembersWithTransaction conn txn portSet)
                 |> Async.Sequential
                 |> Async.AsTask
                 |> DatabaseError.FromQuery
+
             match result with
             | NoError -> do! txn.CommitAsync()
             | _ -> do! txn.RollbackAsync()
+
             return result
         }
 
-    member _.CreatePortSet(name: string) =
+    member this.CreatePortSet(ps: PortSet) =
         async {
-            // The database code needs to be switched to something that alllows
-            // explicit transaction control. As a hack, the portset is created
-            // first, then the members are added with UpdatePortSetMembers;
-            // otherwise, order of operations is not guaranteed by SQLProvider.
             let psGuid = Guid.NewGuid()
-            let portSet = db.Poudrierec2.Portsets.Create()
-            portSet.Id <- psGuid
-            portSet.Name <- name
-            portSet.OnConflict <- Common.OnConflict.Throw
-            let! result = DatabaseError.FromQuery(db.SubmitUpdatesAsync())
 
-            if result <> NoError then
-                db.ClearUpdates() |> ignore
+            let query =
+                $"""
+                INSERT INTO poudrierec2.portsets (id, name, portable_name)
+                VALUES (@id, @name, @portableName)
+                ON CONFLICT DO NOTHING
+                """
 
-            return (result, portSet.Id)
+            use! conn = ds.OpenConnectionAsync()
+            use! txn = conn.BeginTransactionAsync()
+            // Nah. Get portable name as input in PortsSet object.
+            let! result =
+                conn.ExecuteAsync(query, { ps with Id = Some psGuid }, transaction = txn)
+                |> DatabaseError.FromQuery
+
+            match result with
+            | NoError ->
+                // Add the initial members
+                let! result = Add ps.Origins |> this.UpdatePortSetMembersWithTransaction conn txn psGuid
+
+                match result with
+                | NoError -> do! txn.CommitAsync()
+                | _ -> do! txn.RollbackAsync()
+            | _ -> do! txn.RollbackAsync()
+
+            return (result, psGuid)
         }
 
     member _.DeletePortSet(portSet: Guid) =
         async {
             // portset_members is ON DELETE CASCADE, so we don't need to
             // explicitly delete the members.
-            let! portSet =
-                query {
-                    for ps in db.Poudrierec2.Portsets do
-                        where (ps.Id = portSet)
-                }
-                |> Seq.executeQueryAsync
+            let query =
+                """
+                DELETE FROM poudrierec2.portsets
+                WHERE id = @id
+                """
 
-            portSet |> Seq.iter (fun row -> row.Delete())
-
-            let! result = DatabaseError.FromQuery(db.SubmitUpdatesAsync())
+            use! conn = ds.OpenConnectionAsync()
+            let! result = conn.ExecuteAsync(query, {| Id = portSet |}) |> DatabaseError.FromQuery
             return result
         }

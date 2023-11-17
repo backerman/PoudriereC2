@@ -132,27 +132,10 @@ type PortSetsApi(ps: PortSetRepository) =
                 response.StatusCode <- HttpStatusCode.BadRequest
                 response.writeJsonResponse (Error "Invalid or nonexistent payload") |> ignore
             | Some pst ->
-                let! createResult = ps.CreatePortSet pst.Name
+                let! createResult = ps.CreatePortSet pst
 
                 match createResult with
-                | (NoError, newGuid) ->
-                    let! psmResults = ps.UpdatePortSetMembers newGuid [ Add(pst.Origins) ]
-
-                    match psmResults with
-                    | NoError ->
-                        response.StatusCode <- HttpStatusCode.OK
-                        Created newGuid |> response.writeJsonResponse |> ignore
-                    | someError ->
-                        let errResponse =
-                            someError.Handle(
-                                log,
-                                "Failed to add members to port set {PortSet} ({PortSetGuid})",
-                                pst.Name,
-                                newGuid
-                            )
-
-                        response.StatusCode <- errResponse.httpCode
-                        response.writeJsonResponse errResponse.result |> ignore
+                | (NoError, newGuid) -> ()
                 | (someError, _) ->
                     let errResponse =
                         someError.Handle(log, "Failed creation of port set {PortSet}", pst.Name)

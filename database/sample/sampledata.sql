@@ -4,11 +4,13 @@ INSERT INTO poudrierec2.jails (id, name, portable_name, version, architecture)
 VALUES ('0a62a787-c7c1-48bc-8ba0-90d7fbe9c098', '13_0-amd64', '130-amd64', '13.0-RELEASE', 'amd64.amd64');
 
 INSERT INTO poudrierec2.portstrees (id, name, portable_name, method, url)
-VALUES ('4e6d2feb-2a99-4bed-8545-d5462c66ba0c', 'main', 'main', 'git', 'https://git.freebsd.org/ports.git');
+VALUES
+('4e6d2feb-2a99-4bed-8545-d5462c66ba0c', 'main', 'main', 'git', 'https://git.freebsd.org/ports.git');
 
 INSERT INTO poudrierec2.portsets (id, name, portable_name)
 VALUES
 ('11a4e47a-e778-4499-8ad3-4ad117fe0a2f', 'server', 'server'),
+('14a6f67a-ed4e-462c-beb1-4d9a751ac339', 'No jobs using this so tests can delete it', 'testportstreepleaseignore'),
 ('47234d7c-82d1-4ffd-ae18-25aae674f245', '田中太郎', 'tanakatarou');
 
 INSERT INTO poudrierec2.portset_members (portset, portname)
