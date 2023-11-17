@@ -2,7 +2,6 @@ module Facefault.PoudriereC2.Database
 
 open Dapper
 open FSharp.Data.LiteralProviders
-open FSharp.Data.Sql
 open Npgsql
 open System
 open Microsoft.Extensions.Logging
@@ -19,10 +18,6 @@ let Owner = "poudrierec2"
 
 [<Literal>]
 let ResPath = __SOURCE_DIRECTORY__ + "/obj"
-
-type DB =
-    // fsharplint:disable-next-line
-    SqlDataProvider<DatabaseVendor=Common.DatabaseProviderTypes.POSTGRESQL, ConnectionString=ConnectionString, UseOptionTypes=Common.NullableColumnType.OPTION, Owner=Owner, ResolutionPath=ResPath>
 
 // Dapper stuff
 let inline (=>) a b = (a, box b)

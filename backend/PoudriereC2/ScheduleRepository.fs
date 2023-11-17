@@ -3,7 +3,6 @@ namespace Facefault.PoudriereC2
 open Dapper
 open Facefault.PoudriereC2
 open Facefault.PoudriereC2.Database
-open FSharp.Data.Sql
 open Npgsql
 
 type ScheduleRepository(ds: NpgsqlDataSource) =

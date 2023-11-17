@@ -7,7 +7,6 @@ open Microsoft.Azure.Functions.Worker.Http
 open Microsoft.Extensions.Logging
 open System
 open System.Net
-open FSharp.Data.Sql
 
 type ConfigFileApi(cfg: ConfigRepository) =
 

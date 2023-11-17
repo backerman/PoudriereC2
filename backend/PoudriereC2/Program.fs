@@ -5,12 +5,11 @@ open Microsoft.Azure.Functions.Worker
 open Microsoft.Extensions.Hosting
 open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Configuration
-open FSharp.Data.Sql
 open System
 open System.Data
 open Npgsql
-open Dapper
 open Microsoft.Extensions.Logging
+
 
 let configuration =
     ConfigurationBuilder()
@@ -27,7 +26,6 @@ let servicesDelegate (s: IServiceCollection) =
     let connStr = System.Environment.GetEnvironmentVariable "PostgresConnection"
 
     s
-        .AddSingleton<DB.dataContext>(DB.GetDataContext(connStr))
         .AddSingleton<NpgsqlDataSource>(fun x ->
             let loggerFactory = x.GetRequiredService<ILoggerFactory>()
             let ds =
@@ -57,9 +55,5 @@ let main argv =
             .ConfigureFunctionsWorkerDefaults(functionsWorkerDefaultsDelegate)
             .ConfigureServices(servicesDelegate)
             .Build()
-
-    if configuration.["AZURE_FUNCTIONS_ENVIRONMENT"] = "Development" then
-        Common.QueryEvents.SqlQueryEvent
-        |> Event.add (fun sql -> printfn $"Executing SQL: {sql}")
     host.Run()
     0

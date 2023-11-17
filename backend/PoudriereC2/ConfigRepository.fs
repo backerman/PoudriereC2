@@ -3,7 +3,6 @@ namespace Facefault.PoudriereC2
 open Facefault.PoudriereC2
 open Facefault.PoudriereC2.Database
 open System
-open FSharp.Data.Sql
 open Npgsql
 open Dapper
 open System.Data
