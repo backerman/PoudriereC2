@@ -8,6 +8,7 @@ import { ItemList } from "../ItemList";
 import { ConfigCommandBar } from "./ConfigCommandBar";
 import { PortSetEditor } from "./PortSetEditor";
 import { useAzureFunctionsOAuth } from "@/utils/apiAuth";
+import { makeNamePortable } from "@/utils/utils";
 
 const columns: IColumn[] = [
     {
@@ -43,6 +44,7 @@ function computeMutations(oldPs: PortSet, newPs: PortSet) {
 const emptyPortSet: PortSet = {
     id: '',
     name: '',
+    portableName: '',
     origins: []
 }
 
@@ -85,7 +87,7 @@ export function PortSets(): JSX.Element {
                     clearCreatingNewRecord();
                     closeEditor();
                 }}
-                record={activeRecord}
+                record={activeRecord || emptyPortSet}
                 onSubmit={async (ps: PortSet) => {
                     if (!activeRecord) {
                         console.log("Error: no active record exists")
@@ -148,7 +150,8 @@ export function PortSets(): JSX.Element {
                 onAddConfirmClick={() => {
                     setActiveRecord({
                         ...emptyPortSet,
-                        name: addNameRef.current?.value || ''
+                        name: addNameRef.current?.value || '',
+                        portableName: makeNamePortable(addNameRef.current?.value || '')
                     });
                     setCreatingNewRecord();
                     openEditor();

@@ -3,6 +3,7 @@ import { Editor } from "../Editor";
 import { useReducer, useRef, useState } from "react";
 import { Dropdown, IComboBox, IComboBoxOption, IDropdownOption, TextField } from "@fluentui/react";
 import { ComboBoxWithFetcher } from "./ComboBoxWithFetcher";
+import { validatePortableName, validityState } from "@/utils/utils";
 
 export interface JailEditorProps {
     isOpen: boolean
@@ -31,14 +32,6 @@ function updateState<K extends keyof Jail>(state: Jail,
     return newState;
 }
 
-function updateValidity<K extends keyof Jail>(
-    state: Map<K, boolean>,
-    action: { field: K, value: boolean }): Map<K, boolean> {
-    let newState = new Map(state);
-    newState.set(action.field, action.value);
-    return newState;
-}
-
 const jailMethodChoices: IDropdownOption<JailMethodInfo>[] =
     JailMethods.map((method) => { return { key: method.name, text: method.name, data: method }; });
 
@@ -52,11 +45,8 @@ export function JailEditor(props: JailEditorProps): JSX.Element {
     } = props;
 
     // Set up validity status map initial state.
-    const initialValidityState = new Map<keyof Jail, boolean>();
-    for (const key of Object.keys(record) as (keyof Jail)[]) {
-        initialValidityState.set(key, true);
-    }
-    let [validityData, setValidityData] = useReducer(updateValidity, initialValidityState)
+    const validity = validityState(record);
+    let [validityData, setValidityData] = useReducer(validity.reducer, validity.initialState);
 
     let [mostRecentPropsRecord, setMostRecentPropsRecord] = useState(record);
     let [jailData, setState] = useReducer(updateState, {} as Jail);
@@ -138,22 +128,9 @@ export function JailEditor(props: JailEditorProps): JSX.Element {
                 label="Portable name"
                 value={jailData.portableName || ''}
                 onGetErrorMessage={(val) => {
-                    let errMsg = '';
-                    if (val === '') {
-                        errMsg = "Portable name cannot be blank.";
-                    } else if (val.length > 63) {
-                        errMsg = "Portable name must be 63 characters or fewer.";
-                    } else if (!val.match(/^[A-Za-z0-9-]+$/)) {
-                        errMsg = "Portable name may only contain letters, numbers, and hyphens.";
-                    }
-                    if (errMsg !== '') {
-                        // Field is invalid.
-                        setValidityData({ field: 'portableName', value: false });
-                    } else {
-                        // Field is valid.
-                        setValidityData({ field: 'portableName', value: true });
-                    }
-                    return errMsg;
+                    let validity = validatePortableName(val);
+                    setValidityData({ field: 'portableName', value: validity.isValid });
+                    return validity.errMsg;
                 }}
                 onChange={onTextChange('portableName')}
             />

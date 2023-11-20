@@ -8,7 +8,7 @@ import { ItemList } from "../ItemList";
 import { JailEditor } from "./JailEditor";
 import { ConfigCommandBar } from "./ConfigCommandBar";
 import { useAzureFunctionsOAuth } from "@/utils/apiAuth";
-import { makePortable } from "@/utils/utils";
+import { makeNamePortable } from "@/utils/utils";
 
 const columns: IColumn[] = [
     {
@@ -164,7 +164,7 @@ export function Jails(): JSX.Element {
                     const name = addNameRef.current?.value || '';
                     setActiveRecord({
                         name: name,
-                        portableName: makePortable(name),
+                        portableName: makeNamePortable(name),
                     });
                     setCreatingNewRecord();
                     hideAddDialog();

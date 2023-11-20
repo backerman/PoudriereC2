@@ -4,6 +4,7 @@ import {
     IconButton,
     Selection,
     SelectionMode,
+    Separator,
     Stack,
     TextField
 } from "@fluentui/react";
@@ -11,10 +12,11 @@ import { useEffect, useReducer, useRef, useState } from "react";
 import { Editor } from "../Editor";
 import { ItemList } from "../ItemList";
 import { PortSet } from "src/models/portsets";
+import { validatePortableName, validityState } from "@/utils/utils";
 
 export interface PortSetEditorProps {
     isOpen: boolean
-    record: PortSet | undefined
+    record: PortSet
     createNewRecord: boolean
     onSubmit: (formData: PortSet) => void
     onDismiss: () => void
@@ -49,8 +51,21 @@ export function PortSetEditor(props: PortSetEditorProps): JSX.Element {
     let [origins, setOrigins] =
         useReducer(updateOrigins, []);
     let [portSetName, setPortSetName] = useState('');
+    let [portSetPortableName, setPortSetPortableName] = useState('');
     let [error, setError] = useState<any>(null);
-    let originalValue = useRef<PortSet>({ id: '', name: '', origins: [] });
+    let originalValue = useRef<PortSet>({ id: '', name: '', portableName: '', origins: [] });
+
+    // Validity map
+    const validity = validityState<PortSet>(props.record);
+    let [validityData, setValidityData] = useReducer(validity.reducer, validity.initialState);
+    const isFormValid = () => {
+        for (const key of validityData.keys()) {
+            if (!validityData.get(key)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     // The text field for adding an origin.
     const [originName, updateOriginName] = useState('');
@@ -87,6 +102,7 @@ export function PortSetEditor(props: PortSetEditorProps): JSX.Element {
         if (props.record) {
             originalValue.current = props.record;
             setPortSetName(props.record.name);
+            setPortSetPortableName(props.record.portableName);
             setOrigins(props.record.origins);
         }
     }, [props.record]);
@@ -95,10 +111,12 @@ export function PortSetEditor(props: PortSetEditorProps): JSX.Element {
         <Editor
             isOpen={props.isOpen}
             isBlocking={false}
+            submitDisabled={!isFormValid()}
             headerText={`${props.createNewRecord ? 'Create' : 'Edit'} port set ${portSetName}`}
             onDismiss={() => {
                 // When cancel button selected, revert changes.
                 setPortSetName(originalValue.current.name);
+                setPortSetPortableName(originalValue.current.portableName);
                 updateOriginName('');
                 setOrigins(originalValue.current.origins);
                 props.onDismiss();
@@ -107,11 +125,34 @@ export function PortSetEditor(props: PortSetEditorProps): JSX.Element {
                 props.onSubmit({
                     id: props.record?.id || '',
                     name: portSetName,
+                    portableName: portSetPortableName,
                     origins: origins
                 })
             }}>
             <Stack horizontal>
                 <Stack.Item align="stretch" grow={true}>
+                    <TextField
+                        label="GUID"
+                        value={props.record?.id || ''}
+                        disabled={props.createNewRecord}
+                        readOnly={true}
+                    />
+                    <TextField
+                        label="Name"
+                        value={portSetName}
+                        onChange={(_, newValue) => { setPortSetName(newValue || '') }}
+                    />
+                    <TextField
+                        label="Portable name"
+                        value={portSetPortableName || ''}
+                        onGetErrorMessage={(val) => {
+                            let validity = validatePortableName(val);
+                            setValidityData({ field: 'portableName', value: validity.isValid });
+                            return validity.errMsg;
+                        }}
+                        onChange={(_, newValue) => { setPortSetPortableName(newValue || '') }}
+                    />
+                    <Separator/>
                     <TextField
                         width="100%"
                         aria-label={"Text field for adding a package origin"}

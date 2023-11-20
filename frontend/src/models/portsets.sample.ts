@@ -4,6 +4,7 @@ export const sampleData: PortSet[] = [
     {
         id: "3bb71b44-869a-493c-aa82-aaf9f337fc50",
         name: "Yog-Sothoth",
+        portableName: "yog-sothoth",
         origins: [
             "devel/binutils",
             "lang/python38",
