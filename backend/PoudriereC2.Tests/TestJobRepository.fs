@@ -24,7 +24,7 @@ type JobRepositoryTests() =
             let repo = JobRepository(ds)
             let! (err, jobConfigs) = repo.GetJobConfigs()
             err |> should equal NoError
-            jobConfigs |> should haveCount 1
+            jobConfigs |> should haveCount 2
 
             jobConfigs
             |> Seq.head
@@ -32,7 +32,7 @@ type JobRepositoryTests() =
                 equal
                 { Id = Guid("209fc7b5-18c5-40e1-a205-4ae82790621e") |> Some
                   Deleted = false
-                  Name = "Yes it's a job configuration!"
+                  Name = "Configuration with a currently-running job"
                   PoudriereConf = Guid("97241b1e-9c04-4b58-9cdc-4c90eef35225")
                   PoudriereConfName = Some "Random poudriere.conf"
                   PortsTree = Guid("4e6d2feb-2a99-4bed-8545-d5462c66ba0c")
@@ -56,7 +56,7 @@ type JobRepositoryTests() =
             |> should
                 equal
                 { JobId = Guid("209fc7b5-18c5-40e1-a205-4ae82790621e")
-                  JobName = "Yes it's a job configuration!"
+                  JobName = "Configuration with a currently-running job"
                   PortsTree =
                     { Id = Guid("4e6d2feb-2a99-4bed-8545-d5462c66ba0c") |> Some
                       Name = "main"

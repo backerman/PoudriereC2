@@ -277,6 +277,16 @@ WHERE completed IS NOT NULL
 GROUP BY jobconfig;
 COMMENT ON VIEW poudrierec2.jobruns_current IS E'Most recent completed job for each configuration.';
 
+CREATE VIEW poudrierec2.jobs_lastrun_scheduled AS
+-- Jobs with whether they are currently executing, last successful run, and schedule.
+SELECT jc.id, jc.name, mrc.completed last_completed, c.requested current_requested, s.runat
+FROM poudrierec2.jobconfigs jc
+LEFT JOIN poudrierec2.jobruns_mostrecentcompleted mrc ON jc.id = mrc.jobconfig
+LEFT JOIN poudrierec2.jobruns_current c ON jc.id = c.jobconfig
+LEFT JOIN poudrierec2.schedules s ON s.jobconfig = jc.id
+WHERE jc.deleted = false
+ORDER BY jc.id;
+
 CREATE TABLE poudrierec2.portstree_methods (
 	name text NOT NULL,
 	isdefault boolean NOT NULL DEFAULT false,

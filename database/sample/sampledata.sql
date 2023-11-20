@@ -47,7 +47,8 @@ VALUES
 
 INSERT INTO poudrierec2.jobconfigs (id, name, poudriereconf, portstree, portset, jail)
 VALUES
-('209fc7b5-18c5-40e1-a205-4ae82790621e', 'Yes it''s a job configuration!', '97241b1e-9c04-4b58-9cdc-4c90eef35225', '4e6d2feb-2a99-4bed-8545-d5462c66ba0c', '11a4e47a-e778-4499-8ad3-4ad117fe0a2f', '0a62a787-c7c1-48bc-8ba0-90d7fbe9c098');
+('209fc7b5-18c5-40e1-a205-4ae82790621e', 'Configuration with a currently-running job', '97241b1e-9c04-4b58-9cdc-4c90eef35225', '4e6d2feb-2a99-4bed-8545-d5462c66ba0c', '11a4e47a-e778-4499-8ad3-4ad117fe0a2f', '0a62a787-c7c1-48bc-8ba0-90d7fbe9c098'),
+('e51d1d30-434b-4017-a9b5-b242cb1e4237', 'Configuration with only completed jobs', '97241b1e-9c04-4b58-9cdc-4c90eef35225', '4e6d2feb-2a99-4bed-8545-d5462c66ba0c', '47234d7c-82d1-4ffd-ae18-25aae674f245', '0a62a787-c7c1-48bc-8ba0-90d7fbe9c098');
 
 INSERT INTO poudrierec2.virtualmachines (azuuid, created)
 VALUES
@@ -59,8 +60,12 @@ VALUES
 -- 03:42 daily
 ('209fc7b5-18c5-40e1-a205-4ae82790621e', '42 3 * * *');
 
-INSERT INTO poudrierec2.jobruns (jobconfig, requested, virtualmachine)
+INSERT INTO poudrierec2.jobruns (jobconfig, requested, started, completed, virtualmachine)
 VALUES
-('209fc7b5-18c5-40e1-a205-4ae82790621e', '2021-08-05 00:00:00Z', '0f2bb76c-b639-43d2-98d6-5c5dceb8ffe3');
+('209fc7b5-18c5-40e1-a205-4ae82790621e', '2021-08-05 00:00:00Z', '2021-08-05 00:01:04Z', '2021-08-05 05:06:07Z', '0f2bb76c-b639-43d2-98d6-5c5dceb8ffe3'),
+('209fc7b5-18c5-40e1-a205-4ae82790621e', '2021-08-07 00:00:00Z', '2021-08-07 00:01:04Z', NULL, '0f2bb76c-b639-43d2-98d6-5c5dceb8ffe3'),
+('209fc7b5-18c5-40e1-a205-4ae82790621e', '2021-08-09 00:00:00Z', NULL, NULL, '0f2bb76c-b639-43d2-98d6-5c5dceb8ffe3'),
+('e51d1d30-434b-4017-a9b5-b242cb1e4237', '2021-08-03 00:00:00Z', '2021-08-03 00:00:04Z', '2021-08-03 02:00:00Z', '0f2bb76c-b639-43d2-98d6-5c5dceb8ffe3'),
+('e51d1d30-434b-4017-a9b5-b242cb1e4237', '2021-08-04 00:00:00Z', '2021-08-04 00:00:14Z', '2021-08-04 03:00:05Z', '0f2bb76c-b639-43d2-98d6-5c5dceb8ffe3');
 
 COMMIT;
