@@ -2,6 +2,7 @@ import { Dropdown, IDropdownOption, TextField } from "@fluentui/react";
 import { useReducer, useState } from "react";
 import { Editor } from "@/components/Editor";
 import { PortsTree, PortsTreeMethod } from "@/models/portstrees";
+import { validatePortableName, validityState } from "@/utils/utils";
 
 export type PortsTreeEditorProps =
     {
@@ -47,6 +48,16 @@ export function PortsTreeEditor(props: PortsTreeEditorProps): JSX.Element {
         setState(props.record);
         setMostRecentPropsRecord(props.record);
     }
+    const validity = validityState(props.record);
+    let [validityData, setValidityData] = useReducer(validity.reducer, validity.initialState);
+    const isFormValid = () => {
+        for (const key of validityData.keys()) {
+            if (!validityData.get(key)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     return (
         <Editor
@@ -55,30 +66,41 @@ export function PortsTreeEditor(props: PortsTreeEditorProps): JSX.Element {
             headerText={"Edit ports tree “" + props.record.name + "”"}
             onSubmit={() =>
                 props.onSubmit(portsTreeData)}
+            submitDisabled={!isFormValid()}
             onDismiss={() => {
                 // Reset the state to the original value.
                 setState(props.record);
                 props.onDismiss();
             }}>
-                <TextField
-                    label={"Ports tree name"}
-                    value={portsTreeData.name}
-                    onChange={(_, val) =>
-                        setState({field: "name", value: val})} />
-                <Dropdown
-                    label="Fetching method"
-                    options={methodChoices}
-                    selectedKey={portsTreeData.method}
-                    onChange={(_, val: IDropdownOption<PortsTreeMethod> | undefined) => {
-                        if (val != undefined && val.data != undefined) {
-                            // val is one of our options so has the data field.
-                            setState({ field: 'method', value: val.data });
-                        }
-                    }}/>
-                <TextField
-                    label="Ports tree URI"
-                    value={portsTreeData.url || ''}
-                    onChange={(_, val) =>
-                        setState({field: "url", value: val})}/>
+            <TextField
+                label={"Ports tree name"}
+                value={portsTreeData.name}
+                onChange={(_, val) =>
+                    setState({ field: "name", value: val })} />
+            <TextField
+                label={"Ports tree portable name"}
+                value={portsTreeData.portableName}
+                onGetErrorMessage={(val) => {
+                    let validity = validatePortableName(val);
+                    setValidityData({ field: 'portableName', value: validity.isValid });
+                    return validity.errMsg;
+                }}
+                onChange={(_, val) =>
+                    setState({ field: "portableName", value: val })} />
+            <Dropdown
+                label="Fetching method"
+                options={methodChoices}
+                selectedKey={portsTreeData.method}
+                onChange={(_, val: IDropdownOption<PortsTreeMethod> | undefined) => {
+                    if (val != undefined && val.data != undefined) {
+                        // val is one of our options so has the data field.
+                        setState({ field: 'method', value: val.data });
+                    }
+                }} />
+            <TextField
+                label="Ports tree URI"
+                value={portsTreeData.url || ''}
+                onChange={(_, val) =>
+                    setState({ field: "url", value: val })} />
         </Editor>)
 }

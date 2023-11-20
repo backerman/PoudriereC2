@@ -8,6 +8,7 @@ import useSWR from 'swr';
 import { ConfigCommandBar } from './ConfigCommandBar';
 import { PortsTreeEditor } from './PortsTreeEditor';
 import { useAzureFunctionsOAuth } from '@/utils/apiAuth';
+import { makeNamePortable } from '@/utils/utils';
 
 const columns: IColumn[] = [
     {
@@ -130,6 +131,7 @@ export function PortsTrees(): JSX.Element {
                 setActiveRecord({
                     id: undefined,
                     name: addNameRef.current?.value || '',
+                    portableName: makeNamePortable(addNameRef.current?.value || ''),
                     method: 'null',
                     url: undefined
                 });
