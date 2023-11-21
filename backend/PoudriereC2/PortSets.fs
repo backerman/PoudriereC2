@@ -54,8 +54,10 @@ type PortSetsApi(ps: PortSetRepository) =
                 portsets
                 |> List.map (fun (ps) ->
                     { ps with
-                        Origins = portsetMembers.[ps.Id.Value] })
-
+                        Origins =
+                            portsetMembers
+                            |> Map.tryFind ps.Id.Value
+                            |> Option.defaultValue []  })
             let response = req.CreateResponse(HttpStatusCode.OK)
             return response.writeJsonResponse portsetsWithMembers
         }
