@@ -28,7 +28,7 @@ type JobRepository(ds: NpgsqlDataSource) =
                        cf.name poudriereconfname,
                        ps.id portset, ps.name portsetname,
                        pt.id portstree, pt.name portstreename,
-                       j.id jail, j.name jailname
+                       j.id jail, j.name jailname, jc.runat
                 FROM poudrierec2.jobconfigs jc
                 JOIN poudrierec2.portsets ps ON jc.portset = ps.id
                 JOIN poudrierec2.portstrees pt ON jc.portstree = pt.id
@@ -47,7 +47,7 @@ type JobRepository(ds: NpgsqlDataSource) =
         }
 
     /// Function that gets a specific job's metadata.
-    member _.GetJobConfig(id: Guid) : Async<JobInfo option> =
+    member _.GetJobDetails(id: Guid) : Async<JobInfo option> =
         async {
             use! conn = ds.OpenConnectionAsync()
 
@@ -116,7 +116,7 @@ type JobRepository(ds: NpgsqlDataSource) =
                 """
                 UPDATE poudrierec2.jobconfigs
                 SET    name = @name, portset = @portset, portstree = @portstree, jail = @jail,
-                       poudriereconf = @poudriereconf
+                       poudriereconf = @poudriereconf, runat = @runat, deleted = @deleted
                 WHERE  id = @id
                 """
 

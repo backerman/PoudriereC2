@@ -199,6 +199,7 @@ CREATE TABLE poudrierec2.jobconfigs (
 	portstree uuid NOT NULL REFERENCES poudrierec2.portstrees (id),
 	portset uuid NOT NULL REFERENCES poudrierec2.portsets (id),
 	jail uuid NOT NULL REFERENCES poudrierec2.jails (id),
+	runat text,
 	deleted boolean NOT NULL DEFAULT false,
 	CONSTRAINT configs_pk PRIMARY KEY (id)
 );
@@ -232,16 +233,6 @@ COMMENT ON FUNCTION poudrierec2.jobconfig_poudriereconf_is_one() IS 'Validate th
 ALTER FUNCTION poudrierec2.jobconfig_poudriereconf_is_one() OWNER TO poudriereadmin;
 CREATE TRIGGER jobconfig_pc_validate BEFORE INSERT OR UPDATE ON poudrierec2.jobconfigs
 	FOR EACH ROW EXECUTE FUNCTION poudrierec2.jobconfig_poudriereconf_is_one();
-
-CREATE TABLE poudrierec2.schedules (
-	jobconfig uuid NOT NULL,
-	runat text NOT NULL,
-	CONSTRAINT schedules_pk PRIMARY KEY (jobconfig, runat) -- rows should be unique
-);
-COMMENT ON COLUMN poudrierec2.schedules.runat IS E'Crontab string to evaluate for scheduling jobs.';
-ALTER TABLE poudrierec2.schedules ADD CONSTRAINT schedules_jobconfig_fk FOREIGN KEY (jobconfig)
-REFERENCES poudrierec2.jobconfigs (id) MATCH FULL;
-ALTER TABLE poudrierec2.schedules OWNER TO poudriereadmin;
 
 CREATE TABLE poudrierec2.jobruns (
 	jobconfig uuid NOT NULL,
@@ -279,11 +270,10 @@ COMMENT ON VIEW poudrierec2.jobruns_current IS E'Most recent completed job for e
 
 CREATE VIEW poudrierec2.jobs_lastrun_scheduled AS
 -- Jobs with whether they are currently executing, last successful run, and schedule.
-SELECT jc.id, jc.name, mrc.completed last_completed, c.requested current_requested, s.runat
+SELECT jc.id, jc.name, mrc.completed last_completed, c.requested current_requested, jc.runat
 FROM poudrierec2.jobconfigs jc
 LEFT JOIN poudrierec2.jobruns_mostrecentcompleted mrc ON jc.id = mrc.jobconfig
 LEFT JOIN poudrierec2.jobruns_current c ON jc.id = c.jobconfig
-LEFT JOIN poudrierec2.schedules s ON s.jobconfig = jc.id
 WHERE jc.deleted = false
 ORDER BY jc.id;
 

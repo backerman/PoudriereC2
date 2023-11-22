@@ -9,5 +9,6 @@ export interface JobConfig {
     portsTree?: string,
     portsTreeName?: string,
     jail?: string,
-    jailName?: string
+    jailName?: string,
+    runAt?: string
 }

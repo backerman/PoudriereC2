@@ -45,20 +45,15 @@ INSERT INTO poudrierec2.packageoptions (configfile, category, package, set, unse
 VALUES
 ('7557d8a8-bba5-4c99-ba6f-2ffbebb0be63', null, null, '{"DANE", "DTRACE", "FOP", "FORTRAN"}', '{"ALSA", "ASS", "CUPS", "DBUS", "DOXYGEN"}');
 
-INSERT INTO poudrierec2.jobconfigs (id, name, poudriereconf, portstree, portset, jail)
+INSERT INTO poudrierec2.jobconfigs (id, name, poudriereconf, portstree, portset, jail, runat)
 VALUES
-('209fc7b5-18c5-40e1-a205-4ae82790621e', 'Configuration with a currently-running job', '97241b1e-9c04-4b58-9cdc-4c90eef35225', '4e6d2feb-2a99-4bed-8545-d5462c66ba0c', '11a4e47a-e778-4499-8ad3-4ad117fe0a2f', '0a62a787-c7c1-48bc-8ba0-90d7fbe9c098'),
-('e51d1d30-434b-4017-a9b5-b242cb1e4237', 'Configuration with only completed jobs', '97241b1e-9c04-4b58-9cdc-4c90eef35225', '4e6d2feb-2a99-4bed-8545-d5462c66ba0c', '47234d7c-82d1-4ffd-ae18-25aae674f245', '0a62a787-c7c1-48bc-8ba0-90d7fbe9c098');
+('209fc7b5-18c5-40e1-a205-4ae82790621e', 'Configuration with a currently-running job', '97241b1e-9c04-4b58-9cdc-4c90eef35225', '4e6d2feb-2a99-4bed-8545-d5462c66ba0c', '11a4e47a-e778-4499-8ad3-4ad117fe0a2f', '0a62a787-c7c1-48bc-8ba0-90d7fbe9c098', '42 3 * * *'),
+('e51d1d30-434b-4017-a9b5-b242cb1e4237', 'Configuration with only completed jobs', '97241b1e-9c04-4b58-9cdc-4c90eef35225', '4e6d2feb-2a99-4bed-8545-d5462c66ba0c', '47234d7c-82d1-4ffd-ae18-25aae674f245', '0a62a787-c7c1-48bc-8ba0-90d7fbe9c098', '24 3 * * *');
 
 INSERT INTO poudrierec2.virtualmachines (azuuid, created)
 VALUES
 ('0f2bb76c-b639-43d2-98d6-5c5dceb8ffe3', '2021-08-01 01:02:03Z'),
 ('94354c6f-1269-480e-9a81-543665e93c15', '2021-07-01 16:07:08Z');
-
-INSERT INTO poudrierec2.schedules (jobconfig, runat)
-VALUES
--- 03:42 daily
-('209fc7b5-18c5-40e1-a205-4ae82790621e', '42 3 * * *');
 
 INSERT INTO poudrierec2.jobruns (jobconfig, requested, started, completed, virtualmachine)
 VALUES

@@ -43,14 +43,10 @@ type ScheduleRepository(ds: NpgsqlDataSource) =
         async {
             let query =
                 """
-                SELECT      s.jobconfig jobid, mc.completed lastfinished, s.runat runat
-                FROM        poudrierec2.schedules s
-                LEFT JOIN   poudrierec2.jobruns_current c USING (jobconfig)
-                LEFT JOIN   poudrierec2.jobruns_mostrecentcompleted mc USING (jobconfig)
-                WHERE       c.requested IS NULL
+                SELECT      jobid, name, last_completed, current_requested, runat
+                FROM        poudrierec2.jobs_lastrun_scheduled
                 ORDER BY    jobid
                 """
-
             use! conn = ds.OpenConnectionAsync()
             let! result = query |> conn.QueryAsync<JobSchedule>
             return result |> List.ofSeq

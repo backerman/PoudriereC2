@@ -171,5 +171,11 @@ export function JobConfigEditor(props: JobConfigEditorProps): JSX.Element {
                     }
                 }}
             />
+            <TextField
+                label="Run at"
+                required={false}
+                errorMessage={undefined /* TODO */ }
+                value={jobConfig.runAt || ''}
+                onChange={onTextChange("runAt")} />
         </Editor>)
 };

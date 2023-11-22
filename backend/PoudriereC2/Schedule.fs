@@ -11,7 +11,7 @@ open System.Net
 type ScheduleApi(jobs: JobRepository, sched: ScheduleRepository) =
 
     let isJobSchedulable (job: JobSchedule) =
-        match job.LastFinished with
+        match job.LastCompleted with
         | None -> true
         | Some lastFinishedTime ->
             let cronExpression = CronExpression.Parse(job.RunAt)
@@ -71,7 +71,7 @@ type ScheduleApi(jobs: JobRepository, sched: ScheduleRepository) =
                 log.LogInformation("No jobs available")
                 response.StatusCode <- HttpStatusCode.NoContent
             | Some job ->
-                let! result = jobs.GetJobConfig job.JobId
+                let! result = jobs.GetJobDetails job.JobId
 
                 match result with
                 | None ->

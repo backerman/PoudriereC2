@@ -17,7 +17,11 @@ module ConfigTypes =
             JobId: Guid
             /// The last time this job was started and successfully completed;
             /// will only be populated if provided by GetSchedulableJobs.
-            LastFinished: DateTimeOffset option
+            LastCompleted: DateTimeOffset option
+            /// The time this job's current execution was requested;
+            /// if blank, the job is neither running nor requested.
+            CurrentRequested: DateTimeOffset option
+            /// The cron string describing this job's desired schedule.
             RunAt: string
         }
 
@@ -79,7 +83,8 @@ module ConfigTypes =
           PortSet: Guid
           PortSetName: string option
           Jail: Guid
-          JailName: string option }
+          JailName: string option
+          RunAt: string option }
 
     type PortsTreeMethod =
         | Null
