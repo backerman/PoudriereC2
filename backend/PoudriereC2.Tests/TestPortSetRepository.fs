@@ -49,6 +49,32 @@ type PortSetRepositoryTests() =
             portSetMembers.Keys.Count |> should equal 2 // should haveCount doesn't work?
             portSetMembers.[portSets.[0].Id.Value] |> should haveLength 3
             portSetMembers.[portSets.[2].Id.Value] |> should haveLength 4
+            // Verify that this also works for an individual guid.
+            let! portSetMembers2 = repo.GetPortSetMembers(portSets.[0].Id.Value)
+            portSetMembers2 |> should haveLength 3
+        }
+
+    [<Test; Order 2>]
+    member _.``Can update portset members``() =
+        async {
+            let ds = testScope.DataSource
+            let repo = PortSetRepository(ds)
+            let guidToUpdate = Guid "14a6f67a-ed4e-462c-beb1-4d9a751ac339"
+
+            let someUpdates: PortSetUpdate list =
+                [ Add [ "cad/qucs-s"; "www/qt5-webengine"; "devel/freebsd-gcc13" ]
+                  // net/rclone isn't actually in this portset... yet.
+                  Delete [ "net/rclone"; "cad/qucs-s" ]
+                  Add [ "net/rclone" ] ]
+
+            let! err = repo.UpdatePortSetMembers guidToUpdate someUpdates
+            err |> should equal NoError
+            let! updatedMembers = repo.GetPortSetMembers(guidToUpdate)
+
+            updatedMembers
+            |> should equal [ "devel/freebsd-gcc13"; "net/rclone"; "www/qt5-webengine" ]
+
+            ()
         }
 
     [<Test; Order 2>]
