@@ -14,13 +14,13 @@ module ConfigTypes =
     type JobSchedule =
         {
             Name: string option
-            JobId: Guid
+            Id: Guid
             /// The last time this job was started and successfully completed;
             /// will only be populated if provided by GetSchedulableJobs.
-            LastCompleted: DateTimeOffset option
+            LastCompleted: DateTime option
             /// The time this job's current execution was requested;
             /// if blank, the job is neither running nor requested.
-            CurrentRequested: DateTimeOffset option
+            CurrentRequested: DateTime option
             /// The cron string describing this job's desired schedule.
             RunAt: string
         }

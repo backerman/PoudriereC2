@@ -8,47 +8,21 @@ open Microsoft.Extensions.Logging
 open System
 open System.Net
 
-type ScheduleApi(jobs: JobRepository, sched: ScheduleRepository) =
+type ScheduleApi(jobs: JobRepository, sch: ScheduleRepository) =
 
-    let isJobSchedulable (job: JobSchedule) =
+    let shouldJobRun (job: JobSchedule) =
         match job.LastCompleted with
         | None -> true
-        | Some lastFinishedTime ->
+        | Some lastCompletedTime ->
             let cronExpression = CronExpression.Parse(job.RunAt)
 
             let nextRunTime =
-                cronExpression.GetNextOccurrence(lastFinishedTime, TimeZoneInfo.Utc)
+                cronExpression.GetNextOccurrence(lastCompletedTime, TimeZoneInfo.Utc)
 
+            // If the next run time is in the past, then the job should be scheduled.
             match nextRunTime.HasValue with
             | false -> false
-            | true -> nextRunTime.Value > DateTimeOffset.UtcNow
-
-    /// Schedule a job.
-    [<Function("ScheduleJob")>]
-    [<Authorize(AuthorizationPolicy.Administrator)>]
-    member _.scheduleJob
-        (
-            [<HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "jobs")>] req: HttpRequestData,
-            execContext: FunctionContext
-        ) =
-        async {
-            let log = execContext.GetLogger("ScheduleJob")
-            let response = req.CreateResponse()
-            let! maybeSchedule = tryDeserialize<JobSchedule> req log
-
-            match maybeSchedule with
-            | Some jobSchedule ->
-                let! result = sched.ScheduleJob jobSchedule
-                let handled = result.Handle(log, "Unable to schedule {RunAt}", jobSchedule.RunAt)
-                response.StatusCode <- handled.httpCode
-                response.writeJsonResponse handled.result |> ignore
-            | None ->
-                let responseData: FunctionResult = Error "Invalid or nonexistent payload"
-                response.writeJsonResponse responseData |> ignore
-
-            return response
-        }
-        |> Async.StartAsTask
+            | true -> nextRunTime.Value < DateTime.UtcNow
 
     /// Get a job for the calling virtual machine.
     [<Function("GetNextJob")>]
@@ -61,8 +35,8 @@ type ScheduleApi(jobs: JobRepository, sched: ScheduleRepository) =
         async {
             let log = execContext.GetLogger("GetNextJob")
             let response = req.CreateResponse()
-            let! schedulableJobs = sched.GetSchedulableJobs()
-            let needToBeRun = schedulableJobs |> List.filter isJobSchedulable
+            let! schedulableJobs = sch.GetSchedulableJobs()
+            let needToBeRun = schedulableJobs |> List.filter shouldJobRun
             // TODO: Something based on the specific machine.
             let job = needToBeRun |> List.tryHead
 
@@ -71,15 +45,15 @@ type ScheduleApi(jobs: JobRepository, sched: ScheduleRepository) =
                 log.LogInformation("No jobs available")
                 response.StatusCode <- HttpStatusCode.NoContent
             | Some job ->
-                let! result = jobs.GetJobDetails job.JobId
+                let! result = jobs.GetJobDetails job.Id
 
                 match result with
                 | None ->
-                    log.LogError("Unable to get job configuration ID {JobId}", job.JobId)
+                    log.LogError("Unable to get job configuration ID {JobId}", job.Id)
                     response.StatusCode <- HttpStatusCode.InternalServerError
                     Error "Unable to get job config" |> response.writeJsonResponse |> ignore
                 | Some jobConfig ->
-                    log.LogInformation("Returning job {JobId}: {JobInfo}", job.JobId, jobConfig)
+                    log.LogInformation("Returning job {JobId}: {JobInfo}", job.Id, jobConfig)
                     response.writeJsonResponse jobConfig |> ignore
 
             return response
