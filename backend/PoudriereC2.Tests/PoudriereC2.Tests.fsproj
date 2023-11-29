@@ -20,7 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="8.0.100" />
-    <PackageReference Include="AutoFixture.AutoFoq" Version="4.18.0" />
+    <PackageReference Include="AutoFixture.AutoFoq" Version="4.18.1" />
     <PackageReference Include="coverlet.msbuild" Version="6.0.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
