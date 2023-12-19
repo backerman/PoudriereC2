@@ -118,13 +118,21 @@ let getAccessTokenWithScope (scopeUri: string) =
 let getAccessToken () =
     getAccessTokenWithScope "https://ossrdbms-aad.database.windows.net"
 
+/// <summary>Generate a string of SQL placeholders and a corresponding <see cref="DynamicParameters"/> object.</summary>
+/// <param name="values">The values to be used by the SQL query.</param>
+/// <param name="prefix">The prefix to prepend to the placeholder names.</param>
+/// <param name="dbType">The <see cref="System.Data.DbType"/> corresponding to the values' type.</param>
+/// <returns>A string of placeholder names to be inserted into the SQL query text and a
+/// <see cref="DynamicParameters"/> object containing the corresponding values.</returns>
 let makePlaceholders (values: 'a list) (prefix: string) (dbType: DbType) =
     let p = DynamicParameters()
+
     let placeholderArray =
         values
         |> List.mapi (fun i opt ->
             p.Add($"{prefix}{i}", opt, dbType)
             $"@{prefix}{i}")
         |> List.toArray
+
     let placeholdersString = String.Join(", ", placeholderArray)
     (placeholdersString, p)
