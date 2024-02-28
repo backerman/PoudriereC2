@@ -15,7 +15,7 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Update="FSharp.Core" Version="8.0.100" />
     <PackageReference Include="Azure.Identity" Version="1.10.4" />
-    <PackageReference Include="Cronos" Version="0.7.1" />
+    <PackageReference Include="Cronos" Version="0.8.4" />
     <PackageReference Include="Dapper.FSharp" Version="4.7.0" />
     <PackageReference Include="FSharp.Control.FusionTasks" Version="2.6.0" />
     <PackageReference Include="FSharp.Data" Version="6.3.0" />
